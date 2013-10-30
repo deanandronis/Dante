@@ -38,6 +38,14 @@ class Player(Entity):
                               'idleR':(os.path.join(self.imageloc,'IdlingR'), 'idlingR', 19),
                               'jumpL':(os.path.join(self.imageloc,'JumpL'), 'jumpL', 0),
                               'jumpR':(os.path.join(self.imageloc,'JumpR'), 'jumpR', 0),
+                              'deathL':(os.path.join(self.imageloc, 'DeathL'), 'DeathL', 30),
+                              'deathR':(os.path.join(self.imageloc, 'DeathR'), 'DeathR', 30),
+                              'slashL':(os.path.join(self.imageloc, 'NailslashL'), 'NailslashL', 13),
+                              'slashR':(os.path.join(self.imageloc, 'NailslashR'), 'NailslashR', 13),
+                              'spinL':(os.path.join(self.imageloc, 'spinL'), 'spinL', 19),
+                              'spinR':(os.path.join(self.imageloc, 'spinR'), 'spinR', 19),
+                              'shoutL':(os.path.join(self.imageloc, 'shoutL'), 'shoutL', 7),
+                              'shoutR':(os.path.join(self.imageloc, 'shoutR'), 'shoutR', 7),
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths)
@@ -60,4 +68,6 @@ class Player(Entity):
 
     def check_collisions(self):
         pass
+
+
     
