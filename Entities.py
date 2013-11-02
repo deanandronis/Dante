@@ -66,9 +66,9 @@ class Player(Entity):
         self.enable_grav_range = True
         
         #add the items to be checked to lists
-        leftrightcontainer = [x for x in leftrightlist if -50 < x.x or x.x < 50]
-        updowncontainer = [x for x in updownlist if -50 < x.y or x.y < 50]
-        alldircontainer = [x for x in alldirlist if -50 < x.y or x.y < 50 or -50< x.x or x.x < 50]
+        leftrightcontainer = leftrightlist
+        updowncontainer = updownlist
+        alldircontainer = alldirlist
         
         self.touching_ground = False
         #check the items in the lists for their respective collisions
