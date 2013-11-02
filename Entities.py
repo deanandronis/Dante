@@ -8,6 +8,7 @@ import pygame, sys, os
 from pygame.locals import *
 import functions
 
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -62,6 +63,7 @@ class Player(Entity):
         #update the collision box of the character
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
+        self.enable_grav_range = True
         
         #add the items to be checked to lists
         leftrightcontainer = [x for x in leftrightlist if -50 < x.x or x.x < 50]
@@ -70,30 +72,6 @@ class Player(Entity):
         
         self.touching_ground = False
         #check the items in the lists for their respective collisions
-        for item in updowncontainer:
-            if self.rect.colliderect(item.rect):
-                if self.y < item.y: #collide top
-                    self.y = item.y - self.image.get_height()
-                    self.yvel = 0
-                    self.gravity = 0
-                    self.touching_ground = True
-                else: #collide bottom
-                    self.y = item.y + item.image.get_height()
-                    self.yvel = 0
-                    self.gravity = 40
-                    self.touching_ground = False
-            elif not item.y - 10 < self.y + self.image.get_height() and not item.y + 10 + item.image.get_height() > self.y:
-                self.gravity = 40
-        for item in leftrightcontainer:
-            if self.rect.colliderect(item.rect):
-                if self.x < item.x: #collide left
-                    if not self.xvel < 0:
-                        self.x = item.x - self.image.get_width()
-                        self.xvel = 0
-                else: #collide right
-                    if not self.xvel > 0:
-                        self.x = item.x + item.image.get_width()
-                        self.xvel = 0
         for item in alldircontainer:
             if self.rect.colliderect(item.rect):
                 block_threshold = [item.y - item.image.get_height()/6, item.y + item.image.get_height() / 2, item.y + item.image.get_height() /6]
@@ -119,6 +97,7 @@ class Player(Entity):
                             self.yvel = 0
                             self.gravity = 0
                             self.touching_ground = True
+                            self.enable_grav_range = False
                         else:
                             #bottom collision
                             self.y = item.y + item.image.get_height()
@@ -133,7 +112,7 @@ class Player(Entity):
                             self.xvel = 0
                         
                     elif player_centre_lower > block_threshold[0] and player_centre_lower < block_threshold[2]:
-                        #left collision
+                        #right collision
                         if not self.xvel > 0:
                             self.x = item.x + item.image.get_width()
                             self.xvel = 0
@@ -144,12 +123,43 @@ class Player(Entity):
                             self.yvel = 0
                             self.gravity = 0
                             self.touching_ground = True
+                            self.enable_grav_range = False
                         else:
                             #bottom collision
                             self.y = item.y + item.image.get_height()
                             self.yvel = 0
                             self.gravity = 40
-                            
+            else:
+                if self.y + self.image.get_height() > item.y - 32 and self.x < item.x + item.image.get_width() + 1 and self.x + self.image.get_width() > item.x:
+                    self.enable_grav_range = False
+        
+        for item in updowncontainer:
+            if self.rect.colliderect(item.rect):
+                if self.y < item.y: #collide top
+                    self.y = item.y - self.image.get_height()
+                    self.yvel = 0
+                    self.gravity = 0
+                    self.touching_ground = True
+                else: #collide bottom
+                    self.y = item.y + item.image.get_height()
+                    self.yvel = 0
+                    self.gravity = 40
+                    self.touching_ground = False
+            elif self.enable_grav_range == True:
+                if self.y + self.image.get_height() < item.y - 15 or self.y > item.y + item.image.get_height() + 15:
+                    self.gravity = 40
+                
+        for item in leftrightcontainer:
+            if self.rect.colliderect(item.rect):
+                if self.x < item.x: #collide left
+                    if not self.xvel < 0:
+                        self.x = item.x - self.image.get_width()
+                        self.xvel = 0
+                else: #collide right
+                    if not self.xvel > 0:
+                        self.x = item.x + item.image.get_width()
+                        self.xvel = 0
+        
         if self.gravity == 0: self.touching_ground = True
         
         #determine sprite set
@@ -172,12 +182,23 @@ class Player(Entity):
                         self.change_image('idleL')
                         self.facing_right = False
         else:
-            if self.facing_right == True:
+            if self.xvel > 0:
                 if not self.imagename == "jumpR":
-                    self.change_image('jumpR')
-            else:
+                        self.change_image('jumpR')
+                        self.facing_right = True
+            elif self.xvel < 0:
                 if not self.imagename == 'jumpL':
-                    self.change_image('jumpL')
+                        self.change_image('jumpL')
+                        self.facing_right = False
+            else:
+                if self.facing_right == True:
+                    if not self.imagename == "jumpR":
+                        self.change_image('jumpR')
+                        self.facing_right = True
+                else:
+                    if not self.imagename == 'jumpL':
+                        self.change_image('jumpL')
+                        self.facing_right = False
         
         #apply gravity
         if not self.gravity == 0 and not self.yvel > 10:
@@ -239,3 +260,39 @@ class collisionblockalldir(Entity):
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1StandingTile.png'), (255,255,255))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
+
+class Camera():
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.width = 800
+        self.height = 640
+        self.xbounds = (0, 1056)
+        self.ybounds = (0, 640)
+    
+    def reset(self):
+        self.x = 0
+        self.y = 0
+    
+    def setPos(self, x, y):
+        self.x = x
+        self.y = y
+    
+    def setSize(self, width, height):
+        self.width = width
+        self.height = height
+    
+    def updatecamera(self, max):
+        if max.x + max.xvel > self.x + self.width*2/3:
+            self.x = max.x - self.width*2/3
+            
+        elif max.x + max.xvel < self.x + self.width/3:
+            self.x = max.x - self.width/3
+        if self.x + self.width> self.xbounds[1]:
+            self.x = self.xbounds[1] - self.width
+        elif self.x < self.xbounds[0]:
+            self.x = self.xbounds[0]
+        if self.y > self.ybounds[1]:
+            self.y = self.ybounds[1] + self.height
+        elif self.y < self.ybounds[0]:
+            self.y = self.ybounds[0]

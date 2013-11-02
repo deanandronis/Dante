@@ -24,13 +24,14 @@ clock = pygame.time.Clock()
 max = Entities.Player(400,340)
 sprites.append(max)
 blocklist = stage_1.level_1()
-collisionleftright =blocklist[0]
+collisionleftright = blocklist[0]
 collisionupdown = blocklist[1]
 collisionalldir = blocklist[2]
 for item in collisionleftright: sprites.append(item)
 for item in collisionupdown: sprites.append(item)
 for item in collisionalldir: sprites.append(item)
 ticktimer = 0
+camera = Entities.Camera()
 
 while not done:
     #Get and check events:
@@ -64,12 +65,13 @@ while not done:
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps)))
     
     #Draw elements to screen
+    camera.updatecamera(max)
     if ticktimer%6 == 0: 
         for item in sprites:
             if type(item) == Entities.Player: item.animate()
     screen.fill((0,0,0))
     for sprite in sprites:
-        screen.blit(sprite.image, sprite.pos)
+        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
     max.update(collisionleftright, collisionupdown, collisionalldir)
     ticktimer += 1
     pygame.display.flip()
