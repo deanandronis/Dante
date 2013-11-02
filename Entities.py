@@ -6,7 +6,7 @@ Created on Oct 27, 2013
 
 import pygame, sys, os
 from pygame.locals import *
-import functions
+import functions, Constants
 
 
 class Entity(pygame.sprite.Sprite):
@@ -22,6 +22,7 @@ class Player(Entity):
         self.xvel = 0
         self.yvel = 0
         self.gravity = 40
+        self.health = 8
         self.touching_ground = False
         self.facing_right = True
         #load images
@@ -283,11 +284,11 @@ class Camera():
         self.height = height
     
     def updatecamera(self, max):
-        if max.x + max.xvel > self.x + self.width*2/3:
-            self.x = max.x - self.width*2/3
+        if max.x + max.xvel > self.x + self.width*3/5:
+            self.x = max.x - self.width*3/5
             
-        elif max.x + max.xvel < self.x + self.width/3:
-            self.x = max.x - self.width/3
+        elif max.x + max.xvel < self.x + self.width*2/5:
+            self.x = max.x - self.width*2/5
         if self.x + self.width> self.xbounds[1]:
             self.x = self.xbounds[1] - self.width
         elif self.x < self.xbounds[0]:
@@ -296,3 +297,29 @@ class Camera():
             self.y = self.ybounds[1] + self.height
         elif self.y < self.ybounds[0]:
             self.y = self.ybounds[0]
+
+class hud():
+    def __init__(self, stage):
+        self.x = 0
+        self.y = 544
+        if stage == 1:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255))
+        self.image = pygame.transform.scale(self.image, (800,96))
+        self.imagestore = self.image
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(self.x, self.y)
+        self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255))
+    
+    def update(self, health):
+        self.image = self.imagestore
+        self.image.blit(self.healthtext, (145,38))
+        for i in range(0, health):
+            pygame.draw.rect(self.image, (0,255,0), pygame.Rect(225 + i*21, 37, 14,22))
+        for i in range(health, 10):
+            pygame.draw.rect(self.image, (255,0,0), pygame.Rect(225 + i*21, 37, 14,22))
+        
+        
+        
+        
+        
+        

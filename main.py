@@ -5,8 +5,7 @@ Created on Oct 27, 2013
 '''
 import pygame, sys, os, math, datetime
 from pygame.locals import *
-import Entities, functions, stage_1
-from stage_1 import level_1
+import Entities, functions, stage_1, Constants
 
 
 #Variable init
@@ -32,6 +31,7 @@ for item in collisionupdown: sprites.append(item)
 for item in collisionalldir: sprites.append(item)
 ticktimer = 0
 camera = Entities.Camera()
+hud = Entities.hud(1)
 
 while not done:
     #Get and check events:
@@ -64,14 +64,18 @@ while not done:
     current_fps = float(clock.get_fps())
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps)))
     
-    #Draw elements to screen
+    #Update the hud and camera
     camera.updatecamera(max)
+    hud.update(max.health)
+    
+    #Draw elements to screen
     if ticktimer%6 == 0: 
         for item in sprites:
             if type(item) == Entities.Player: item.animate()
     screen.fill((0,0,0))
     for sprite in sprites:
         screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
+    screen.blit(hud.image, (hud.x, hud.y))
     max.update(collisionleftright, collisionupdown, collisionalldir)
     ticktimer += 1
     pygame.display.flip()

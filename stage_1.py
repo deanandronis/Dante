@@ -3,10 +3,12 @@ Created on 31/10/2013
 
 @author: 22491
 '''
-import pygame, os, sys, Entities, functions
+import pygame, os, sys, Entities, functions, Constants
 
 def level_1():
     level_layout = ("W                               W",
+                    "W                               W",
+                    "W                               W",
                     "W                               W",
                     "W                               W",
                     "W                               W",
@@ -21,7 +23,6 @@ def level_1():
                     "W                               W",
                     "W                               W",
                     "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-                    "                                 ",
                     "                                 ",
                     "                                 ",
                     "                                 ",

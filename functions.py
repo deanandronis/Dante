@@ -5,7 +5,7 @@ Created on Oct 27, 2013
 '''
 import pygame, sys, os, math
 from pygame.locals import *
-import Entities
+import Entities, Constants
 
 def get_image(path, colorkey):
     image = pygame.image.load(path).convert()
