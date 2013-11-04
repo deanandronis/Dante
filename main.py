@@ -26,13 +26,14 @@ blocklist = stage_1.level_1()
 collisionleftright = blocklist[0]
 collisionupdown = blocklist[1]
 collisionalldir = blocklist[2]
+damagearray = []
 for item in collisionleftright: sprites.append(item)
 for item in collisionupdown: sprites.append(item)
 for item in collisionalldir: sprites.append(item)
 ticktimer = 0
 camera = Entities.Camera()
 hud = Entities.hud(1)
-
+damagearray.append(hud)
 while not done:
     #Get and check events:
     for event in pygame.event.get():
@@ -76,7 +77,7 @@ while not done:
     for sprite in sprites:
         screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
     screen.blit(hud.image, (hud.x, hud.y))
-    max.update(collisionleftright, collisionupdown, collisionalldir)
+    max.update(collisionleftright, collisionupdown, collisionalldir, damagearray)
     ticktimer += 1
     pygame.display.flip()
     clock.tick(MAX_FPS)

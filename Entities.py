@@ -18,11 +18,12 @@ class Player(Entity):
     def __init__(self, x, y):
         Entity.__init__(self)
         #Global variables for Character
+        self.startpoint = (x,y)
         self.pos = (self.x,self.y) = x,y
         self.xvel = 0
         self.yvel = 0
         self.gravity = 40
-        self.health = 8
+        self.health = 10
         self.touching_ground = False
         self.facing_right = True
         #load images
@@ -60,7 +61,7 @@ class Player(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
         
-    def update(self, leftrightlist, updownlist, alldirlist):
+    def update(self, leftrightlist, updownlist, alldirlist, damagelist):
         #update the collision box of the character
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
@@ -133,6 +134,7 @@ class Player(Entity):
             else:
                 if self.y + self.image.get_height() > item.y - 32 and self.x < item.x + item.image.get_width() + 1 and self.x + self.image.get_width() > item.x:
                     self.enable_grav_range = False
+                    
         
         for item in updowncontainer:
             if self.rect.colliderect(item.rect):
@@ -141,14 +143,16 @@ class Player(Entity):
                     self.yvel = 0
                     self.gravity = 0
                     self.touching_ground = True
+                    self.enable_grav_range = False
                 else: #collide bottom
                     self.y = item.y + item.image.get_height()
                     self.yvel = 0
                     self.gravity = 40
                     self.touching_ground = False
-            elif self.enable_grav_range == True:
-                if self.y + self.image.get_height() < item.y - 15 or self.y > item.y + item.image.get_height() + 15:
-                    self.gravity = 40
+            else:
+                if self.y + self.image.get_height() > item.y - 32 and self.x < item.x + item.image.get_width() + 1 and self.x + self.image.get_width() > item.x:
+                    self.enable_grav_range = False
+                   
                 
         for item in leftrightcontainer:
             if self.rect.colliderect(item.rect):
@@ -162,6 +166,14 @@ class Player(Entity):
                         self.xvel = 0
         
         if self.gravity == 0: self.touching_ground = True
+        if self.enable_grav_range == True: self.gravity = 40
+        #calculate damage
+        for item in damagelist:
+            if self.rect.colliderect(item):
+                if isinstance(item, hud):
+                    self.reset()
+                    self.health -= 1
+        
         
         #determine sprite set
         if self.touching_ground == True:
@@ -215,8 +227,14 @@ class Player(Entity):
         if self.imageindex == self.numimages: self.imageindex = 0
         else: self.imageindex += 1  
 
-    def check_collisions(self):
-        pass
+    def reset(self):
+        self.pos = self.startpoint
+        self.x = self.pos[0]
+        self.y = self.pos[1]
+        self.xvel= 0
+        self.yvel = 0
+        self.gravity = 40
+        
     
     def change_image(self, image):
         self.imageindex = 0
@@ -305,19 +323,28 @@ class hud():
         if stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255))
         self.image = pygame.transform.scale(self.image, (800,96))
-        self.imagestore = self.image
+        self.backimagestore = self.image
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.x, self.y)
         self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255))
+        
+        #load relevant images
+        self.imageloc = os.path.join('Resources','General Resources')
+        self.imagepaths = {   'maxPortrait':(self.imageloc, 'Portrait', 0),
+                              
+                          }
+        self.images = {}
+        self.images = functions.load_imageset(self.imagepaths)
+        self.images['maxPortrait'][0] = pygame.transform.scale(self.images['maxPortrait'][0], (58,58))
     
     def update(self, health):
-        self.image = self.imagestore
-        self.image.blit(self.healthtext, (145,38))
+        self.image = self.backimagestore
+        self.image.blit(self.healthtext, (100,38))
         for i in range(0, health):
-            pygame.draw.rect(self.image, (0,255,0), pygame.Rect(225 + i*21, 37, 14,22))
+            pygame.draw.rect(self.image, (0,255,0), pygame.Rect(180 + i*21, 37, 14,22))
         for i in range(health, 10):
-            pygame.draw.rect(self.image, (255,0,0), pygame.Rect(225 + i*21, 37, 14,22))
-        
+            pygame.draw.rect(self.image, (255,0,0), pygame.Rect(180 + i*21, 37, 14,22))
+        self.image.blit(self.images['maxPortrait'][0], (19,17))
         
         
         
