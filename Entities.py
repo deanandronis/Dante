@@ -6,7 +6,7 @@ Created on Oct 27, 2013
 
 import pygame, sys, os
 from pygame.locals import *
-import functions, Constants
+import functions, Constants, Globals
 
 
 class Entity(pygame.sprite.Sprite):
@@ -26,6 +26,8 @@ class Player(Entity):
         self.health = 10
         self.touching_ground = False
         self.facing_right = True
+        self.next_level = False
+        self.destroyblock = []
         #load images
         '''
         IMAGE SYNTAX FOR USE:
@@ -71,6 +73,7 @@ class Player(Entity):
         leftrightcontainer = leftrightlist
         updowncontainer = updownlist
         alldircontainer = alldirlist
+        damagecontainer = damagelist
         
         self.touching_ground = False
         #check the items in the lists for their respective collisions
@@ -168,11 +171,14 @@ class Player(Entity):
         if self.gravity == 0: self.touching_ground = True
         if self.enable_grav_range == True: self.gravity = 40
         #calculate damage
-        for item in damagelist:
+        for item in damagecontainer:
             if self.rect.colliderect(item):
                 if isinstance(item, hud):
                     self.reset()
                     self.health -= 1
+                elif isinstance(item, goal_piece):
+                    self.next_level = True
+                    self.destroyblock.append(item)
         
         
         #determine sprite set
@@ -279,6 +285,22 @@ class collisionblockalldir(Entity):
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1StandingTile.png'), (255,255,255))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
+        
+class goal_piece(Entity):
+    def __init__(self, x, y, stage):
+        Entity.__init__(self)
+        #Global variables 
+        self.x = x
+        self.y = y
+        self.pos = (self.x, self.y)
+        if stage == 1:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources', '1ObjectiveTile.bmp'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(self.pos)
+        
+    def destroy(self):
+        self.image = None
+        
 
 class Camera():
     def __init__(self):

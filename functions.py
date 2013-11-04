@@ -39,27 +39,31 @@ def load_imageset(imagedict):
             images[item] = create_image_list(imagedict[item][0], imagedict[item][1], imagedict[item][2], '.bmp', (255,0,255))
     return images
         
-def returnlayoutlist(layout):
+def returnlayoutlist(layout, stage):
     rowcount = 0
     updownlist = []
     leftrightlist = []
     alldirlist = []
     otherlist = []
+    specialblocklist = []
     for row in layout:
         for column, blocktype in enumerate(row):
             if row[column] == "F":
-                new_block = Entities.collisionblockupdown(column*32, rowcount*32, 1, column)
+                new_block = Entities.collisionblockupdown(column*32, rowcount*32, stage, column)
                 updownlist.append(new_block)
-            if row[column] == "W":
-                new_block = Entities.collisionblockleftright(column*32, rowcount*32, 1, column)
+            elif row[column] == "W":
+                new_block = Entities.collisionblockleftright(column*32, rowcount*32, stage, column)
                 leftrightlist.append(new_block)
-            if row[column] == "S":
-                new_block = Entities.collisionblockalldir(column*32, rowcount*32, 1, column)
+            elif row[column] == "S":
+                new_block = Entities.collisionblockalldir(column*32, rowcount*32, stage, column)
                 alldirlist.append(new_block)
-            if row[column] == "M":
+            elif row[column] == "M":
                 max = Entities.Player(int(column*32), int(rowcount*32))
                 otherlist.append(max)
+            elif row[column] == "G":
+                new_block = Entities.goal_piece(column*32, rowcount*32, stage)
+                specialblocklist.append(new_block)
             
         rowcount += 1
-    blocklist = [leftrightlist, updownlist, alldirlist, otherlist]
+    blocklist = [leftrightlist, updownlist, alldirlist, otherlist, specialblocklist, stage]
     return blocklist
