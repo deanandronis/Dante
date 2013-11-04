@@ -10,8 +10,8 @@ import functions, Constants, Globals
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
+    def __init__(self, *args):
+        pygame.sprite.Sprite.__init__(self, *args)
         
 #Player class
 class Player(Entity):
@@ -63,21 +63,16 @@ class Player(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
         
-    def update(self, leftrightlist, updownlist, alldirlist, damagelist):
+    def update(self):
         #update the collision box of the character
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
         self.enable_grav_range = True
         
         #add the items to be checked to lists
-        leftrightcontainer = leftrightlist
-        updowncontainer = updownlist
-        alldircontainer = alldirlist
-        damagecontainer = damagelist
-        
         self.touching_ground = False
         #check the items in the lists for their respective collisions
-        for item in alldircontainer:
+        for item in Globals.group_UDLR:
             if self.rect.colliderect(item.rect):
                 block_threshold = [item.y - item.image.get_height()/6, item.y + item.image.get_height() / 2, item.y + item.image.get_height() /6]
                 player_centre_upper = self.y + (self.image.get_height()/6)
@@ -139,7 +134,7 @@ class Player(Entity):
                     self.enable_grav_range = False
                     
         
-        for item in updowncontainer:
+        for item in Globals.group_UD:
             if self.rect.colliderect(item.rect):
                 if self.y < item.y: #collide top
                     self.y = item.y - self.image.get_height()
@@ -157,7 +152,7 @@ class Player(Entity):
                     self.enable_grav_range = False
                    
                 
-        for item in leftrightcontainer:
+        for item in Globals.group_LR:
             if self.rect.colliderect(item.rect):
                 if self.x < item.x: #collide left
                     if not self.xvel < 0:
@@ -171,7 +166,7 @@ class Player(Entity):
         if self.gravity == 0: self.touching_ground = True
         if self.enable_grav_range == True: self.gravity = 40
         #calculate damage
-        for item in damagecontainer:
+        for item in Globals.group_SPECIAL:
             if self.rect.colliderect(item):
                 if isinstance(item, hud):
                     self.reset()
@@ -250,7 +245,7 @@ class Player(Entity):
 
 class collisionblockupdown(Entity):
     def __init__(self, x, y, stage, blocknumber):
-        Entity.__init__(self)
+        Entity.__init__(self, Globals.group_UD)
         #Global variables 
         self.x = x
         self.y = y
@@ -263,7 +258,7 @@ class collisionblockupdown(Entity):
         
 class collisionblockleftright(Entity):
     def __init__(self, x, y, stage, blocknumber):
-        Entity.__init__(self)
+        Entity.__init__(self, Globals.group_LR)
         #Global variables 
         self.x = x
         self.y = y
@@ -276,7 +271,7 @@ class collisionblockleftright(Entity):
         
 class collisionblockalldir(Entity):
     def __init__(self, x, y, stage, blocknumber):
-        Entity.__init__(self)
+        Entity.__init__(self, Globals.group_UDLR)
         #Global variables 
         self.x = x
         self.y = y
@@ -288,7 +283,7 @@ class collisionblockalldir(Entity):
         
 class goal_piece(Entity):
     def __init__(self, x, y, stage):
-        Entity.__init__(self)
+        Entity.__init__(self, Globals.group_SPECIAL)
         #Global variables 
         self.x = x
         self.y = y

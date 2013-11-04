@@ -18,10 +18,6 @@ def load_level(levellayout):
             Globals.player = levellayout[3][index]
             Globals.sprites.append(Globals.player)
     Globals.damagearray = levellayout[4]
-    for item in Globals.collisionleftright: Globals.sprites.append(item)
-    for item in Globals.collisionupdown: Globals.sprites.append(item)
-    for item in Globals.collisionalldir: Globals.sprites.append(item)
-    for item in Globals.damagearray: Globals.sprites.append(item)
     Globals.hud = Entities.hud(levellayout[5])
     
     
@@ -96,9 +92,16 @@ while not done:
     screen.fill((0,0,0))
     for sprite in Globals.sprites:
         screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
-   
+    for sprite in Globals.group_LR:
+        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
+    for sprite in Globals.group_UD:
+        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
+    for sprite in Globals.group_UDLR:
+        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
+    for sprite in Globals.group_SPECIAL:
+        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
     screen.blit(Globals.hud.image, (Globals.hud.x, Globals.hud.y))
-    Globals.player.update(Globals.collisionleftright, Globals.collisionupdown, Globals.collisionalldir, Globals.damagearray)
+    Globals.player.update()
     ticktimer += 1
     pygame.display.flip()
     clock.tick(MAX_FPS)

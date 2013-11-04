@@ -18,7 +18,10 @@ level = 1
 player = None
 hud= None
 
-
+group_LR = pygame.sprite.Group()
+group_UD = pygame.sprite.Group()
+group_UDLR = pygame.sprite.Group()
+group_SPECIAL = pygame.sprite.Group()
 
 def reset_all(): #reset all variables back to starting values
     global damagearray
