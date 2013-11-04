@@ -20,7 +20,7 @@ def level_1():
                     "W                               W",
                     "W                               W",
                     "W           S                   W",
-                    "W                               W",
+                    "W M                             W",
                     "W                               W",
                     "FFFFFFFFFFFFFFFFFF      FFFFFFFFF",
                     "                                 ",

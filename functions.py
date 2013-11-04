@@ -44,6 +44,7 @@ def returnlayoutlist(layout):
     updownlist = []
     leftrightlist = []
     alldirlist = []
+    otherlist = []
     for row in layout:
         for column, blocktype in enumerate(row):
             if row[column] == "F":
@@ -55,7 +56,10 @@ def returnlayoutlist(layout):
             if row[column] == "S":
                 new_block = Entities.collisionblockalldir(column*32, rowcount*32, 1, column)
                 alldirlist.append(new_block)
+            if row[column] == "M":
+                max = Entities.Player(int(column*32), int(rowcount*32))
+                otherlist.append(max)
             
         rowcount += 1
-    blocklist = [leftrightlist, updownlist, alldirlist]
+    blocklist = [leftrightlist, updownlist, alldirlist, otherlist]
     return blocklist
