@@ -8,35 +8,42 @@ import pygame, sys, os, Entities
 pygame.init()
 
 #initial variables
-damagearray = []
-collisionleftright = []
-collisionupdown = []
-collisionalldir = []
-sprites = []
 stage = 1
 level = 1
 player = None
 hud= None
 
+#create sprite groups
+group_PLAYER = pygame.sprite.Group()
 group_LR = pygame.sprite.Group()
 group_UD = pygame.sprite.Group()
 group_UDLR = pygame.sprite.Group()
 group_SPECIAL = pygame.sprite.Group()
 
 def reset_all(): #reset all variables back to starting values
-    global damagearray
-    global collisionleftright 
-    global collisionupdown
-    global collisionalldir   
-    global sprites 
+    global group_LR
+    global group_SPECIAL 
+    global group_UD
+    global group_UDLR   
+    global group_PLAYER
     global stage 
     global level
-    damagearray = []
-    collisionleftright = []
-    collisionupdown = []
-    collisionalldir = []
-    sprites = []
+    group_LR.empty()
+    group_SPECIAL.empty()
+    group_UD.empty()
+    group_UDLR.empty()
+    group_PLAYER.empty()
     stage = 1
     level = 1
 
-
+def clear_groups():
+    global group_LR
+    global group_SPECIAL 
+    global group_UD
+    global group_UDLR   
+    global group_PLAYER
+    group_LR.empty()
+    group_SPECIAL.empty()
+    group_UD.empty()
+    group_UDLR.empty()
+    group_PLAYER.empty()

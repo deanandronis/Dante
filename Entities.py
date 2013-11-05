@@ -16,7 +16,7 @@ class Entity(pygame.sprite.Sprite):
 #Player class
 class Player(Entity):
     def __init__(self, x, y):
-        Entity.__init__(self)
+        Entity.__init__(self, Globals.group_PLAYER)
         #Global variables for Character
         self.startpoint = (x,y)
         self.pos = (self.x,self.y) = x,y
@@ -28,6 +28,10 @@ class Player(Entity):
         self.facing_right = True
         self.next_level = False
         self.destroyblock = []
+        self.collide_left = False
+        self.collide_right = False
+        self.collide_up = False
+        self.collide_down = False
         #load images
         '''
         IMAGE SYNTAX FOR USE:
@@ -76,7 +80,7 @@ class Player(Entity):
             if self.rect.colliderect(item.rect):
                 block_threshold = [item.y - item.image.get_height()/6, item.y + item.image.get_height() / 2, item.y + item.image.get_height() /6]
                 player_centre_upper = self.y + (self.image.get_height()/6)
-                player_centre_lower = self.y + (self.image.get_height()/6) + self.image.get_height()
+                player_centre_lower = self.y + (self.image.get_height()/6) + self.image.get_height()/2
                 
                 if self.x + self.image.get_width() < item.x + item.image.get_width(): #left of centre
                     if player_centre_upper > block_threshold[0] and player_centre_upper < block_threshold[2]:
@@ -173,7 +177,7 @@ class Player(Entity):
                     self.health -= 1
                 elif isinstance(item, goal_piece):
                     self.next_level = True
-                    self.destroyblock.append(item)
+                    Globals.group_SPECIAL.remove(item)
         
         
         #determine sprite set
@@ -333,10 +337,12 @@ class Camera():
         elif self.y < self.ybounds[0]:
             self.y = self.ybounds[0]
 
-class hud():
+class hud(pygame.sprite.Sprite):
     def __init__(self, stage):
+        pygame.sprite.Sprite.__init__(self, Globals.group_SPECIAL)
         self.x = 0
         self.y = 544
+        self.pos = (self.x,self.y)
         if stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255))
         self.image = pygame.transform.scale(self.image, (800,96))
