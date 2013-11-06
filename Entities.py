@@ -261,5 +261,34 @@ class hud(pygame.sprite.Sprite):
         for i in range(health, 10):
             pygame.draw.rect(self.image, (255,0,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the red health blocks
         self.image.blit(self.images['maxPortrait'][0], (19,17)) #draw the portrait onto the HUD
-
+        
+        
+class Projectile(Entity):
+    def __init__(self, x, y, xvel, yvel):
+        Entity.__init__(self, Globals.group_PROJECTILES)
+    
+        #set the required variables    
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
+        self.xvel = xvel
+        self.yvel = yvel
+    def update(self):
+        self.rect.x += self.xvel
+        self.yvel += abs(self.yvel)/40 + 0.36
+        self.rect.y += self.yvel
+        
+        if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False):
+            Globals.group_PROJECTILES.remove(self)
+        elif pygame.sprite.spritecollide(self,Globals.group_PLAYER, False):
+            Globals.group_PROJECTILES.remove(self)
+        elif pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
+            Globals.group_PROJECTILES.remove(self)
+        
+        
+class Piano(Projectile):
+    def __init__(self, x, y, xvel, yvel):
+        self.image = functions.get_image(os.path.join('Resources','Projectiles','PianoProjectile1.png'), (255,0,255)) #get the piano image
+        Projectile.__init__(self, x, y, xvel, yvel)
+        
         

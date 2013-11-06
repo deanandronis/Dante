@@ -6,53 +6,17 @@ Created on 31/10/2013
 import pygame, os, sys, Entities, functions, Constants, Globals
 
 def level_1():
-    level_layout = ("W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W           S                   W",
-                    "W M         S     S           G W",
-                    "W           S     S    S        W",
-                    "FFFFFFFFFFFF            FFFFFFFF",
-                    "                                 ",
-                    "                                 ",
-                    "                                 ",
-                    "                                 "                  
-                    )
-    blocklayout = functions.returnlayoutlist(level_layout, 1)
-    return blocklayout
+    floor_platform = Entities.Platform(32,16*32,30,1)
+    wall_platform = Entities.Platform(0,0, 1, 17)
+    wall_platform1 = Entities.Platform(32*30,0,1,17)
+    Globals.player = Entities.Player(32,32*14)
+    Globals.hud = Entities.hud(1)
+    random_projectile = Entities.Piano(100,100,10,0)
+
 
 def level_2():
-    level_layout = ("W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W                               W",
-                    "W           S                   W",
-                    "W M                           G W",
-                    "W                               W",
-                    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-                    "                                 ",
-                    "                                 ",
-                    "                                 ",
-                    "                                 "                  
-                    )
-    blocklayout = functions.returnlayoutlist(level_layout, 1)
-    return blocklayout
+    floor_platform = Entities.Platform(32,16*32,30,1)
+    wall_platform = Entities.Platform(0,0, 1, 17)
+    wall_platform1 = Entities.Platform(32*30,0,1,17)
+    Globals.player = Entities.Player(32,32)
+    Globals.hud = Entities.hud(1)

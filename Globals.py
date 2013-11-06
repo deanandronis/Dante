@@ -17,11 +17,13 @@ hud= None
 group_PLAYER = pygame.sprite.Group()
 group_COLLIDEBLOCKS = pygame.sprite.Group()
 group_SPECIAL = pygame.sprite.Group()
+group_PROJECTILES = pygame.sprite.Group()
 
 def reset_all(): #reset all variables back to starting values
     global group_SPECIAL 
     global group_COLLIDEBLOCKS   
     global group_PLAYER
+    
     global stage 
     global level
     group_LR.empty()

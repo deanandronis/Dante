@@ -8,12 +8,6 @@ from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
 
 #definitions
-def load_level():
-    floor_platform = Entities.Platform(32,16*32,30,1)
-    wall_platform = Entities.Platform(0,0, 1, 17)
-    wall_platform1 = Entities.Platform(32*30,0,1,17)
-    Globals.player = Entities.Player(32,32)
-    Globals.hud = Entities.hud(1)
 
 
 #Variable init
@@ -27,7 +21,7 @@ done = False #necessary for while loop
 global screen, clock #variables for the screen and game timer
 screen = pygame.display.set_mode(WINDOW_SIZE) #creates the window
 clock = pygame.time.Clock() #creates a controller for the game cycles
-load_level() #load level 1
+stage_1.level_1() #load level 1
 
 ticktimer = 0 #variable to calculate the time that has passed
 camera = Entities.Camera() #create the camera
@@ -51,6 +45,12 @@ while not done:
                     Globals.player.yvel = -12 #accelerate the player upwards
             elif event.key == pygame.K_DOWN:
                 pass
+            elif event.key == pygame.K_z:
+                pass
+            elif event.key == pygame.K_x:
+                pass
+            elif event.key == pygame.K_c:
+                pass
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT: #left key released
@@ -72,12 +72,10 @@ while not done:
         for item in Globals.group_PLAYER: #animate the player every 6 cycles
             item.animate()
     Globals.player.update() #update the player
-    
+    Globals.group_PROJECTILES.update()
     #Update the hud and camera
     camera.updatecamera(Globals.player) #update the camera's position to centre window on player
     Globals.hud.update(Globals.player.health) #redraw the hud elements
-    
-    
     
     #Draw elements to screen       
     screen.fill((0,0,0)) #wipe the screen
@@ -86,9 +84,8 @@ while not done:
         
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
-        
+    Globals.group_PROJECTILES.draw(screen) #draw the projectiles to the screen
     Globals.group_SPECIAL.draw(screen) #draw the HUD to the screen
-    
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60
