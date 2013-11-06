@@ -15,15 +15,11 @@ hud= None
 
 #create sprite groups
 group_PLAYER = pygame.sprite.Group()
-group_LR = pygame.sprite.Group()
-group_UD = pygame.sprite.Group()
 group_UDLR = pygame.sprite.Group()
 group_SPECIAL = pygame.sprite.Group()
 
 def reset_all(): #reset all variables back to starting values
-    global group_LR
     global group_SPECIAL 
-    global group_UD
     global group_UDLR   
     global group_PLAYER
     global stage 

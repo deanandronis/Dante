@@ -27,11 +27,7 @@ class Player(Entity):
         self.touching_ground = False
         self.facing_right = True
         self.next_level = False
-        self.destroyblock = []
-        self.collide_left = False
-        self.collide_right = False
-        self.collide_up = False
-        self.collide_down = False
+
         #load images
         '''
         IMAGE SYNTAX FOR USE:
@@ -68,117 +64,50 @@ class Player(Entity):
         self.rect.move_ip(self.pos)
         
     def update(self):
+        for item in self.collidelist:
+            self.collidelist.remove(item)
+        self.touching_ground = False
         #update the collision box of the character
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
-        self.enable_grav_range = True
         
-        #add the items to be checked to lists
-        self.touching_ground = False
-        #check the items in the lists for their respective collisions
-        for item in Globals.group_UDLR:
-            if self.rect.colliderect(item.rect):
-                block_threshold = [item.y - item.image.get_height()/6, item.y + item.image.get_height() / 2, item.y + item.image.get_height() /6]
-                player_centre_upper = self.y + (self.image.get_height()/6)
-                player_centre_lower = self.y + (self.image.get_height()/6) + self.image.get_height()/2
-                
-                if self.x + self.image.get_width() < item.x + item.image.get_width(): #left of centre
-                    if player_centre_upper > block_threshold[0] and player_centre_upper < block_threshold[2]:
-                        #left collision
-                        if not self.xvel < 0:
-                            self.x = item.x - self.image.get_width()
-                            self.xvel = 0
-                    
-                    elif player_centre_lower > block_threshold[0] and player_centre_lower < block_threshold[2]:
-                        #left collision
-                        if not self.xvel < 0:
-                            self.x = item.x - self.image.get_width()
-                            self.xvel = 0
-                    else:
-                        if self.y < item.y:
-                            #top collision
-                            self.y = item.y - self.image.get_height()
-                            self.yvel = 0
-                            self.gravity = 0
-                            self.touching_ground = True
-                            self.enable_grav_range = False
-                        else:
-                            #bottom collision
-                            self.y = item.y + item.image.get_height()
-                            self.yvel = 0
-                            self.gravity = 40
-                    
-                else: #right of centre
-                    if self.y + (self.image.get_height()/6) > block_threshold[0] and self.y + self.image.get_height()/6 < block_threshold[2]:
-                        #right collision
-                        if not self.xvel > 0:
-                            self.x = item.x + item.image.get_width()
-                            self.xvel = 0
-                        
-                    elif player_centre_lower > block_threshold[0] and player_centre_lower < block_threshold[2]:
-                        #right collision
-                        if not self.xvel > 0:
-                            self.x = item.x + item.image.get_width()
-                            self.xvel = 0
-                    else:
-                        if self.y < item.y:
-                            #top collision
-                            self.y = item.y - self.image.get_height()
-                            self.yvel = 0
-                            self.gravity = 0
-                            self.touching_ground = True
-                            self.enable_grav_range = False
-                        else:
-                            #bottom collision
-                            self.y = item.y + item.image.get_height()
-                            self.yvel = 0
-                            self.gravity = 40
+        #move x and check for collision
+        self.rect.x += self.xvel
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_UDLR, False)
+        for block in block_hit_list:
+            #Collision moving right
+            if self.xvel > 0:
+                self.rect.right = block.rect.left #set right side of player to left side of block
             else:
-                if self.y + self.image.get_height() > item.y - 32 and self.x < item.x + item.image.get_width() + 1 and self.x + self.image.get_width() > item.x:
-                    self.enable_grav_range = False
-                    
+                #Collision moving left
+                self.rect.left = block.rect.right #set left side of player to right side of block
         
-        for item in Globals.group_UD:
-            if self.rect.colliderect(item.rect):
-                if self.y < item.y: #collide top
-                    self.y = item.y - self.image.get_height()
-                    self.yvel = 0
-                    self.gravity = 0
+        #apply gravity
+        if not self.yvel >= 10:
+            self.yvel += abs(self.yvel) / 40 + 0.36
+        #move y and check for collisions
+        self.rect.y += self.yvel
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_UDLR, False) 
+        for block in block_hit_list:
+                 
+            # check collision
+            if self.yvel > 0: #top collision
+                self.rect.bottom = block.rect.top #set bottom of player to top of block
+                self.yvel = 0 #stop vertical movement
+                self.onGround = True #player is on ground
+            else: #bottom collision
+                self.rect.top = block.rect.bottom  
+                self.yvel = 0                  
+                
+        self.collidelist = [x for x in Globals.group_SPECIAL if pygame.sprite.spritecollide(self,Globals.group_SPECIAL, False)]
+        for item in self.collidelist:
+            if isinstance(item, hud):
+                self.reset()
+                self.health -= 1
+        if not self.touching_ground:
+            for item in Globals.group_UDLR:
+                if self.rect.y < item.rect.y + item.rect.height and item.rect.y - 50 < self.rect.y + self.rect.height and self.rect.x + self.rect.width > item.rect.x and self.rect.x < item.rect.x + item.rect.width:
                     self.touching_ground = True
-                    self.enable_grav_range = False
-                else: #collide bottom
-                    self.y = item.y + item.image.get_height()
-                    self.yvel = 0
-                    self.gravity = 40
-                    self.touching_ground = False
-            else:
-                if self.y + self.image.get_height() > item.y - 32 and self.x < item.x + item.image.get_width() + 1 and self.x + self.image.get_width() > item.x:
-                    self.enable_grav_range = False
-                   
-                
-        for item in Globals.group_LR:
-            if self.rect.colliderect(item.rect):
-                if self.x < item.x: #collide left
-                    if not self.xvel < 0:
-                        self.x = item.x - self.image.get_width()
-                        self.xvel = 0
-                else: #collide right
-                    if not self.xvel > 0:
-                        self.x = item.x + item.image.get_width()
-                        self.xvel = 0
-        
-        if self.gravity == 0: self.touching_ground = True
-        if self.enable_grav_range == True: self.gravity = 40
-        #calculate damage
-        for item in Globals.group_SPECIAL:
-            if self.rect.colliderect(item):
-                if isinstance(item, hud):
-                    self.reset()
-                    self.health -= 1
-                elif isinstance(item, goal_piece):
-                    self.next_level = True
-                    Globals.group_SPECIAL.remove(item)
-        
         
         #determine sprite set
         if self.touching_ground == True:
@@ -218,15 +147,10 @@ class Player(Entity):
                         self.change_image('jumpL')
                         self.facing_right = False
         
-        #apply gravity
-        if not self.gravity == 0 and not self.yvel > 10:
-            self.yvel += abs(self.yvel) / self.gravity + 0.36
+        #set position
+        self.pos = (self.rect.x, self.rect.y)
         
-        #apply speeds and reset position
-        self.x += self.xvel
-        self.y += self.yvel
-        self.pos = (self.x, self.y)
-    
+        
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex]
         if self.imageindex == self.numimages: self.imageindex = 0
@@ -234,11 +158,10 @@ class Player(Entity):
 
     def reset(self):
         self.pos = self.startpoint
-        self.x = self.pos[0]
-        self.y = self.pos[1]
+        self.rect.x = self.startpoint[0]
+        self.rect.y = self.startpoint[1]
         self.xvel= 0
         self.yvel = 0
-        self.gravity = 40
         
     
     def change_image(self, image):
@@ -247,43 +170,7 @@ class Player(Entity):
         self.image = self.images[self.imagename][0]
         self.numimages = len(self.images[self.imagename]) - 1
 
-class collisionblockupdown(Entity):
-    def __init__(self, x, y, stage, blocknumber):
-        Entity.__init__(self, Globals.group_UD)
-        #Global variables 
-        self.x = x
-        self.y = y
-        self.pos = (self.x, self.y)
-        if stage == 1:
-            if blocknumber % 2 == 0: self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1WallTile1.png'), (255,255,255))
-            else: self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1WallTile2.png'), (255,255,255))  
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(self.pos)
-        
-class collisionblockleftright(Entity):
-    def __init__(self, x, y, stage, blocknumber):
-        Entity.__init__(self, Globals.group_LR)
-        #Global variables 
-        self.x = x
-        self.y = y
-        self.pos = (self.x, self.y)
-        if stage == 1:
-            if blocknumber % 2 == 0: self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1FloorTile1.png'), (255,255,255))
-            else: self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1FloorTile2.png'), (255,255,255))  
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(self.pos)
-        
-class collisionblockalldir(Entity):
-    def __init__(self, x, y, stage, blocknumber):
-        Entity.__init__(self, Globals.group_UDLR)
-        #Global variables 
-        self.x = x
-        self.y = y
-        self.pos = (self.x, self.y)
-        if stage == 1:
-            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1StandingTile.png'), (255,255,255))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(self.pos)
+
         
 class goal_piece(Entity):
     def __init__(self, x, y, stage):
@@ -369,7 +256,17 @@ class hud(pygame.sprite.Sprite):
             pygame.draw.rect(self.image, (255,0,0), pygame.Rect(180 + i*21, 37, 14,22))
         self.image.blit(self.images['maxPortrait'][0], (19,17))
         
-        
-        
+class Platform(Entity):
+    def __init__(self, x, y, blocksacross, blocksdown):
+        #get image
+        Entity.__init__(self, Globals.group_UDLR)
+        self.blockimage = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1Floortile1.png'), (255,0,255))
+        self.image = pygame.Surface((blocksacross*32,blocksdown*32))
+        for rows in range(0,blocksdown):
+            for columns in range(0,blocksacross):
+                self.image.blit(self.blockimage, (columns*32,rows*32))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x,y)
+        self.pos = (self.rect.x, self.rect.y)
         
         

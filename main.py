@@ -8,26 +8,12 @@ from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
 
 #definitions
-def load_level(levellayout):
-    Globals.collisionleftright = levellayout[0]
-    Globals.collisionupdown = levellayout[1]
-    Globals.collisionalldir = levellayout[2]
-    for item in levellayout[0]: Globals.group_LR.add(item)
-    for item in levellayout[1]: Globals.group_UD.add(item)
-    for item in levellayout[2]: Globals.group_UDLR.add(item)
-    for index, value in enumerate(levellayout[3]):
-        if isinstance(levellayout[3][index], Entities.Player):
-            Globals.player = levellayout[3][index]
-    Globals.hud = Entities.hud(levellayout[5])
-
-    
-    
-def next_level():
-    if Globals.stage == 1:
-        if Globals.level == 1:
-            Globals.level += 1
-            Globals.clear_groups()
-            load_level(stage_1.level_2())
+def load_level():
+    floor_platform = Entities.Platform(32,400,10,1)
+    wall_platform = Entities.Platform(300,200, 1, 9)
+    wall_platform1 = Entities.Platform(32,200,1,9)
+    Globals.player = Entities.Player(32,32)
+    Globals.hud = Entities.hud(1)
 
 
 #Variable init
@@ -41,8 +27,7 @@ done = False
 global screen, clock
 screen = pygame.display.set_mode(WINDOW_SIZE)
 clock = pygame.time.Clock()
-load_level(stage_1.level_1())
-
+load_level()
 
 ticktimer = 0
 camera = Entities.Camera()
@@ -51,7 +36,7 @@ while not done:
     #test next level
     if Globals.player.next_level == True:
         Globals.player.next_level = False
-        next_level()
+        
 
     #Get and check events:
     for event in pygame.event.get():
@@ -92,15 +77,8 @@ while not done:
         for item in Globals.group_PLAYER:
             item.animate()
     screen.fill((0,0,0))
-    for sprite in Globals.group_PLAYER:
-        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
-    for sprite in Globals.group_LR:
-        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
-    for sprite in Globals.group_UD:
-        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
-        pass
-    for sprite in Globals.group_UDLR:
-        screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
+    Globals.group_UDLR.draw(screen)
+    Globals.group_PLAYER.draw(screen)
     for sprite in Globals.group_SPECIAL:
         screen.blit(sprite.image, (sprite.pos[0] - camera.x, sprite.pos[1] - camera.y))
     Globals.player.update()
