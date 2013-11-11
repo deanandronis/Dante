@@ -562,4 +562,7 @@ class movingtext(Entity):
             self.kill()
         if self.rect.x < 0 or self.rect.x > 1000 or self.rect.y < 0 or self.rect.y > 1000:
             self.kill()
-   
+
+class narrator_bubble(Entity):
+    def __init__(self, x, y, text):
+        pass
