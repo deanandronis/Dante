@@ -9,7 +9,7 @@ from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
 
-
+#base class for shit
 class Entity(pygame.sprite.Sprite):
     def __init__(self, *args):
         pygame.sprite.Sprite.__init__(self, *args)
@@ -284,6 +284,8 @@ class Player(Entity):
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     book = Book(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
+
+#collision shit
 class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown): 
         #get image
@@ -307,7 +309,7 @@ class goal_piece(Entity):
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
         self.rect.move_ip((x,y)) #move the collision box into position
         
-
+#game essentials
 class Camera():
     def __init__(self):
         self.x = 0 #set the position of the camera
@@ -373,7 +375,7 @@ class hud(pygame.sprite.Sprite):
             pygame.draw.rect(self.image, (255,0,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the red health blocks
         self.image.blit(self.images['maxPortrait'][0], (19,17)) #draw the portrait onto the HUD
         
-        
+#projectile classes        
 class Projectile(Entity):
     def __init__(self, x, y, xvel, yvel):
         Entity.__init__(self, Globals.group_PROJECTILES)

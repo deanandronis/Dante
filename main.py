@@ -96,7 +96,11 @@ while not done:
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
-    Globals.group_SPECIAL.draw(screen) #draw the HUD to the screen
+    for item in Globals.group_SPECIAL:
+        if isinstance(item, Entities.hud):
+            screen.blit(item.image, item.rect) #draw the HUD to the screen
+        else:
+            screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #draw whatever else is in the group
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60
