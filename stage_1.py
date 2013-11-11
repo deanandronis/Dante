@@ -11,7 +11,6 @@ def level_1():
     wall_platform1 = Entities.Platform(32*30,0,1,17)
     Globals.player = Entities.Player(32,32*14)
     Globals.hud = Entities.hud(1)
-    random_projectile = Entities.Piano(100,100,10,0)
 
 
 def level_2():
@@ -19,4 +18,3 @@ def level_2():
     wall_platform = Entities.Platform(0,0, 1, 17)
     wall_platform1 = Entities.Platform(32*30,0,1,17)
     Globals.player = Entities.Player(32,32)
-    Globals.hud = Entities.hud(1)

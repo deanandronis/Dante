@@ -4,9 +4,10 @@ Created on Oct 27, 2013
 @author: Dean, God Almighty of Sex and Women
 '''
 
-import pygame, sys, os
+import pygame, sys, os, math
 from pygame.locals import *
 import functions, Constants, Globals
+from random import randrange, randint
 
 
 class Entity(pygame.sprite.Sprite):
@@ -25,6 +26,10 @@ class Player(Entity):
         self.touching_ground = False #touching ground variable
         self.facing_right = True #variable for player direction
         self.next_level = False #variable to check for next level
+        self.attack = None
+        self.attacking = False
+        self.arrowkey_enabled = True
+        self.can_attack = True
 
         #load images
         '''
@@ -75,12 +80,23 @@ class Player(Entity):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
         for block in block_hit_list: #iterate through the list
             #Collision moving right means that player collided with left side of block
-            if self.xvel > 0:
-                self.rect.right = block.rect.left #set right side of player to left side of block
-            elif self.xvel < 0:
-                #Collision moving left means player collided with right side of block
-                self.rect.left = block.rect.right #set left side of player to right side of block
-        
+            if not self.imagename == 'spinL' and not self.imagename == 'spinR':
+                if self.xvel > 0:
+                    self.rect.right = block.rect.left #set right side of player to left side of block
+                elif self.xvel < 0:
+                    #Collision moving left means player collided with right side of block
+                    self.rect.left = block.rect.right #set left side of player to right side of block
+            elif self.imagename == 'spinL':
+                if self.rect.x > block.rect.x:
+                    self.rect.left = block.rect.right
+                else:
+                    self.rect.right = block.rect.left
+            elif self.imagename == 'spinR':
+                if self.rect.x < block.rect.x:
+                    self.rect.right = block.rect.left
+                else:
+                    self.rect.left = block.rect.right
+            
         #apply gravity
         if self.yvel < 10:
             self.yvel += abs(self.yvel) / 40 + 0.36
@@ -110,43 +126,53 @@ class Player(Entity):
                     self.touching_ground = True
         
         #determine sprite set
-        if self.touching_ground == True: #set of ground sprites
-            if self.xvel > 0: #sprite should be running right
-                if not self.imagename == 'runR':
-                    self.change_image('runR')
-                    self.facing_right = True
-            elif self.xvel < 0: #sprite should be running left
-                if not self.imagename == 'runL':
-                    self.change_image('runL')
-                    self.facing_right = False
-            else: #player is stationary; check direction for sprite
-                if self.facing_right == True: #sprite should be idling right
-                    if not self.imagename == 'idleR':
-                        self.change_image('idleR')
+        if not self.attacking:
+            if self.touching_ground: #set of ground sprites
+                if self.xvel > 0: #sprite should be running right
+                    if not self.imagename == 'runR':
+                        self.change_image('runR')
                         self.facing_right = True
-                elif self.facing_right == False: #sprite should be idling left
-                    if not self.imagename == 'idleL':
-                        self.change_image('idleL')
+                elif self.xvel < 0: #sprite should be running left
+                    if not self.imagename == 'runL':
+                        self.change_image('runL')
                         self.facing_right = False
-        else: #set of mid-air sprites
-            if self.xvel > 0: #sprite should be jumping right
-                if not self.imagename == "jumpR":
-                        self.change_image('jumpR')
-                        self.facing_right = True
-            elif self.xvel < 0: #sprite should be jumping left
-                if not self.imagename == 'jumpL':
-                        self.change_image('jumpL')
-                        self.facing_right = False
-            else: #check direction player is facing
-                if self.facing_right == True: #sprite should be jumping right
+                else: #player is stationary; check direction for sprite
+                    if self.facing_right == True: #sprite should be idling right
+                        if not self.imagename == 'idleR':
+                            self.change_image('idleR')
+                            self.facing_right = True
+                    elif self.facing_right == False: #sprite should be idling left
+                        if not self.imagename == 'idleL':
+                            self.change_image('idleL')
+                            self.facing_right = False
+            else: #set of mid-air sprites
+                if self.xvel > 0: #sprite should be jumping right
                     if not self.imagename == "jumpR":
-                        self.change_image('jumpR')
-                        self.facing_right = True
-                else: #sprite should be jumping left
+                            self.change_image('jumpR')
+                            self.facing_right = True
+                elif self.xvel < 0: #sprite should be jumping left
                     if not self.imagename == 'jumpL':
-                        self.change_image('jumpL')
-                        self.facing_right = False
-        
+                            self.change_image('jumpL')
+                            self.facing_right = False
+                else: #check direction player is facing
+                    if self.facing_right == True: #sprite should be jumping right
+                        if not self.imagename == "jumpR":
+                            self.change_image('jumpR')
+                            self.facing_right = True
+                    else: #sprite should be jumping left
+                        if not self.imagename == 'jumpL':
+                            self.change_image('jumpL')
+                            self.facing_right = False
+        else:
+            if self.attack == 'spin':
+                if self.facing_right:
+                    if not self.imagename == 'spinR':
+                        self.change_image('spinR')
+                        self.rect.x -= 14
+                else:
+                    if not self.imagename == 'spinL':
+                        self.change_image('spinL')
+                        self.rect.x -= 14
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
@@ -154,7 +180,27 @@ class Player(Entity):
         
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
-        if self.imageindex == self.numimages: self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
+        if self.imageindex == self.numimages: 
+            if self.imagename == 'spinR':
+                self.rect.x += 15
+                self.x += 14
+                self.change_image('idleR')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                self.create_projectile()
+            elif self.imagename == 'spinL':
+                self.rect.x += 14
+                self.x += 14
+                self.change_image('idleL')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                self.create_projectile()
+            else:
+                self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
         else: self.imageindex += 1  #otherwise, allow the next rotation
         
 
@@ -170,8 +216,74 @@ class Player(Entity):
         self.imagename = image #change the image list
         self.image = self.images[self.imagename][0] #set the image to the first image in the list
         self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
-
-        
+    
+    def create_projectile(self):
+        self.projectiletype = randrange(1,6,1)
+        if self.projectiletype == 1:
+            if self.facing_right:
+                self.degrees = float(randrange(1,1000,1)) / 1000
+                self.magnitude = float(randrange(10,13))
+                self.projxvel = math.cos(self.degrees) * self.magnitude 
+                self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                piano = Piano(self.rect.x + self.rect.width, self.rect.y - 50, self.projxvel, self.projyvel)
+            else:
+                self.degrees = float(randrange(1,1000,1)) / 1000
+                self.magnitude = float(randrange(10,13))
+                self.projxvel = -math.cos(self.degrees) * self.magnitude 
+                self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                piano = Piano(self.rect.x - 75, self.rect.y - 50, self.projxvel, self.projyvel)
+        elif self.projectiletype == 2:
+                if self.facing_right:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    watermelon = Watermelon(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
+                else:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = -math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    watermelon = Watermelon(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
+        elif self.projectiletype == 3:
+                if self.facing_right:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    chair = Chair(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
+                else:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = -math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    chair = Chair(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
+        elif self.projectiletype == 4:
+                if self.facing_right:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    hat = Hat(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
+                else:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = -math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    hat = Hat(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
+        elif self.projectiletype == 5:
+                if self.facing_right:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    book = Book(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
+                else:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = -math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    book = Book(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
 class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown): 
         #get image
@@ -227,8 +339,7 @@ class Camera():
             self.y = self.ybounds[1] + self.height
         elif self.y < self.ybounds[0]:
             self.y = self.ybounds[0]
-      
-       
+         
 
 class hud(pygame.sprite.Sprite):
     def __init__(self, stage):
@@ -277,18 +388,48 @@ class Projectile(Entity):
         self.rect.x += self.xvel
         self.yvel += abs(self.yvel)/40 + 0.36
         self.rect.y += self.yvel
-        
         if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False):
             Globals.group_PROJECTILES.remove(self)
+            self.yvel = 0
         elif pygame.sprite.spritecollide(self,Globals.group_PLAYER, False):
             Globals.group_PROJECTILES.remove(self)
+            self.yvel = 0
         elif pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
-            Globals.group_PROJECTILES.remove(self)
-        
-        
+            Globals.group_PROJECTILES.remove()
+            self.yvel = 0
+               
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','PianoProjectile1.png'), (255,0,255)) #get the piano image
         Projectile.__init__(self, x, y, xvel, yvel)
+        self.damage = 6
         
+class Watermelon(Projectile):
+    def __init__(self, x, y, xvel, yvel):
+        self.image = functions.get_image(os.path.join('Resources','Projectiles','WatermelonProjectile1.png'), (255,0,255)) #get the piano image
+        Projectile.__init__(self, x, y, xvel, yvel)
+        self.damage = 4   
+
+class Hat(Projectile):
+    def __init__(self, x, y, xvel, yvel):
+        self.image = functions.get_image(os.path.join('Resources','Projectiles','HatProjectile.png'), (255,0,255)) #get the piano image
+        Projectile.__init__(self, x, y, xvel, yvel)   
+        self.damage = 1
+
+class Book(Projectile):
+    def __init__(self, x, y, xvel, yvel):
+        self.image = functions.get_image(os.path.join('Resources','Projectiles','BookProjectile.png'), (255,0,255)) #get the piano image
+        Projectile.__init__(self, x, y, xvel, yvel)   
+        self.damage = 2
+
+class Television(Projectile):
+    def __init__(self, x, y, xvel, yvel):
+        self.image = functions.get_image(os.path.join('Resources','Projectiles','HatProjectile.png'), (255,0,255)) #get the piano image
+        Projectile.__init__(self, x, y, xvel, yvel)
+        self.damage = 5   
         
+class Chair(Projectile):
+    def __init__(self, x, y, xvel, yvel):
+        self.image = functions.get_image(os.path.join('Resources','Projectiles','chair.png'), (255,0,255)) #get the piano image
+        Projectile.__init__(self, x, y, xvel, yvel)   
+        self.damage = 3

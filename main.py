@@ -6,6 +6,8 @@ Created on Oct 27, 2013
 import pygame, sys, os, math, datetime
 from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
+from random import randrange
+
 
 #definitions
 
@@ -37,26 +39,34 @@ while not done:
         if event.type == pygame.QUIT: done = True #exit the game if player presses cross button
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                Globals.player.xvel = -5 #left arrow key down; set player's horizontal velocity to -5 (5 units/cycle left)
+                if Globals.player.arrowkey_enabled:
+                    Globals.player.xvel = -5 #left arrow key down; set player's horizontal velocity to -5 (5 units/cycle left)
             elif event.key == pygame.K_RIGHT:
-                Globals.player.xvel = 5 #right arrow key pressed; set player's horizontal velocity to 5 (5 units/cycle right)
+                if Globals.player.arrowkey_enabled:
+                    Globals.player.xvel = 5 #right arrow key pressed; set player's horizontal velocity to 5 (5 units/cycle right)
             elif event.key == pygame.K_UP:#up arrow key pressed
-                if Globals.player.touching_ground: #check to see if player is touching ground
-                    Globals.player.yvel = -12 #accelerate the player upwards
+                if Globals.player.arrowkey_enabled:
+                    if Globals.player.touching_ground: #check to see if player is touching ground
+                        Globals.player.yvel = -12 #accelerate the player upwards
             elif event.key == pygame.K_DOWN:
                 pass
             elif event.key == pygame.K_z:
                 pass
-            elif event.key == pygame.K_x:
-                pass
+            elif event.key == pygame.K_x: #x key pressed - spin
+                if Globals.player.can_attack:
+                    Globals.player.attack = 'spin'
+                    Globals.player.attacking = True
+                    Globals.player.arrowkey_enabled = False
+                    Globals.player.can_attack = False
+                    Globals.player.xvel = 0
             elif event.key == pygame.K_c:
                 pass
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT: #left key released
-                if not Globals.player.xvel > 0: #set the player's horizontal velocity to 0 if player isn't moving right
+                if not Globals.player.xvel > 0 and Globals.player.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
                     Globals.player.xvel = 0 
-            elif event.key == pygame.K_RIGHT: #right key released
+            elif event.key == pygame.K_RIGHT and Globals.player.arrowkey_enabled: #right key released
                 if not Globals.player.xvel < 0: #set the player's horizontal velocity to 0 if player isn't moving left
                     Globals.player.xvel = 0
             elif event.key == pygame.K_DOWN:
@@ -84,7 +94,8 @@ while not done:
         
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
-    Globals.group_PROJECTILES.draw(screen) #draw the projectiles to the screen
+    for item in Globals.group_PROJECTILES: #draw the projectiles to screen
+        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
     Globals.group_SPECIAL.draw(screen) #draw the HUD to the screen
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
