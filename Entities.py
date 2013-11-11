@@ -357,7 +357,8 @@ class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown): 
         #get image
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS) 
-        self.blockimage = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1Floortile1.png'), (255,0,255))
+        if Globals.stage == 1:
+            self.blockimage = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1Floortile1.png'), (255,0,255))
         self.image = pygame.Surface((blocksacross*32,blocksdown*32))
         for rows in range(0,blocksdown):
             for columns in range(0,blocksacross):
@@ -368,9 +369,9 @@ class Platform(Entity):
         
         
 class goal_piece(Entity):
-    def __init__(self, x, y, stage):
+    def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to the Globals.group_SPECIAL group
-        if stage == 1:
+        if Globals.stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources', '1ObjectiveTile.bmp'), (255,0,255)) #load the image
             
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
@@ -411,12 +412,12 @@ class Camera():
          
 
 class hud(pygame.sprite.Sprite):
-    def __init__(self, stage):
+    def __init__(self):
         pygame.sprite.Sprite.__init__(self, Globals.group_SPECIAL) #add the HUD to the Globals.group_SPECIAL group
         self.x = 0 #set the position of the HUD
         self.y = 544
         self.pos = (self.x,self.y) 
-        if stage == 1:
+        if Globals.stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255)) #load the image
         self.image = pygame.transform.scale(self.image, (800,96)) #scale the image to the window size
         self.backimagestore = self.image #create a backup of the background image
@@ -425,13 +426,13 @@ class hud(pygame.sprite.Sprite):
         self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255)) #load the text for the HUD
         
         #load relevant images
-        self.imageloc = os.path.join('Resources','General Resources') #set the location for images
-        self.imagepaths = {   'maxPortrait':(self.imageloc, 'Portrait', 0), 
+        self.imageloc = os.path.join('Resources','General Resources','HUD') #set the location for images
+        self.imagepaths = {   'maxPortrait':(self.imageloc, 'Bo', 3), 
                               
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #load the images from the dictionary
-        self.images['maxPortrait'][0] = pygame.transform.scale(self.images['maxPortrait'][0], (58,58)) #scale the portrait to fit the HUD
+        #self.images['maxPortrait'][0] = pygame.transform.scale(self.images['maxPortrait'][0], (58,58)) #scale the portrait to fit the HUD
     
     def update(self, health): #redraw the HUD
         self.image = self.backimagestore #reset the image
@@ -440,7 +441,11 @@ class hud(pygame.sprite.Sprite):
             pygame.draw.rect(self.image, (0,255,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the green health blocks
         for i in range(health, 10):
             pygame.draw.rect(self.image, (255,0,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the red health blocks
-        self.image.blit(self.images['maxPortrait'][0], (19,17)) #draw the portrait onto the HUD
+        #draw the portrait onto the HUD
+        if health > 7: self.image.blit(self.images['maxPortrait'][0], (19,17)) 
+        elif health > 4: self.image.blit(self.images['maxPortrait'][1], (19,17))
+        elif health > 1: self.image.blit(self.images['maxPortrait'][2], (19,17))
+        elif health <= 1: self.image.blit(self.images['maxPortrait'][3],(19,17))
         
 #projectile classes        
 class Projectile(Entity):

@@ -37,6 +37,9 @@ while not done:
     if Globals.player.next_level == True:
         Globals.player.next_level = False
         next_level()
+    
+    if ticktimer%60 == 0:
+        Globals.player.health -= 1
 
     #Get and check events:
     for event in pygame.event.get():

@@ -22,7 +22,7 @@ group_PROJECTILES = pygame.sprite.Group()
 def reset_all(): #reset all variables back to starting values
     global group_SPECIAL 
     global group_COLLIDEBLOCKS   
-    global group_PLAYE
+    global group_PLAYER
     global stage 
     global level
     group_SPECIAL.empty()
@@ -35,5 +35,8 @@ def clear_groups():
     global group_SPECIAL 
     global group_COLLIDEBLOCKS   
     global group_PLAYER
+    global group_PROJECTILES
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
+    group_SPECIAL.empty()
+    group_PROJECTILES.empty()
