@@ -10,7 +10,11 @@ from random import randrange
 
 
 #definitions
-
+def next_level():
+    if Globals.stage == 1:
+        if Globals.level == 1:
+            Globals.clear_groups()
+            stage_1.level_2()
 
 #Variable init
 pygame.init() #initialise pygame modules
@@ -32,7 +36,7 @@ while not done:
     #test next level
     if Globals.player.next_level == True:
         Globals.player.next_level = False
-        
+        next_level()
 
     #Get and check events:
     for event in pygame.event.get():
@@ -51,7 +55,10 @@ while not done:
             elif event.key == pygame.K_DOWN:
                 pass
             elif event.key == pygame.K_z:
-                pass
+                if Globals.player.can_attack:
+                    Globals.player.attack = 'slash'
+                    Globals.player.attacking = True
+                    Globals.player.can_attack = False
             elif event.key == pygame.K_x: #x key pressed - spin
                 if Globals.player.can_attack:
                     Globals.player.attack = 'spin'
@@ -60,7 +67,12 @@ while not done:
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
             elif event.key == pygame.K_c:
-                pass
+                if Globals.player.can_attack:
+                    Globals.player.attack = 'shout'
+                    Globals.player.attacking = True
+                    Globals.player.arrowkey_enabled = False
+                    Globals.player.can_attack = False
+                    Globals.player.xvel = 0
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT: #left key released
@@ -95,6 +107,7 @@ while not done:
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
+        if (isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0: item.animate()
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
     for item in Globals.group_SPECIAL:
         if isinstance(item, Entities.hud):

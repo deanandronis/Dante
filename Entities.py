@@ -80,18 +80,18 @@ class Player(Entity):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
         for block in block_hit_list: #iterate through the list
             #Collision moving right means that player collided with left side of block
-            if not self.imagename == 'spinL' and not self.imagename == 'spinR':
+            if not self.attacking:
                 if self.xvel > 0:
                     self.rect.right = block.rect.left #set right side of player to left side of block
                 elif self.xvel < 0:
                     #Collision moving left means player collided with right side of block
                     self.rect.left = block.rect.right #set left side of player to right side of block
-            elif self.imagename == 'spinL':
+            elif self.imagename == 'spinL' or self.imagename == 'slashL' or self.imagename == 'shoutL':
                 if self.rect.x > block.rect.x:
                     self.rect.left = block.rect.right
                 else:
                     self.rect.right = block.rect.left
-            elif self.imagename == 'spinR':
+            elif self.imagename == 'spinR' or self.imagename == 'slashR' or self.imagename == 'shoutR':
                 if self.rect.x < block.rect.x:
                     self.rect.right = block.rect.left
                 else:
@@ -118,6 +118,9 @@ class Player(Entity):
             if isinstance(item, hud) and self.rect.colliderect(item.rect): #if player is colliding with the hud
                 self.reset() #reset position 
                 self.health -= 3 #damage
+            elif isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
+                self.next_level = True
+                item.kill()
                 
                 
         if not self.touching_ground: #check to see if player is within 20 pixels of a ground block 
@@ -173,6 +176,23 @@ class Player(Entity):
                     if not self.imagename == 'spinL':
                         self.change_image('spinL')
                         self.rect.x -= 14
+            elif self.attack == 'slash':
+                if self.facing_right:
+                    if not self.imagename == 'slashR':
+                        self.change_image('slashR')
+                        self.rect.x -= 14
+                else:
+                    if not self.imagename == 'slashL':
+                        self.change_image('slashL')
+                        self.rect.x -= 14
+            elif self.attack == 'shout':
+                if self.facing_right:
+                    if not self.imagename == 'shoutR':
+                        self.change_image('shoutR')
+                else:
+                    if not self.imagename == 'shoutL':
+                        self.change_image('shoutL')
+                        self.rect.x -= 14
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
@@ -199,6 +219,40 @@ class Player(Entity):
                 self.can_attack = True
                 self.arrowkey_enabled = True
                 self.create_projectile()
+            elif self.imagename == 'slashR':
+                self.rect.x += 20
+                self.x += 20
+                self.change_image('idleR')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+            elif self.imagename == 'slashL':
+                self.rect.x += 19
+                self.x += 19
+                self.change_image('idleL')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+            elif self.imagename == 'shoutL':
+                self.rect.x += 19
+                self.x += 19
+                self.change_image('idleL')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                shoutproj = shoutProj(self.rect.x - 20, self.rect.y + 10, True)
+            elif self.imagename == 'shoutR':
+                self.rect.x += 0
+                self.x += 0
+                self.change_image('idleR')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                shoutproj = shoutProj(self.rect.x + self.rect.width - 3, self.rect.y + 8, False)
             else:
                 self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
         else: self.imageindex += 1  #otherwise, allow the next rotation
@@ -218,7 +272,7 @@ class Player(Entity):
         self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
     
     def create_projectile(self):
-        self.projectiletype = randrange(1,6,1)
+        self.projectiletype = randrange(1,7,1)
         if self.projectiletype == 1:
             if self.facing_right:
                 self.degrees = float(randrange(1,1000,1)) / 1000
@@ -284,6 +338,19 @@ class Player(Entity):
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     book = Book(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
+        elif self.projectiletype == 6:
+                if self.facing_right:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    tv = Television(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
+                else:
+                    self.degrees = float(randrange(1,1000,1)) / 1000
+                    self.magnitude = float(randrange(10,13))
+                    self.projxvel = -math.cos(self.degrees) * self.magnitude 
+                    self.projyvel = -math.cos(self.degrees) * self.magnitude 
+                    tv = Television(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
 
 #collision shit
 class Platform(Entity):
@@ -386,9 +453,10 @@ class Projectile(Entity):
         self.rect.y = y
         self.xvel = xvel
         self.yvel = yvel
+        self.gravity = True
     def update(self):
         self.rect.x += self.xvel
-        self.yvel += abs(self.yvel)/40 + 0.36
+        if self.gravity: self.yvel += abs(self.yvel)/40 + 0.36
         self.rect.y += self.yvel
         if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False):
             Globals.group_PROJECTILES.remove(self)
@@ -426,12 +494,37 @@ class Book(Projectile):
 
 class Television(Projectile):
     def __init__(self, x, y, xvel, yvel):
-        self.image = functions.get_image(os.path.join('Resources','Projectiles','HatProjectile.png'), (255,0,255)) #get the piano image
+        self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','TV'), 'TV', 17, '.bmp', (255,0,255))
+        self.image = self.imagelist[0]
+        self.numimages = 17
+        self.image_index = 0
         Projectile.__init__(self, x, y, xvel, yvel)
         self.damage = 5   
+    def animate(self):
+        self.image = self.imagelist[self.image_index]
+        if self.image_index < self.numimages: self.image_index += 1
+        else: self.image_index = 0
         
 class Chair(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','chair.png'), (255,0,255)) #get the piano image
         Projectile.__init__(self, x, y, xvel, yvel)   
         self.damage = 3
+
+class shoutProj(Projectile):
+    def __init__(self, x, y, attack_left):
+        self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','Gaypride'), 'Gaypride',8, '.bmp', (255,0,255))
+        self.image = self.imagelist[0]
+        self.image_index = 0
+        self.numimages = 8
+        if attack_left:
+            Projectile.__init__(self, x, y, -7, 0)
+        else:
+            Projectile.__init__(self,x,y,7,0)
+        self.gravity = False
+            
+    def animate(self):
+        self.image = self.imagelist[self.image_index]
+        if self.image_index < self.numimages: self.image_index += 1
+        else: self.image_index = 0
+        
