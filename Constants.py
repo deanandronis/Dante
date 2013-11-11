@@ -6,5 +6,7 @@ Created on 02/11/2013
 import pygame, os, sys
 
 pygame.init()
-
-healthtext = pygame.font.Font(os.path.join('Resources','General Resources','Square.ttf'), 20)
+squarefont = os.path.join('Resources','General Resources','Square.ttf')
+healthtext = pygame.font.Font(squarefont, 20)
+spleentext = pygame.font.Font(squarefont, 14)
+narratetext = pygame.font.Font(squarefont, 12)

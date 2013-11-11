@@ -37,9 +37,6 @@ while not done:
     if Globals.player.next_level == True:
         Globals.player.next_level = False
         next_level()
-    
-    if ticktimer%60 == 0:
-        Globals.player.health -= 1
 
     #Get and check events:
     for event in pygame.event.get():
@@ -92,7 +89,6 @@ while not done:
     current_fps = float(clock.get_fps()) #get the current FPS
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps))) #set the window caption 
     
-    
     if ticktimer%6 == 0: 
         for item in Globals.group_PLAYER: #animate the player every 6 cycles
             item.animate()
@@ -107,16 +103,18 @@ while not done:
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.pos[0] - camera.x, item.pos[1] - camera.y)) #account for camera location
         
-    for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
+    
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         if (isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0: item.animate()
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
     for item in Globals.group_SPECIAL:
+        if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.hud):
             screen.blit(item.image, item.rect) #draw the HUD to the screen
         else:
             screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #draw whatever else is in the group
+    for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
+        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60

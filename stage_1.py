@@ -10,6 +10,7 @@ def level_1():
     wall_platform = Entities.Platform(0,0, 1, 17)
     wall_platform1 = Entities.Platform(32*30,0,1,17)
     end_block = Entities.goal_piece(28*32, 15*32)
+    death_block = Entities.damage_tile(5*32,15*32)
     Globals.player = Entities.Player(32,32*14)
     Globals.hud = Entities.hud()
 

@@ -118,9 +118,14 @@ class Player(Entity):
             if isinstance(item, hud) and self.rect.colliderect(item.rect): #if player is colliding with the hud
                 self.reset() #reset position 
                 self.health -= 3 #damage
+                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
             elif isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
                 self.next_level = True
                 item.kill()
+            elif isinstance(item, damage_tile) and self.rect.colliderect(item.rect):
+                self.health -= 1
+                item.kill()
+                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
                 
                 
         if not self.touching_ground: #check to see if player is within 20 pixels of a ground block 
@@ -367,6 +372,13 @@ class Platform(Entity):
         self.rect.move_ip(x,y)
         self.pos = (self.rect.x, self.rect.y)
         
+class damage_tile(Entity):
+    def __init__(self,x,y):
+        Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
+        if Globals.stage == 1:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1DeathTile.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
         
 class goal_piece(Entity):
     def __init__(self, x, y):
@@ -533,3 +545,21 @@ class shoutProj(Projectile):
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
         
+class movingtext(Entity):
+    def __init__(self, x, y, xvel, yvel, text):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.xvel = xvel
+        self.yvel = yvel
+        self.image = Constants.spleentext.render(text, 0, (255,253,255)) #load the text 
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x,y)
+        
+    def update(self):
+        self.rect.x += self.xvel
+        self.rect.y += self.yvel
+        
+        if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False):
+            self.kill()
+        if self.rect.x < 0 or self.rect.x > 1000 or self.rect.y < 0 or self.rect.y > 1000:
+            self.kill()
+   
