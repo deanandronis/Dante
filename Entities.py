@@ -576,7 +576,6 @@ class narrator_bubble(Entity):
         self.maxwidth = self.bubblewidth         
         self.image=pygame.Surface((self.bubblewidth+11+55, 84))
         self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
-        print self.text
         for item in self.text:
             self.rendertext.append(Constants.narratetext.render(item, 0, (0 ,0,0))) #load the text
         self.image.blit(self.images[0], (0,0))
@@ -588,3 +587,9 @@ class narrator_bubble(Entity):
             self.image.blit(item, (12, 11 + index * 14))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(x,y)
+        
+class Troll(Entity):
+    pass
+        
+        
+        
