@@ -53,7 +53,7 @@ while not done:
                     if Globals.player.touching_ground: #check to see if player is touching ground
                         Globals.player.yvel = -12 #accelerate the player upwards
             elif event.key == pygame.K_DOWN:
-                pass
+                Globals.player.health -= 1
             elif event.key == pygame.K_z:
                 if Globals.player.can_attack:
                     Globals.player.attack = 'slash'

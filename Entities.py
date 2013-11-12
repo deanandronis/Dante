@@ -4,11 +4,10 @@ Created on Oct 27, 2013
 @author: Dean, God Almighty of Sex and Women
 '''
 
-import pygame, sys, os, math
+import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
-
 #base class for shit
 class Entity(pygame.sprite.Sprite):
     def __init__(self, *args):
@@ -565,4 +564,27 @@ class movingtext(Entity):
 
 class narrator_bubble(Entity):
     def __init__(self, x, y, text):
-        pass
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.rendertext = []
+        self.images = [functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleleft.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubble_centre.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleright.bmp'), (255,0,255))
+                       ]
+        self.text = textwrap.dedent(text) 
+        self.bubblewidth = len(text)*3
+        if self.bubblewidth <70: self.bubblewidth = 70
+        self.maxwidth = self.bubblewidth         
+        self.image=pygame.Surface((self.bubblewidth+11+55, 84))
+        self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
+        print self.text
+        for item in self.text:
+            self.rendertext.append(Constants.narratetext.render(item, 0, (0 ,0,0))) #load the text
+        self.image.blit(self.images[0], (0,0))
+        
+        for i in range(0,self.bubblewidth):
+            self.image.blit(self.images[1],(i + 11, 0))
+        self.image.blit(self.images[2],(self.image.get_width() - 55,0))
+        for index, item in enumerate(self.rendertext):
+            self.image.blit(item, (12, 11 + index * 14))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x,y)

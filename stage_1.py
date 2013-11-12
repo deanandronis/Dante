@@ -13,6 +13,7 @@ def level_1():
     death_block = Entities.damage_tile(5*32,15*32)
     Globals.player = Entities.Player(32,32*14)
     Globals.hud = Entities.hud()
+    messagebubble = Entities.narrator_bubble(100,100,"Well this works")
 
 def level_2():
     floor_platform = Entities.Platform(32,16*32,30,1)
