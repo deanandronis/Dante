@@ -200,6 +200,8 @@ class Player(Entity):
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
+        if self.health < 0:
+            self.health = 0
         
         
     def animate(self):
@@ -283,7 +285,7 @@ class Player(Entity):
                 self.magnitude = float(randrange(10,13))
                 self.projxvel = math.cos(self.degrees) * self.magnitude 
                 self.projyvel = -math.cos(self.degrees) * self.magnitude 
-                piano = Piano(self.rect.x + self.rect.width, self.rect.y - 50, self.projxvel, self.projyvel)
+                piano = Piano(self.rect.x + self.rect.width, self.rect.y - 90, self.projxvel, self.projyvel)
             else:
                 self.degrees = float(randrange(1,1000,1)) / 1000
                 self.magnitude = float(randrange(10,13))
@@ -412,9 +414,9 @@ class Camera():
         elif player.rect.x + player.xvel < self.x + self.width*2/5: #if the player is in the left 2/5 of the window, move the camera
             self.x = player.rect.x - self.width*2/5
         
-        if self.x + self.width> self.xbounds[1]: #check to see if the camera is within boundaries
+        if self.x + self.width > self.xbounds[1]: #check to see if the camera is within boundaries
             self.x = self.xbounds[1] - self.width
-        elif self.x < self.xbounds[0]:
+        elif self.x <= self.xbounds[0]:
             self.x = self.xbounds[0]
         if self.y > self.ybounds[1]:
             self.y = self.ybounds[1] + self.height
@@ -464,56 +466,82 @@ class Projectile(Entity):
         Entity.__init__(self, Globals.group_PROJECTILES)
     
         #set the required variables    
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.x = x
-        self.rect.y = y
         self.xvel = xvel
         self.yvel = yvel
         self.gravity = True
+        self.numbounce = 0
     def update(self):
         self.rect.x += self.xvel
         if self.gravity: self.yvel += abs(self.yvel)/40 + 0.36
         self.rect.y += self.yvel
-        if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False):
-            Globals.group_PROJECTILES.remove(self)
-            self.yvel = 0
-        elif pygame.sprite.spritecollide(self,Globals.group_PLAYER, False):
-            Globals.group_PROJECTILES.remove(self)
+        self.collidearray = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False)
+        for item in self.collidearray:
+            if self.rect.x < item.rect.x or self.rect.y > item.rect.y:
+                self.kill()
+            else:
+                if self.numbounce < 2:
+                    self.yvel /= -2
+                    self.rect.y -= 15
+                    self.numbounce += 1
+                else:
+                    self.kill()
+                    
+                
+        if pygame.sprite.spritecollide(self,Globals.group_PLAYER, False):
+            self.kill()
             self.yvel = 0
         elif pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
-            Globals.group_PROJECTILES.remove()
+            self.kill()
             self.yvel = 0
                
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','PianoProjectile1.png'), (255,0,255)) #get the piano image
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)
         self.damage = 6
+        
         
 class Watermelon(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','WatermelonProjectile1.png'), (255,0,255)) #get the piano image
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)
-        self.damage = 4   
+        self.damage = 4  
+        
 
 class Hat(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','HatProjectile.png'), (255,0,255)) #get the piano image
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)   
         self.damage = 1
 
 class Book(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','BookProjectile.png'), (255,0,255)) #get the piano image
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)   
         self.damage = 2
-
+        
+        
 class Television(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','TV'), 'TV', 17, '.bmp', (255,0,255))
         self.image = self.imagelist[0]
         self.numimages = 17
         self.image_index = 0
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)
         self.damage = 5   
     def animate(self):
@@ -524,8 +552,12 @@ class Television(Projectile):
 class Chair(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','chair.png'), (255,0,255)) #get the piano image
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)   
         self.damage = 3
+        
 
 class shoutProj(Projectile):
     def __init__(self, x, y, attack_left):
@@ -533,6 +565,9 @@ class shoutProj(Projectile):
         self.image = self.imagelist[0]
         self.image_index = 0
         self.numimages = 8
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
         if attack_left:
             Projectile.__init__(self, x, y, -7, 0)
         else:
@@ -589,7 +624,65 @@ class narrator_bubble(Entity):
         self.rect.move_ip(x,y)
         
 class Troll(Entity):
-    pass
+    def __init__(self, x, y, facingL):
+        Entity.__init__(self, Globals.group_AI)
+        #load images
+        self.imageloc = os.path.join('Resources','Stage 1 Resources','Troll','Bitmaps')
+        self.imagepaths = {   'walkL':(os.path.join(self.imageloc,'WalkL'), 'TrollWalkL', 3),
+                              'walkR':(os.path.join(self.imageloc,'WalkR'), 'TrollWalkR', 3),
+                              'idleL':(os.path.join(self.imageloc,'WalkL'), 'TrollWalkL', 0),
+                              'idleR':(os.path.join(self.imageloc,'WalkR'), 'TrollWalkR', 0),
+                              'explodeL':(os.path.join(self.imageloc,'ExplodeL'), 'TrollExplodeL', 9),
+                              'explodeR':(os.path.join(self.imageloc,'ExplodeR'), 'TrollExplodeR', 9)
+                          }
+        self.images = {}
+        self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
+        #set image
+        if facingL: 
+            self.image = self.images['idleL'][0]
+            self.numimages = len(self.images['idleL']) - 1
+            self.imagename = 'idleL'
+        else: 
+            self.image = self.images['idleR'][0]
+            self.numimages = len(self.images['idleR']) - 1
+            self.imagename = 'idleR'
+        self.image_index = 0
+        
+        #declare variables
+        self.facingL = facingL
+        self.xvel = 0
+        self.yvel = 0
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.range_to_character = 0
+        self.wall_separating = False
+        self.health = 3
+        self.eventcounter = 5
+        
+    
+        
+    def animate(self):
+        self.image = self.images[self.imagename][self.image_index]
+        if self.image_index < self.numimages: self.image_index += 1
+        else: self.image_index = 0
+    
+    def update(self, screen):
+        pass    
+        
+    def calculate_range(self):
+        self.player.x = Globals.player.rect.x 
+        self.player.y = Globals.player.rect.y
+        #calc horizontal and vertical distances
+        if self.rect.x > self.player.x: self.xdist_to_character = self.rect.x - self.player.x
+        else: self.xdist_to_character = self.player.x - self.rect.x
+        if self.rect.y > self.player.y: self.ydist_to_character = self.rect.y - self.player.y
+        else: self.ydist_to_character = self.player.y - self.rect.y
+        
+        #calculate overall distance
+        self.dist_to_character = math.sqrt((self.ydist_to_character^2)+(self.xdist_to_character*2))
+        self.angle_to_character = math.atan2(self.ydist_to_character, self.xdist_to_character)
+        return [self.dist_to_character, self.angle_to_character]
         
         
+            
         

@@ -115,6 +115,10 @@ while not done:
             screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #draw whatever else is in the group
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
+    for item in Globals.group_AI:
+        item.animate()
+        pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - camera.x, item.rect.y + item.rect.height/2 - camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - camera.y))
+        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y))
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60
