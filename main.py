@@ -27,10 +27,11 @@ done = False #necessary for while loop
 global screen, clock #variables for the screen and game timer
 screen = pygame.display.set_mode(WINDOW_SIZE) #creates the window
 clock = pygame.time.Clock() #creates a controller for the game cycles
+ticktimer = 0 #variable to calculate the time that has passed
+Globals.camera = Entities.Camera() #create the camera
 stage_1.level_1() #load level 1
 
-ticktimer = 0 #variable to calculate the time that has passed
-camera = Entities.Camera() #create the camera
+
 
 while not done:
     #test next level
@@ -94,31 +95,31 @@ while not done:
             item.animate()
     Globals.player.update() #update the player
     Globals.group_PROJECTILES.update()
-    #Update the hud and camera
-    camera.updatecamera(Globals.player) #update the camera's position to centre window on player
+    #Update the hud and Globals.camera
+    Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
     Globals.hud.update(Globals.player.health) #redraw the hud elements
     
     #Draw elements to screen       
     screen.fill((0,0,0)) #wipe the screen
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.pos[0] - camera.x, item.pos[1] - camera.y)) #account for camera location
+        screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
         
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         if (isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0: item.animate()
-        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_SPECIAL:
         if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.hud):
             screen.blit(item.image, item.rect) #draw the HUD to the screen
         else:
-            screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #draw whatever else is in the group
+            screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y)) #account for camera location
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_AI:
         item.animate()
-        pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - camera.x, item.rect.y + item.rect.height/2 - camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - camera.y))
-        screen.blit(item.image, (item.rect.x - camera.x, item.rect.y - camera.y))
+#         pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - Globals.camera.x, item.rect.y + item.rect.height/2 - Globals.camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - Globals.camera.y))
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60

@@ -70,6 +70,10 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
+        if self.rect.y > Globals.hud.rect.y:
+            self.health -= 4
+            self.reset()
+            spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
         self.rect.move_ip(self.x, self.y) #set the collision box location
@@ -267,6 +271,8 @@ class Player(Entity):
     def reset(self):
         self.rect.x = self.startpoint[0] #go back to the start point
         self.rect.y = self.startpoint[1] 
+        self.x = self.rect.x
+        self.y = self.rect.y
         self.xvel= 0 #stop velocities
         self.yvel = 0
         
@@ -361,17 +367,40 @@ class Player(Entity):
 #collision shit
 class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown): 
-        #get image
-        Entity.__init__(self, Globals.group_COLLIDEBLOCKS) 
-        if Globals.stage == 1:
-            self.blockimage = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1Floortile1.png'), (255,0,255))
-        self.image = pygame.Surface((blocksacross*32,blocksdown*32))
-        for rows in range(0,blocksdown):
-            for columns in range(0,blocksacross):
-                self.image.blit(self.blockimage, (columns*32,rows*32))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(x,y)
-        self.pos = (self.rect.x, self.rect.y)
+            #get image
+            Entity.__init__(self, Globals.group_COLLIDEBLOCKS) 
+            if Globals.stage == 1:
+                self.imageloc = os.path.join('Resources','Stage 1 Resources','LevelTiles') #set the location for images
+                self.images = [
+                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_left_corner.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_centre1.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_centre2.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_right_corner.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'bottom_tile.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_single.png'), (255,0,255)),
+                           ]
+            self.image = pygame.Surface((blocksacross*32,blocksdown*32))
+            if not blocksacross == 1:    
+                for rows in range(0,blocksdown):
+                    for columns in range(0,blocksacross):
+                        if rows == 0 and columns == 0:
+                            self.image.blit(self.images[0], (columns*32,rows*32))
+                        elif rows == 0 and columns == blocksacross - 1:
+                            self.image.blit(self.images[3], (columns*32,rows*32))
+                        elif rows == 0 and columns%2 == 0:
+                            self.image.blit(self.images[1], (columns*32,rows*32))
+                        elif rows == 0 and columns%2 == 1:
+                            self.image.blit(self.images[1], (columns*32,rows*32))
+                        else:
+                            self.image.blit(self.images[4], (columns*32,rows*32))
+            else:
+                self.image.blit(self.images[5], (0,0))
+                for rows in range(0, blocksdown):
+                    self.image.blit(self.images[4], (0,rows*32))
+    
+            self.rect = pygame.Rect(self.image.get_rect())
+            self.rect.move_ip(x,y)
+            self.pos = (self.rect.x, self.rect.y)
         
 class damage_tile(Entity):
     def __init__(self,x,y):
@@ -493,6 +522,9 @@ class Projectile(Entity):
         elif pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
             self.kill()
             self.yvel = 0
+            
+        if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
+            self.kill()
                
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):

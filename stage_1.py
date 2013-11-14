@@ -6,14 +6,14 @@ Created on 31/10/2013
 import pygame, os, sys, Entities, functions, Constants, Globals
 
 def level_1():
-    floor_platform = Entities.Platform(32,16*32,30,1)
-    wall_platform = Entities.Platform(0,0, 1, 17)
-    wall_platform1 = Entities.Platform(32*30,0,1,17)
-    end_block = Entities.goal_piece(28*32, 15*32)
-    death_block = Entities.damage_tile(5*32,15*32)
-    Globals.player = Entities.Player(32,32*14)
+    floor_platform = Entities.Platform(4*32,12*32, 26,5)
+    end_block = Entities.goal_piece(24*32, 11*32)
+    death_block = Entities.damage_tile(14*32,11*32)
+    Globals.player = Entities.Player(6*32,32*10)
     Globals.hud = Entities.hud()
-    troll = Entities.Troll(32*9,32*14 + 16, True)
+    troll = Entities.Troll(32*9,32*10 + 16, True)
+    Globals.camera.xbounds = (0, 34*32)
+    Globals.camera.ybounds = (0, 640)
     
 def level_2():
     floor_platform = Entities.Platform(32,16*32,30,1)
