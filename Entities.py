@@ -29,6 +29,7 @@ class Player(Entity):
         self.attacking = False
         self.arrowkey_enabled = True
         self.can_attack = True
+        self.slash_damage = True
 
         #load images
         '''
@@ -136,6 +137,16 @@ class Player(Entity):
                 if self.rect.y < item.rect.y + item.rect.height and item.rect.y - 20 < self.rect.y + self.rect.height and self.rect.x + self.rect.width > item.rect.x and self.rect.x < item.rect.x + item.rect.width:
                     self.touching_ground = True
         
+        #calculate damage with AI units
+        collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
+        for item in collidearray:
+            if self.imagename == 'slashL' and self.imageindex > 6 and item.rect.x < self.rect.x and item.can_damage and self.slash_damage:
+                item.damage(5, True)
+                self.slash_damage = False
+            elif self.imagename == 'slashR' and self.imageindex > 6 and item.rect.x > self.rect.x and item.can_damage and self.slash_damage:
+                item.damage(5, False)
+                self.slash_damage = False
+                
         #determine sprite set
         if not self.attacking:
             if self.touching_ground: #set of ground sprites
@@ -189,10 +200,12 @@ class Player(Entity):
                     if not self.imagename == 'slashR':
                         self.change_image('slashR')
                         self.rect.x -= 14
+                        self.slash_damage = True
                 else:
                     if not self.imagename == 'slashL':
                         self.change_image('slashL')
                         self.rect.x -= 14
+                        self.slash_damage = True
             elif self.attack == 'shout':
                 if self.facing_right:
                     if not self.imagename == 'shoutR':
@@ -522,6 +535,10 @@ class Projectile(Entity):
         elif pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
             self.kill()
             self.yvel = 0
+        self.collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
+        for item in self.collidearray:
+            item.damage(self.damage)
+            self.kill()
             
         if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
             self.kill()
@@ -600,6 +617,7 @@ class shoutProj(Projectile):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.x = x
         self.rect.y = y
+        self.damage = 0
         if attack_left:
             Projectile.__init__(self, x, y, -7, 0)
         else:
@@ -682,24 +700,83 @@ class Troll(Entity):
         
         #declare variables
         self.facingL = facingL
-        self.xvel = 0
-        self.yvel = 0
+        self.xvel = 0.0
+        self.yvel = 0.0
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.range_to_character = 0
         self.wall_separating = False
         self.health = 3
         self.eventcounter = 5
+        self.can_damage = True
+        self.x = self.rect.x
+        self.y = self.rect.y
+        self.stunned = False
         
     
         
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
-        if self.image_index < self.numimages: self.image_index += 1
-        else: self.image_index = 0
+        if self.image_index < self.numimages: 
+            self.image_index += 1
+        else: 
+            if self.imagename == 'explodeL' or self.imagename == 'explodeR':
+                self.kill()
+            else:
+                self.image_index = 0
     
-    def update(self, screen):
-        pass    
+    def update(self):
+        self.rect= pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((self.x, self.y))
+        
+        self.rect.x += self.xvel
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that troll is colliding with
+        for block in block_hit_list: #iterate through the list
+            #Collision moving right means that troll collided with left side of block
+            if self.xvel > 0:
+                self.rect.right = block.rect.left #set right side to left side of block
+            elif self.xvel < 0:
+                #Collision moving left means player collided with right side of block
+                self.rect.left = block.rect.right #set left side to right side of block
+           
+        #apply gravity
+        if self.yvel < 10:
+            self.yvel += abs(self.yvel) / 40 + 0.36
+        #move y and check for collisions
+        self.rect.y += self.yvel
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that troll is colliding with  
+        for block in block_hit_list: #iterate over list
+            # check collision
+            if self.yvel > 0: #top collision
+                self.rect.bottom = block.rect.top #set bottom to top of block
+                self.yvel = 0 #stop vertical movement
+            elif self.yvel < 0: #bottom collision
+                self.rect.top = block.rect.bottom  #set top to the bottom of block
+                self.yvel = 0 #stop vertical movement
+        self.x = self.rect.x
+        self.y = self.rect.y
+        
+    def damage(self, damage, left):
+        self.health -= damage
+        if self.health <= 0:
+            self.health = 0
+            if self.facingL:
+                if not self.imagename == 'explodeL': 
+                    self.change_image('explodeL')
+                    self.rect.x -= 4
+                    self.x -= 4
+            else:
+                if not self.imagename == 'explodeR': 
+                    self.change_image('explodeR')
+                    self.x -= 18
+                    self.rect.x -= 18
+            
+        
+    def change_image(self, image):
+        self.image_index = 0 #reset the image position
+        self.imagename = image #change the image list
+        self.image = self.images[self.imagename][0] #set the image to the first image in the list
+        self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
         
     def calculate_range(self):
         self.player.x = Globals.player.rect.x 

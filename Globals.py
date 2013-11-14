@@ -25,11 +25,15 @@ def reset_all(): #reset all variables back to starting values
     global group_SPECIAL 
     global group_COLLIDEBLOCKS   
     global group_PLAYER
+    global group_PROJECTILES
+    global group_AI
     global stage 
     global level
     group_SPECIAL.empty()
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
+    group_PROJECTILES.empty()
+    group_AI.empty()
     stage = 1
     level = 1
 
@@ -38,7 +42,9 @@ def clear_groups():
     global group_COLLIDEBLOCKS   
     global group_PLAYER
     global group_PROJECTILES
+    global group_AI
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
     group_SPECIAL.empty()
     group_PROJECTILES.empty()
+    group_AI.empty()

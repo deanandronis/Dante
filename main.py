@@ -75,6 +75,7 @@ while not done:
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
+            elif event.key == pygame.K_F1: troll = Entities.Troll(32*9,32*5 + 16, False)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT: #left key released
                 if not Globals.player.xvel > 0 and Globals.player.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
@@ -108,18 +109,20 @@ while not done:
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         if (isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0: item.animate()
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+    for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+    for item in Globals.group_AI:
+        item.update()
+        if ticktimer%6==0: item.animate()
+#         pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - Globals.camera.x, item.rect.y + item.rect.height/2 - Globals.camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - Globals.camera.y))
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
     for item in Globals.group_SPECIAL:
         if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.hud):
             screen.blit(item.image, item.rect) #draw the HUD to the screen
         else:
             screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
-    for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
-    for item in Globals.group_AI:
-        item.animate()
-#         pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - Globals.camera.x, item.rect.y + item.rect.height/2 - Globals.camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - Globals.camera.y))
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
+
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60
