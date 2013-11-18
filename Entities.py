@@ -141,11 +141,16 @@ class Player(Entity):
         collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
         for item in collidearray:
             if self.imagename == 'slashL' and self.imageindex > 6 and item.rect.x < self.rect.x and item.can_damage and self.slash_damage:
-                item.damage(5, True)
+                item.damage(5)
                 self.slash_damage = False
             elif self.imagename == 'slashR' and self.imageindex > 6 and item.rect.x > self.rect.x and item.can_damage and self.slash_damage:
-                item.damage(5, False)
+                item.damage(5)
                 self.slash_damage = False
+            elif self.rect.x < item.rect.x:
+#                 item.damage_player()
+#                 self.xvel = -3
+#                 self.yvel = -3
+                pass
                 
         #determine sprite set
         if not self.attacking:
@@ -214,6 +219,14 @@ class Player(Entity):
                     if not self.imagename == 'shoutL':
                         self.change_image('shoutL')
                         self.rect.x -= 14
+            elif self.attack == 'lazer':
+                if self.facing_right:
+                    if not self.imagename == 'shoutR':
+                        self.change_image('shoutR')
+                else:
+                    if not self.imagename == 'shoutL':
+                        self.change_image('shoutL')
+                        self.rect.x -= 14
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
@@ -258,7 +271,7 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-            elif self.imagename == 'shoutL':
+            elif self.imagename == 'shoutL' and self.attack == 'shout':
                 self.rect.x += 19
                 self.x += 19
                 self.change_image('idleL')
@@ -267,7 +280,7 @@ class Player(Entity):
                 self.can_attack = True
                 self.arrowkey_enabled = True
                 shoutproj = shoutProj(self.rect.x - 20, self.rect.y + 10, True)
-            elif self.imagename == 'shoutR':
+            elif self.imagename == 'shoutR' and self.attack == 'shout':
                 self.rect.x += 0
                 self.x += 0
                 self.change_image('idleR')
@@ -276,6 +289,23 @@ class Player(Entity):
                 self.can_attack = True
                 self.arrowkey_enabled = True
                 shoutproj = shoutProj(self.rect.x + self.rect.width - 3, self.rect.y + 8, False)
+            elif self.imagename == "shoutR" and self.attack == 'lazer':
+                self.change_image('idleR')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                laser = lazer(self.rect.x + self.rect.width - 14, self.rect.y + 11, False)
+            elif self.imagename == "shoutL" and self.attack == 'lazer':
+                self.change_image('idleL')
+                self.rect.x += 19
+                self.x += 19
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                laser = lazer(self.rect.x, self.rect.y + 11, True)
+                
             else:
                 self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
         else: self.imageindex += 1  #otherwise, allow the next rotation
@@ -541,8 +571,8 @@ class Projectile(Entity):
             self.kill()
             
         if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
-            self.kill()
-               
+            self.kill()    
+                     
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','PianoProjectile1.png'), (255,0,255)) #get the piano image
@@ -551,7 +581,6 @@ class Piano(Projectile):
         self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)
         self.damage = 6
-        
         
 class Watermelon(Projectile):
     def __init__(self, x, y, xvel, yvel):
@@ -562,7 +591,6 @@ class Watermelon(Projectile):
         Projectile.__init__(self, x, y, xvel, yvel)
         self.damage = 4  
         
-
 class Hat(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','HatProjectile.png'), (255,0,255)) #get the piano image
@@ -580,8 +608,7 @@ class Book(Projectile):
         self.rect.y = y
         Projectile.__init__(self, x, y, xvel, yvel)   
         self.damage = 2
-        
-        
+               
 class Television(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','TV'), 'TV', 17, '.bmp', (255,0,255))
@@ -607,7 +634,6 @@ class Chair(Projectile):
         Projectile.__init__(self, x, y, xvel, yvel)   
         self.damage = 3
         
-
 class shoutProj(Projectile):
     def __init__(self, x, y, attack_left):
         self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','Gaypride'), 'Gaypride',8, '.bmp', (255,0,255))
@@ -628,6 +654,42 @@ class shoutProj(Projectile):
         self.image = self.imagelist[self.image_index]
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
+        
+class lazer(Entity):
+    def __init__(self, x, y, left):
+        Entity.__init__(self, Globals.group_PROJECTILES)
+        self.collided = False
+        if left: 
+            self.range = -800
+            self.interval = -1
+        else: 
+            self.range = 800
+            self.interval = 1
+        self.lazerimage = functions.get_image(os.path.join('Resources','Projectiles','Lazer fragment.png'), (255,0,255))
+        for i in range(0, self.range, self.interval):
+            self.rect = pygame.Rect(x + i, y, 1, 11)
+            if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) or self.rect.x == 0 or self.rect.x == Globals.camera.xbounds[1]:
+                self.range = i
+                break
+            
+        self.image = pygame.Surface((abs(self.range), 11))
+        for i in range(1, self.range, self.interval):
+            self.image.blit(self.lazerimage, (abs(i), 0))
+        self.rect = self.image.get_rect()
+        if left: self.rect.move_ip(x + self.range,y)
+        else: self.rect.move_ip(x,y)
+        self.damage = 10
+        self.duration = 30
+        self.time = 1
+        
+    def update(self):
+        if self.time%self.duration == 0: self.kill()
+        else: self.time += 1
+        collide = pygame.sprite.spritecollide(self, Globals.group_AI, False)
+        for item in collide:
+            item.damage(10)
+            
+        
         
 class movingtext(Entity):
     def __init__(self, x, y, xvel, yvel, text):
@@ -756,7 +818,7 @@ class Troll(Entity):
         self.x = self.rect.x
         self.y = self.rect.y
         
-    def damage(self, damage, left):
+    def damage(self, damage):
         self.health -= damage
         if self.health <= 0:
             self.health = 0
@@ -771,7 +833,10 @@ class Troll(Entity):
                     self.x -= 18
                     self.rect.x -= 18
             
-        
+    def damage_player(self):
+        Globals.player.health -= 4
+    
+    
     def change_image(self, image):
         self.image_index = 0 #reset the image position
         self.imagename = image #change the image list

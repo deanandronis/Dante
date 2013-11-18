@@ -74,8 +74,16 @@ while not done:
                     Globals.player.arrowkey_enabled = False
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
+            elif event.key == pygame.K_v:
+                if Globals.player.can_attack:
+                    Globals.player.attack = 'lazer'
+                    Globals.player.attacking = True
+                    Globals.player.arrowkey_enabled = False
+                    Globals.player.can_attack = False
+                    Globals.player.xvel = 0
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
-            elif event.key == pygame.K_F1: troll = Entities.Troll(32*9,32*5 + 16, False)
+            elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
+            elif event.key == pygame.K_F2: troll = Entities.Troll(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y, False)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT: #left key released
                 if not Globals.player.xvel > 0 and Globals.player.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
