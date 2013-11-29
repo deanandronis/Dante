@@ -20,5 +20,6 @@ def level_2():
     wall_platform = Entities.Platform(0,0, 1, 17)
     wall_platform1 = Entities.Platform(32*30,0,1,17)
     end_block = Entities.goal_piece(28*32, 15*32)
+    coin_block = Entities.Coin(27*32, 15*32)
     Globals.player = Entities.Player(32,32*14)
     Globals.hud = Entities.hud()

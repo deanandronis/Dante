@@ -13,6 +13,7 @@ level = 1
 player = None
 hud= None
 camera = None
+score = 0
 
 #create sprite groups
 group_PLAYER = pygame.sprite.GroupSingle()

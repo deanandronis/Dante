@@ -130,6 +130,10 @@ class Player(Entity):
                 self.health -= 1
                 item.kill()
                 spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
+            elif isinstance(item, Coin) and self.rect.colliderect(item.rect):
+                Globals.score += 5
+                item.kill()
+                
                 
                 
         if not self.touching_ground: #check to see if player is within 20 pixels of a ground block 
@@ -654,6 +658,15 @@ class shoutProj(Projectile):
         self.image = self.imagelist[self.image_index]
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
+        
+class Coin(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources', '1CoinTile.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
+
         
 class lazer(Entity):
     def __init__(self, x, y, left):
