@@ -8,6 +8,7 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
+
 #base class for shit
 class Entity(pygame.sprite.Sprite):
     def __init__(self, *args):
@@ -127,13 +128,14 @@ class Player(Entity):
                 self.next_level = True
                 item.kill()
             elif isinstance(item, damage_tile) and self.rect.colliderect(item.rect):
-                self.health -= 1
+                self.health -= 1 
                 item.kill()
                 spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
+            elif isinstance(item, key) and self.rect.colliderect(item.rect):
+                item.destroy = True
             elif isinstance(item, Coin) and self.rect.colliderect(item.rect):
                 Globals.score += 5
                 item.kill()
-                
                 
                 
         if not self.touching_ground: #check to see if player is within 20 pixels of a ground block 
@@ -466,6 +468,79 @@ class goal_piece(Entity):
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
         self.rect.move_ip((x,y)) #move the collision box into position
         
+class key(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.image = functions.get_image(os.path.join('Resources','General Resources','KeyTile.bmp'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.destroy = False
+        self.destroytimer = 40
+        self.timer = 0
+        self.pos = (self.rect.x, self.rect.y)
+    
+    def update(self):
+        if self.destroy:
+            Globals.key_pause = True
+            #self.rect.y = -1000
+            self.timer += 1
+            self.destroylist = [x for x in Globals.group_COLLIDEBLOCKS if isinstance(x, Door)]
+            if self.destroylist and self.timer == self.destroytimer:
+                self.destitem = self.destroylist[len(self.destroylist) - 1]
+                if self.destitem.rect.width > self.destitem.rect.height: 
+                    self.destitem.remove_one_horiz()
+                else: 
+                    self.destitem.remove_one_vert()
+            elif not self.destroylist: self.kill
+            
+        if self.timer >= self.destroytimer: self.timer = 0
+            
+        
+class Door(Entity):
+    def __init__(self, x, y, blocksacross, blocksdown):
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        self.blockimage = functions.get_image(os.path.join('Resources','General Resources','Doortile.png'), (255,0,255))
+        self.image = pygame.Surface((blocksacross*32,blocksdown*32))
+        for rows in range(0,blocksdown):
+            for columns in range(0,blocksacross):
+                self.image.blit(self.blockimage, (columns*32, rows*32))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x,y)
+        self.pos = (self.rect.x, self.rect.y)
+        self.width = blocksacross*32
+        self.height = blocksdown*32
+    
+    def remove_one_horiz(self):
+        if self.width == 32: 
+            self.kill()
+            for item in Globals.group_SPECIAL: 
+                if isinstance(item, key): 
+                    item.kill()
+                    Globals.key_pause = False
+        else:
+            self.rect.x += 32
+            self.width -= 32
+            self.image = pygame.Surface((self.width, self.height))
+            for rows in range(0,self.height/32):
+                for columns in range(0,self.width/32):
+                    self.image.blit(self.blockimage, (columns*32, rows*32))
+
+        
+    def remove_one_vert(self):
+        if self.height == 32: 
+            self.kill()
+            for item in Globals.group_SPECIAL: 
+                if isinstance(item, key): 
+                    item.kill()
+                    Globals.key_pause = False
+        else:
+            self.rect.y += 32
+            self.height -= 32
+            self.image = pygame.Surface((self.width, self.height))
+            for rows in range(0,self.height/32):
+                for columns in range(0,self.width/32):
+                    self.image.blit(self.blockimage, (columns*32, rows*32))
+    
 #game essentials
 class Camera():
     def __init__(self):
@@ -681,7 +756,7 @@ class lazer(Entity):
         self.lazerimage = functions.get_image(os.path.join('Resources','Projectiles','Lazer fragment.png'), (255,0,255))
         for i in range(0, self.range, self.interval):
             self.rect = pygame.Rect(x + i, y, 1, 11)
-            if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) or self.rect.x == 0 or self.rect.x == Globals.camera.xbounds[1]:
+            if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) or pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False) or self.rect.x == 0 or self.rect.x == Globals.camera.xbounds[1]:
                 self.range = i
                 break
             
@@ -701,9 +776,8 @@ class lazer(Entity):
         collide = pygame.sprite.spritecollide(self, Globals.group_AI, False)
         for item in collide:
             item.damage(10)
-            
-        
-        
+                   
+#Text classes
 class movingtext(Entity):
     def __init__(self, x, y, xvel, yvel, text):
         Entity.__init__(self, Globals.group_SPECIAL)
@@ -748,6 +822,7 @@ class narrator_bubble(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(x,y)
         
+#AI 
 class Troll(Entity):
     def __init__(self, x, y, facingL):
         Entity.__init__(self, Globals.group_AI)
@@ -782,11 +857,14 @@ class Troll(Entity):
         self.range_to_character = 0
         self.wall_separating = False
         self.health = 3
-        self.eventcounter = 5
+        self.cycles = 0
+        self.next_event = 40
         self.can_damage = True
         self.x = self.rect.x
         self.y = self.rect.y
         self.stunned = False
+        self.currentevent = 'checkdist'
+        self.distance = 0
         
     
         
@@ -803,6 +881,8 @@ class Troll(Entity):
     def update(self):
         self.rect= pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
+        
+        if self.cycles%self.next_event == 0: self.event()
         
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that troll is colliding with
@@ -828,8 +908,19 @@ class Troll(Entity):
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set top to the bottom of block
                 self.yvel = 0 #stop vertical movement
+                
+                
         self.x = self.rect.x
         self.y = self.rect.y
+        self.cycles += 1  
+        
+    def event(self):
+        if self.currentevent == 'checkdist':
+            self.distance = self.calculate_range()
+            if self.distance < 4:
+                self.currentevent = 'explode'
+         
+        
         
     def damage(self, damage):
         self.health -= damage
@@ -857,17 +948,17 @@ class Troll(Entity):
         self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
         
     def calculate_range(self):
-        self.player.x = Globals.player.rect.x 
-        self.player.y = Globals.player.rect.y
+        self.playerx = Globals.player.rect.x 
+        self.playery = Globals.player.rect.y
         #calc horizontal and vertical distances
-        if self.rect.x > self.player.x: self.xdist_to_character = self.rect.x - self.player.x
-        else: self.xdist_to_character = self.player.x - self.rect.x
-        if self.rect.y > self.player.y: self.ydist_to_character = self.rect.y - self.player.y
-        else: self.ydist_to_character = self.player.y - self.rect.y
+        if self.rect.x > self.playerx: self.xdist_to_character = self.rect.x - self.playerx
+        else: self.xdist_to_character = self.playerx - self.rect.x
+        if self.rect.y > self.playery: self.ydist_to_character = self.rect.y - self.playery
+        else: self.ydist_to_character = self.playery - self.rect.y
         
         #calculate overall distance
         self.dist_to_character = math.sqrt((self.ydist_to_character^2)+(self.xdist_to_character*2))
-        self.angle_to_character = math.atan2(self.ydist_to_character, self.xdist_to_character)
+        self.angle_to_character = math.atan2(self.playery - self.rect.y, self.playerx - self.rect.x)
         return [self.dist_to_character, self.angle_to_character]
         
         
