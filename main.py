@@ -42,7 +42,7 @@ while not done:
     #Get and check events:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: done = True #exit the game if player presses cross button
-        elif event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN and not Globals.key_pause:
             if event.key == pygame.K_LEFT:
                 if Globals.player.arrowkey_enabled:
                     Globals.player.xvel = -5 #left arrow key down; set player's horizontal velocity to -5 (5 units/cycle left)
@@ -99,11 +99,12 @@ while not done:
     current_fps = float(clock.get_fps()) #get the current FPS
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps))) #set the window caption 
     
-    if ticktimer%6 == 0: 
+    if ticktimer%6 == 0 and not Globals.key_pause: 
         for item in Globals.group_PLAYER: #animate the player every 6 cycles
             item.animate()
-    Globals.player.update() #update the player
-    Globals.group_PROJECTILES.update()
+    if not Globals.key_pause:
+        Globals.player.update() #update the player
+        Globals.group_PROJECTILES.update()
     #Update the hud and Globals.camera
     Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
     Globals.hud.update(Globals.player.health) #redraw the hud elements
@@ -115,17 +116,20 @@ while not done:
         
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
-        if (isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0: item.animate()
+        if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0) and not Globals.key_pause: item.animate()
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_AI:
-        item.update()
-        if ticktimer%6==0: item.animate()
+        if not Globals.key_pause:
+            item.update()
+            if ticktimer%6==0: item.animate()
 #         pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - Globals.camera.x, item.rect.y + item.rect.height/2 - Globals.camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - Globals.camera.y))
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
     for item in Globals.group_SPECIAL:
-        if isinstance(item, Entities.movingtext): item.update()
+        if not Globals.key_pause:
+            if isinstance(item, Entities.movingtext): item.update()
+        if isinstance(item, Entities.key): item.update()
         if isinstance(item, Entities.hud):
             screen.blit(item.image, item.rect) #draw the HUD to the screen
         else:

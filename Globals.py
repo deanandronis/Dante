@@ -14,6 +14,7 @@ player = None
 hud= None
 camera = None
 score = 0
+key_pause = False
 
 #create sprite groups
 group_PLAYER = pygame.sprite.GroupSingle()
