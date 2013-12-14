@@ -11,8 +11,6 @@ def level_1():
     death_block = Entities.damage_tile(14*32,11*32)
     Globals.player = Entities.Player(6*32,32*10)
     Globals.hud = Entities.hud()
-    key = Entities.key(10*32, 11*32)
-    door = Entities.Door(10*32, 5*32, 10, 1)
     troll = Entities.Troll(32*9,32*5 + 16, True)
     Globals.camera.xbounds = (0, 58*32)
     Globals.camera.ybounds = (0, 640)

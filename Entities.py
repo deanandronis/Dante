@@ -8,6 +8,7 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
+from msilib.schema import SelfReg
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -133,6 +134,7 @@ class Player(Entity):
                 spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
             elif isinstance(item, key) and self.rect.colliderect(item.rect):
                 item.destroy = True
+                item.image = functions.get_image(os.path.join('Resources','General Resources','InvisibleTile.png'),(255,0,255))
             elif isinstance(item, Coin) and self.rect.colliderect(item.rect):
                 Globals.score += 5
                 item.kill()
@@ -469,35 +471,38 @@ class goal_piece(Entity):
         self.rect.move_ip((x,y)) #move the collision box into position
         
 class key(Entity):
-    def __init__(self, x, y):
+    def __init__(self, x, y, index):
         Entity.__init__(self, Globals.group_SPECIAL)
         self.image = functions.get_image(os.path.join('Resources','General Resources','KeyTile.bmp'), (255,0,255))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.destroy = False
-        self.destroytimer = 40
+        self.destroytimer = 30
         self.timer = 0
         self.pos = (self.rect.x, self.rect.y)
+        self.index = index
     
     def update(self):
         if self.destroy:
             Globals.key_pause = True
             #self.rect.y = -1000
             self.timer += 1
-            self.destroylist = [x for x in Globals.group_COLLIDEBLOCKS if isinstance(x, Door)]
+            self.destroylist = [x for x in Globals.group_COLLIDEBLOCKS if isinstance(x, Door) and x.index == self.index]
             if self.destroylist and self.timer == self.destroytimer:
+                
                 self.destitem = self.destroylist[len(self.destroylist) - 1]
                 if self.destitem.rect.width > self.destitem.rect.height: 
                     self.destitem.remove_one_horiz()
                 else: 
                     self.destitem.remove_one_vert()
-            elif not self.destroylist: self.kill
-            
+            elif not self.destroylist: 
+                self.kill()
+                Globals.key_pause = False
+          
         if self.timer >= self.destroytimer: self.timer = 0
-            
-        
+              
 class Door(Entity):
-    def __init__(self, x, y, blocksacross, blocksdown):
+    def __init__(self, x, y, blocksacross, blocksdown, index):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
         self.blockimage = functions.get_image(os.path.join('Resources','General Resources','Doortile.png'), (255,0,255))
         self.image = pygame.Surface((blocksacross*32,blocksdown*32))
@@ -509,14 +514,11 @@ class Door(Entity):
         self.pos = (self.rect.x, self.rect.y)
         self.width = blocksacross*32
         self.height = blocksdown*32
+        self.index = index
     
     def remove_one_horiz(self):
         if self.width == 32: 
             self.kill()
-            for item in Globals.group_SPECIAL: 
-                if isinstance(item, key): 
-                    item.kill()
-                    Globals.key_pause = False
         else:
             self.rect.x += 32
             self.width -= 32
@@ -529,10 +531,7 @@ class Door(Entity):
     def remove_one_vert(self):
         if self.height == 32: 
             self.kill()
-            for item in Globals.group_SPECIAL: 
-                if isinstance(item, key): 
-                    item.kill()
-                    Globals.key_pause = False
+
         else:
             self.rect.y += 32
             self.height -= 32
@@ -574,7 +573,6 @@ class Camera():
         elif self.y < self.ybounds[0]:
             self.y = self.ybounds[0]
          
-
 class hud(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, Globals.group_SPECIAL) #add the HUD to the Globals.group_SPECIAL group
@@ -587,7 +585,7 @@ class hud(pygame.sprite.Sprite):
         self.backimagestore = self.image #create a backup of the background image
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
         self.rect.move_ip(self.x, self.y) #move the collision box into position
-        self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255)) #load the text for the HUD
+        self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255)) #load the text for the health        
         
         #load relevant images
         self.imageloc = os.path.join('Resources','General Resources','HUD') #set the location for images
@@ -599,18 +597,26 @@ class hud(pygame.sprite.Sprite):
         #self.images['maxPortrait'][0] = pygame.transform.scale(self.images['maxPortrait'][0], (58,58)) #scale the portrait to fit the HUD
     
     def update(self, health): #redraw the HUD
+        
         self.image = self.backimagestore #reset the image
+        
         self.image.blit(self.healthtext, (100,38)) #draw the health text onto the HUD
         for i in range(0, health):
             pygame.draw.rect(self.image, (0,255,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the green health blocks
         for i in range(health, 10):
             pygame.draw.rect(self.image, (255,0,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the red health blocks
+            
         #draw the portrait onto the HUD
         if health > 7: self.image.blit(self.images['maxPortrait'][0], (19,17)) 
         elif health > 4: self.image.blit(self.images['maxPortrait'][1], (19,17))
         elif health > 1: self.image.blit(self.images['maxPortrait'][2], (19,17))
         elif health <= 1: self.image.blit(self.images['maxPortrait'][3],(19,17))
         
+        self.score = None
+        self.scoretext = None
+        self.score = 'Score: ' + str(Globals.score)
+        self.scoretext = Constants.healthtext.render(self.score, 0, (255,253,255)) #load the text for the score
+        self.image.blit(self.scoretext, (600, 38))
 #projectile classes        
 class Projectile(Entity):
     def __init__(self, x, y, xvel, yvel):
@@ -733,7 +739,8 @@ class shoutProj(Projectile):
         self.image = self.imagelist[self.image_index]
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
-        
+
+#other stuff
 class Coin(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL)
@@ -742,7 +749,6 @@ class Coin(Entity):
         self.rect.x = x
         self.rect.y = y
 
-        
 class lazer(Entity):
     def __init__(self, x, y, left):
         Entity.__init__(self, Globals.group_PROJECTILES)
