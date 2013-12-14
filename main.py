@@ -116,7 +116,7 @@ while not done:
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
         
-    
+
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0) and not Globals.key_pause: item.animate()
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location

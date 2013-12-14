@@ -9,6 +9,7 @@ from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
 from msilib.schema import SelfReg
+from _abcoll import ItemsView
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -830,7 +831,7 @@ class narrator_bubble(Entity):
         
 #AI 
 class Troll(Entity):
-    def __init__(self, x, y, facingL):
+    def __init__(self, x, y, facingL, patrolblock):
         Entity.__init__(self, Globals.group_AI)
         #load images
         self.imageloc = os.path.join('Resources','Stage 1 Resources','Troll','Bitmaps')
@@ -863,16 +864,14 @@ class Troll(Entity):
         self.range_to_character = 0
         self.wall_separating = False
         self.health = 3
-        self.cycles = 0
-        self.next_event = 40
+        self.pausecycles = 0
         self.can_damage = True
         self.x = self.rect.x
         self.y = self.rect.y
         self.stunned = False
         self.currentevent = 'checkdist'
         self.distance = 0
-        
-    
+        self.patrolblock = patrolblock
         
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
@@ -888,7 +887,7 @@ class Troll(Entity):
         self.rect= pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
         
-        if self.cycles%self.next_event == 0: self.event()
+        self.event()
         
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that troll is colliding with
@@ -915,19 +914,79 @@ class Troll(Entity):
                 self.rect.top = block.rect.bottom  #set top to the bottom of block
                 self.yvel = 0 #stop vertical movement
                 
+        #animations
+        if self.facingL:
+            if self.xvel == 0:
+                if not self.imagename == 'idleL':
+                    self.change_image('idleL')
+            else:
+                if not self.imagename == 'walkL':
+                    self.change_image('walkL')
+        else:
+            if self.xvel == 0:
+                if not self.imagename == 'idleR':
+                    self.change_image('idleR')
+            else:
+                if not self.imagename == 'walkR':
+                    self.change_image('walkR')
                 
         self.x = self.rect.x
         self.y = self.rect.y
-        self.cycles += 1  
+      
         
     def event(self):
-        if self.currentevent == 'checkdist':
-            self.distance = self.calculate_range()
-            if self.distance < 4:
-                self.currentevent = 'explode'
-         
+       
+        self.distance = self.calculate_range()[0]
+        if self.distance < 17:
+            #self.currentevent = 'charge'
+            pass
+        elif not self.currentevent == 'pausing': self.currentevent = 'patrol'
+        if self.currentevent == 'charge':
+            if self.rect.colliderect(Globals.player.rect):
+                if Globals.player.rect.x > self.rect.x:
+                    pass
+                else:
+                    pass
+                self.xvel = 0
+                self.yvel = 0
+                
+                if self.can_damage:
+                    self.can_damage = False
+                    Globals.player.health -= 4
+                self.damage(1000)
+            elif Globals.player.rect.x > self.rect.x:
+                self.xvel = 7
+            else:
+                self.xvel = -7
+        elif self.currentevent == 'patrol':          
+            if self.facingL: self.xvel = -4
+            else: self.xvel = 4
+                      
+            if self.facingL and self.rect.x <= self.patrolblock.rect.x:
+                self.currentevent = 'pausing'
+                self.xvel = 0
+                self.yvel = 0
+                
+            elif not self.facingL and self.rect.x + self.rect.width >= self.patrolblock.rect.x + self.patrolblock.rect.width:
+                self.currentevent = 'pausing'
+                self.xvel = 0
+                self.yvel = 0
+                
+        elif self.currentevent == 'pausing':
+            if self.pausecycles%140==0: 
+                self.currentevent = 'patrol'
+                if self.facingL: 
+                    self.facingL = False
+                else: 
+                    self.facingL = True
+            self.pausecycles += 1
+
+            
         
+        print self.currentevent
+        print self.calculate_range()[0]
         
+               
     def damage(self, damage):
         self.health -= damage
         if self.health <= 0:
@@ -937,11 +996,13 @@ class Troll(Entity):
                     self.change_image('explodeL')
                     self.rect.x -= 4
                     self.x -= 4
+                    self.rect.y -= 16
             else:
                 if not self.imagename == 'explodeR': 
                     self.change_image('explodeR')
                     self.x -= 18
                     self.rect.x -= 18
+                    self.rect.y -= 16
             
     def damage_player(self):
         Globals.player.health -= 4
@@ -954,17 +1015,20 @@ class Troll(Entity):
         self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
         
     def calculate_range(self):
-        self.playerx = Globals.player.rect.x 
-        self.playery = Globals.player.rect.y
+        self.playerx = Globals.player.rect.x + Globals.player.rect.width/2
+        self.playery = Globals.player.rect.y + Globals.player.rect.height/2
+        self.xpos = self.rect.x + self.rect.width/2
+        self.ypos = self.rect.y + self.rect.height/2
+        
         #calc horizontal and vertical distances
-        if self.rect.x > self.playerx: self.xdist_to_character = self.rect.x - self.playerx
-        else: self.xdist_to_character = self.playerx - self.rect.x
-        if self.rect.y > self.playery: self.ydist_to_character = self.rect.y - self.playery
-        else: self.ydist_to_character = self.playery - self.rect.y
+        if self.xpos > self.playerx: self.xdist_to_character = self.xpos - self.playerx
+        else: self.xdist_to_character = self.playerx - self.xpos
+        if self.ypos > self.playery: self.ydist_to_character = self.ypos - self.playery
+        else: self.ydist_to_character = self.playery - self.ypos
         
         #calculate overall distance
         self.dist_to_character = math.sqrt((self.ydist_to_character^2)+(self.xdist_to_character*2))
-        self.angle_to_character = math.atan2(self.playery - self.rect.y, self.playerx - self.rect.x)
+        self.angle_to_character = math.atan2(self.playery - self.ypos, self.playerx - self.xpos)
         return [self.dist_to_character, self.angle_to_character]
         
         
