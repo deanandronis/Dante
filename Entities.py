@@ -10,6 +10,7 @@ import functions, Constants, Globals
 from random import randrange, randint
 from msilib.schema import SelfReg
 from _abcoll import ItemsView
+from pygame.tests.base_test import pygame_quit
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -872,6 +873,7 @@ class Troll(Entity):
         self.currentevent = 'checkdist'
         self.distance = 0
         self.patrolblock = patrolblock
+        self.can_die = True
         
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
@@ -886,7 +888,6 @@ class Troll(Entity):
     def update(self):
         self.rect= pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
-        
         self.event()
         
         self.rect.x += self.xvel
@@ -934,15 +935,18 @@ class Troll(Entity):
         self.y = self.rect.y
       
         
-    def event(self):
-       
+    def event(self):  
         self.distance = self.calculate_range()[0]
-        if self.distance < 17:
-            #self.currentevent = 'charge'
-            pass
-        elif not self.currentevent == 'pausing': self.currentevent = 'patrol'
+        if self.distance < 17 and not self.currentevent == 'explode':
+            if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
+                if not self.object_between(): 
+                    self.currentevent = 'charge'
+        
+        elif not self.currentevent == 'pausing' and not self.currentevent == 'explode': self.currentevent = 'patrol'
+        
         if self.currentevent == 'charge':
             if self.rect.colliderect(Globals.player.rect):
+                self.currentevent = 'explode'
                 if Globals.player.rect.x > self.rect.x:
                     pass
                 else:
@@ -953,12 +957,14 @@ class Troll(Entity):
                 if self.can_damage:
                     self.can_damage = False
                     Globals.player.health -= 4
-                self.damage(1000)
+                    self.damage(1000)
             elif Globals.player.rect.x > self.rect.x:
                 self.xvel = 7
             else:
                 self.xvel = -7
-        elif self.currentevent == 'patrol':          
+                
+                
+        elif self.currentevent == 'patrol':
             if self.facingL: self.xvel = -4
             else: self.xvel = 4
                       
@@ -979,17 +985,13 @@ class Troll(Entity):
                     self.facingL = False
                 else: 
                     self.facingL = True
-            self.pausecycles += 1
-
-            
-        
-        print self.currentevent
-        print self.calculate_range()[0]
-        
+            self.pausecycles += 1        
                
     def damage(self, damage):
         self.health -= damage
-        if self.health <= 0:
+        
+        if self.health <= 0 and self.can_die:
+            self.can_die = False
             self.health = 0
             if self.facingL:
                 if not self.imagename == 'explodeL': 
@@ -997,6 +999,7 @@ class Troll(Entity):
                     self.rect.x -= 4
                     self.x -= 4
                     self.rect.y -= 16
+                    
             else:
                 if not self.imagename == 'explodeR': 
                     self.change_image('explodeR')
@@ -1009,10 +1012,12 @@ class Troll(Entity):
     
     
     def change_image(self, image):
-        self.image_index = 0 #reset the image position
-        self.imagename = image #change the image list
-        self.image = self.images[self.imagename][0] #set the image to the first image in the list
-        self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
+        
+        if not self.imagename == image:
+            self.image_index = 0 #reset the image position
+            self.imagename = image #change the image list
+            self.image = self.images[self.imagename][0] #set the image to the first image in the list
+            self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
         
     def calculate_range(self):
         self.playerx = Globals.player.rect.x + Globals.player.rect.width/2
@@ -1030,6 +1035,41 @@ class Troll(Entity):
         self.dist_to_character = math.sqrt((self.ydist_to_character^2)+(self.xdist_to_character*2))
         self.angle_to_character = math.atan2(self.playery - self.ypos, self.playerx - self.xpos)
         return [self.dist_to_character, self.angle_to_character]
+    
+    def object_between(self):
+        self.playerx = Globals.player.rect.x + Globals.player.rect.width/2
+        self.playery = Globals.player.rect.y + Globals.player.rect.height/2
+        self.xpos = self.rect.x + self.rect.width/2
+        self.ypos = self.rect.y + self.rect.height/2
+        self.angle_to_player = self.calculate_range()[1]
+        self.dist_to_character = self.calculate_range()[0]
+        
+        if self.xpos < self.playerx:
+            for xpoint in range(self.xpos, self.playerx, 1):
+                if self.ypos < self.playery:
+                    for ypoint in range(self.ypos, self.playery, 1):
+                        for item in Globals.group_COLLIDEBLOCKS:
+                            if item.rect.collidepoint((xpoint, ypoint)):
+                                return True
+                else:
+                    for ypoint in range(self.playery, self.ypos, 1):
+                        for item in Globals.group_COLLIDEBLOCKS:
+                            if item.rect.collidepoint((xpoint, ypoint)):
+                                return True
+                            
+            
+        else:
+            for xpoint in range(self.playerx, self.xpos, 1):
+                if self.ypos < self.playery:
+                    for ypoint in range(self.ypos, self.playery, 1):
+                        for item in Globals.group_COLLIDEBLOCKS:
+                            if item.rect.collidepoint((xpoint, ypoint)):
+                                return True
+                else:
+                    for ypoint in range(self.playery, self.ypos, 1):
+                        for item in Globals.group_COLLIDEBLOCKS:
+                            if item.rect.collidepoint((xpoint, ypoint)):
+                                return True
         
         
             

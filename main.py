@@ -81,9 +81,11 @@ while not done:
                     Globals.player.arrowkey_enabled = False
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
+            
+            #cheat keys        
+            elif event.key == pygame.K_HOME: Globals.player.yvel = -12
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
             elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
-            elif event.key == pygame.K_F2: troll = Entities.Troll(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y, False)
             elif event.key == pygame.K_F12: coin = Entities.Coin(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             
         elif event.type == pygame.KEYUP:
