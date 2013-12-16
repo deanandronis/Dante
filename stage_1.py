@@ -9,10 +9,10 @@ def level_1():
     floor_platform = Entities.Platform(4*32,12*32, 50,5)
     end_block = Entities.goal_piece(51*32, 11*32)
     death_block = Entities.damage_tile(14*32,11*32)
-    small_plat = Entities.Platform(2*32, 4*32, 10, 2)
-    Globals.player = Entities.Player(6*32,32*10)
+    small_plat = Entities.Platform(2*32, 6*32, 10, 2)
+    Globals.player = Entities.Player(10*32,32*10)
     Globals.hud = Entities.hud()
-    troll = Entities.Troll(32*2,32*2 + 16, True, small_plat)
+    troll = Entities.Troll(32*2,32*4 + 16, True, small_plat)
     Globals.camera.xbounds = (0, 58*32)
     Globals.camera.ybounds = (0, 640)
     

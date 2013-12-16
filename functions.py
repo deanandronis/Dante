@@ -38,4 +38,8 @@ def load_imageset(imagedict):
     for item in imagedict.keys():
             images[item] = create_image_list(imagedict[item][0], imagedict[item][1], imagedict[item][2], '.bmp', (255,0,255))
     return images
-        
+
+def xfrange(start, stop, step):
+    while start < stop:
+        yield start
+        start += step

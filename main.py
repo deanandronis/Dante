@@ -7,6 +7,8 @@ import pygame, sys, os, math, datetime
 from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
 from random import randrange
+from socket import meth
+from Entities import Camera
 
 
 #definitions
@@ -128,7 +130,6 @@ while not done:
         if not Globals.key_pause:
             item.update()
             if ticktimer%6==0: item.animate()
-#         pygame.draw.line(screen,(255,255,255), (item.rect.x + item.rect.width/2 - Globals.camera.x, item.rect.y + item.rect.height/2 - Globals.camera.y), (Globals.player.rect.x + Globals.player.rect.width/2 - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height/2 - Globals.camera.y))
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
     for item in Globals.group_SPECIAL:
         if not Globals.key_pause:

@@ -875,6 +875,7 @@ class Troll(Entity):
         self.patrolblock = patrolblock
         self.can_die = True
         
+        
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
         if self.image_index < self.numimages: 
@@ -916,26 +917,29 @@ class Troll(Entity):
                 self.yvel = 0 #stop vertical movement
                 
         #animations
-        if self.facingL:
+        
+        if self.facingL and not self.currentevent == 'explode':
             if self.xvel == 0:
                 if not self.imagename == 'idleL':
                     self.change_image('idleL')
             else:
                 if not self.imagename == 'walkL':
                     self.change_image('walkL')
-        else:
+        elif not self.facingL and not self.currentevent == 'explode':
             if self.xvel == 0:
                 if not self.imagename == 'idleR':
                     self.change_image('idleR')
             else:
                 if not self.imagename == 'walkR':
                     self.change_image('walkR')
+        
                 
         self.x = self.rect.x
         self.y = self.rect.y
       
         
     def event(self):  
+        self.object_between()
         self.distance = self.calculate_range()[0]
         if self.distance < 17 and not self.currentevent == 'explode':
             if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
@@ -965,8 +969,8 @@ class Troll(Entity):
                 
                 
         elif self.currentevent == 'patrol':
-            if self.facingL: self.xvel = -4
-            else: self.xvel = 4
+            if self.facingL: self.xvel = -3
+            else: self.xvel = 3
                       
             if self.facingL and self.rect.x <= self.patrolblock.rect.x:
                 self.currentevent = 'pausing'
@@ -1033,43 +1037,38 @@ class Troll(Entity):
         
         #calculate overall distance
         self.dist_to_character = math.sqrt((self.ydist_to_character^2)+(self.xdist_to_character*2))
-        self.angle_to_character = math.atan2(self.playery - self.ypos, self.playerx - self.xpos)
+        self.angle_to_character = math.atan2(self.ydist_to_character, self.xdist_to_character)
         return [self.dist_to_character, self.angle_to_character]
     
     def object_between(self):
-        self.playerx = Globals.player.rect.x + Globals.player.rect.width/2
-        self.playery = Globals.player.rect.y + Globals.player.rect.height/2
         self.xpos = self.rect.x + self.rect.width/2
         self.ypos = self.rect.y + self.rect.height/2
-        self.angle_to_player = self.calculate_range()[1]
-        self.dist_to_character = self.calculate_range()[0]
-        
-        if self.xpos < self.playerx:
-            for xpoint in range(self.xpos, self.playerx, 1):
-                if self.ypos < self.playery:
-                    for ypoint in range(self.ypos, self.playery, 1):
-                        for item in Globals.group_COLLIDEBLOCKS:
-                            if item.rect.collidepoint((xpoint, ypoint)):
-                                return True
-                else:
-                    for ypoint in range(self.playery, self.ypos, 1):
-                        for item in Globals.group_COLLIDEBLOCKS:
-                            if item.rect.collidepoint((xpoint, ypoint)):
-                                return True
-                            
+        self.playerx = (Globals.player.rect.x + Globals.player.rect.width/2) - self.xpos
+        self.playery = (Globals.player.rect.y + Globals.player.rect.height/2) - self.ypos
+        self.collide = False
+        self.ylist = []
+        try:
+            gradient = float(self.playery)/float(self.playerx)
+            if self.playerx < 15:
+                if 0 < self.playerx: self.xlist = [x for x in functions.xfrange(0, self.playerx, 0.1)]
+                else: self.xlist = [x for x in xfrange(0, self.playerx, -0.1)]
+            else:
+                if 0 < self.playerx: self.xlist = [x for x in range(0, self.playerx, 1)]
+                else: self.xlist = [x for x in range(0, self.playerx, -1)]
+            for value in self.xlist:
+                self.ypoint = gradient * value
+                self.ylist.append(self.ypoint)
+            for key, value in enumerate(self.xlist):
+                for item in Globals.group_COLLIDEBLOCKS:
+                    if item.rect.collidepoint(value + self.xpos, self.ylist[key] + self.ypos):
+                        self.collide = True
+                        return self.collide
+                    else: pass
+            return self.collide
             
-        else:
-            for xpoint in range(self.playerx, self.xpos, 1):
-                if self.ypos < self.playery:
-                    for ypoint in range(self.ypos, self.playery, 1):
-                        for item in Globals.group_COLLIDEBLOCKS:
-                            if item.rect.collidepoint((xpoint, ypoint)):
-                                return True
-                else:
-                    for ypoint in range(self.playery, self.ypos, 1):
-                        for item in Globals.group_COLLIDEBLOCKS:
-                            if item.rect.collidepoint((xpoint, ypoint)):
-                                return True
+        except:
+            return True
+            print "Throw"
         
         
             
