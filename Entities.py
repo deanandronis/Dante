@@ -629,6 +629,7 @@ class Projectile(Entity):
         self.yvel = yvel
         self.gravity = True
         self.numbounce = 0
+        self.can_stun = False
     def update(self):
         self.rect.x += self.xvel
         if self.gravity: self.yvel += abs(self.yvel)/40 + 0.36
@@ -656,6 +657,7 @@ class Projectile(Entity):
         for item in self.collidearray:
             item.damage(self.damage)
             self.kill()
+            if self.can_stun and item.can_stun: item.stun()
             
         if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
             self.kill()    
@@ -731,12 +733,14 @@ class shoutProj(Projectile):
         self.rect.x = x
         self.rect.y = y
         self.damage = 0
+        
         if attack_left:
             Projectile.__init__(self, x, y, -7, 0)
         else:
             Projectile.__init__(self,x,y,7,0)
         self.gravity = False
-            
+        self.can_stun = True
+        
     def animate(self):
         self.image = self.imagelist[self.image_index]
         if self.image_index < self.numimages: self.image_index += 1
@@ -874,7 +878,7 @@ class Troll(Entity):
         self.distance = 0
         self.patrolblock = patrolblock
         self.can_die = True
-        
+        self.can_stun = True        
         
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
@@ -915,7 +919,7 @@ class Troll(Entity):
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set top to the bottom of block
                 self.yvel = 0 #stop vertical movement
-                
+
         #animations
         
         if self.facingL and not self.currentevent == 'explode':
@@ -941,12 +945,12 @@ class Troll(Entity):
     def event(self):  
         self.object_between()
         self.distance = self.calculate_range()[0]
-        if self.distance < 17 and not self.currentevent == 'explode':
+        if self.distance < 17 and not self.currentevent == 'explode' and not self.currentevent == 'stunned':
             if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
                 if not self.object_between(): 
                     self.currentevent = 'charge'
         
-        elif not self.currentevent == 'pausing' and not self.currentevent == 'explode': self.currentevent = 'patrol'
+        elif not self.currentevent == 'pausing' and not self.currentevent == 'explode' and not self.currentevent == 'stunned': self.currentevent = 'patrol'
         
         if self.currentevent == 'charge':
             if self.rect.colliderect(Globals.player.rect):
@@ -962,6 +966,10 @@ class Troll(Entity):
                     self.can_damage = False
                     Globals.player.health -= 4
                     self.damage(1000)
+                '''elif abs(self.rect.y - Globals.player.rect.y) > 20:
+                self.currentevent = 'patrol'
+            elif abs(self.rect.x - Globals.player.x) == 0:
+                self.xvel = 0'''
             elif Globals.player.rect.x > self.rect.x:
                 self.xvel = 7
             else:
@@ -989,7 +997,13 @@ class Troll(Entity):
                     self.facingL = False
                 else: 
                     self.facingL = True
-            self.pausecycles += 1        
+            self.pausecycles += 1     
+        
+        elif self.currentevent == 'stunned':
+            if self.pausecycles%140==0: 
+                self.currentevent = 'patrol'
+                self.can_stun = True
+            self.pausecycles += 1         
                
     def damage(self, damage):
         self.health -= damage
@@ -997,6 +1011,7 @@ class Troll(Entity):
         if self.health <= 0 and self.can_die:
             self.can_die = False
             self.health = 0
+            self.currentevent = 'explode'
             if self.facingL:
                 if not self.imagename == 'explodeL': 
                     self.change_image('explodeL')
@@ -1051,7 +1066,7 @@ class Troll(Entity):
             gradient = float(self.playery)/float(self.playerx)
             if self.playerx < 15:
                 if 0 < self.playerx: self.xlist = [x for x in functions.xfrange(0, self.playerx, 0.1)]
-                else: self.xlist = [x for x in xfrange(0, self.playerx, -0.1)]
+                else: return True
             else:
                 if 0 < self.playerx: self.xlist = [x for x in range(0, self.playerx, 1)]
                 else: self.xlist = [x for x in range(0, self.playerx, -1)]
@@ -1070,6 +1085,9 @@ class Troll(Entity):
             return True
             print "Throw"
         
-        
+    def stun(self):
+        self.currentevent = 'stunned'
+        self.xvel = 0
+        self.can_stun= False
             
         
