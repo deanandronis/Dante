@@ -8,9 +8,7 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
-from msilib.schema import SelfReg
-from _abcoll import ItemsView
-from pygame.tests.base_test import pygame_quit
+
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -23,8 +21,8 @@ class Player(Entity):
         Entity.__init__(self, Globals.group_PLAYER) #adds the player to the group Globals.group_PLAYER
         #Global variables for Character
         self.startpoint = (x,y) #starting location of the character
-        self.xvel = 0 #horizontal velocity 
-        self.yvel = 0 #vertical velocity
+        self.xvel = 0.0 #horizontal velocity 
+        self.yvel = 0.0 #vertical velocity
         self.health = 10 #player's health
         self.touching_ground = False #touching ground variable
         self.facing_right = True #variable for player direction
@@ -34,7 +32,12 @@ class Player(Entity):
         self.arrowkey_enabled = True
         self.can_attack = True
         self.slash_damage = True
-
+        self.leftdown = False
+        self.rightdown = False
+        self.sliding = False
+        self.slideduration = 0
+        self.slidetimer = 0
+        
         #load images
         '''
         IMAGE SYNTAX FOR USE:
@@ -75,6 +78,7 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
+        self.xvel = float(self.xvel)
         if self.rect.y > Globals.hud.rect.y:
             self.health -= 4
             self.reset()
@@ -82,6 +86,15 @@ class Player(Entity):
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
         self.rect.move_ip(self.x, self.y) #set the collision box location
+        
+        #check and apply slide
+        if self.sliding:
+            self.arrowkey_enabled = False
+            self.xvel -= self.xvel/10
+            if abs(self.xvel) < 1.5: 
+                self.xvel = 0
+                self.sliding = False
+                self.arrowkey_enabled = True
         
         #move x and check for collision
         self.rect.x += self.xvel
@@ -104,10 +117,12 @@ class Player(Entity):
                     self.rect.right = block.rect.left
                 else:
                     self.rect.left = block.rect.right
-            
+        
         #apply gravity
         if self.yvel < 10:
             self.yvel += abs(self.yvel) / 40 + 0.36
+      
+                
         #move y and check for collisions
         self.rect.y += self.yvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
@@ -157,10 +172,18 @@ class Player(Entity):
                 item.damage(5)
                 self.slash_damage = False
             elif self.rect.x < item.rect.x:
-#                 item.damage_player()
-#                 self.xvel = -3
-#                 self.yvel = -3
-                pass
+                self.sliding = True
+                self.xvel = -8
+                if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
+            elif self.rect.x > item.rect.x:
+                self.sliding = True
+                self.xvel = 9
+                if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
+        
+        for item in Globals.group_PROJECTILES:
+            if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
+                self.health -= item.damage
+                item.kill()
                 
         #determine sprite set
         if not self.attacking:
@@ -528,8 +551,7 @@ class Door(Entity):
             for rows in range(0,self.height/32):
                 for columns in range(0,self.width/32):
                     self.image.blit(self.blockimage, (columns*32, rows*32))
-
-        
+       
     def remove_one_vert(self):
         if self.height == 32: 
             self.kill()
@@ -542,6 +564,27 @@ class Door(Entity):
                 for columns in range(0,self.width/32):
                     self.image.blit(self.blockimage, (columns*32, rows*32))
     
+    def add_one_vert_bottom(self):
+        self.height += 32
+        self.image = pygame.Surface((self.width, self.height))
+        for rows in range(0,self.height/32):
+            for columns in range(0,self.width/32):
+                self.image.blit(self.blockimage, (columns*32, rows*32))
+
+    
+    def add_one_vert_top(self):
+        
+        self.height += 32
+        self.image = pygame.Surface((self.width, self.height))
+        for rows in range(0,self.height/32):
+            for columns in range(0,self.width/32):
+                self.image.blit(self.blockimage, (columns*32, rows*32))
+        
+        self.rect.y -= 32
+        self.pos = (self.rect.x, self.rect.y)
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(self.pos)
+        
 #game essentials
 class Camera():
     def __init__(self):
@@ -619,6 +662,8 @@ class hud(pygame.sprite.Sprite):
         self.score = 'Score: ' + str(Globals.score)
         self.scoretext = Constants.healthtext.render(self.score, 0, (255,253,255)) #load the text for the score
         self.image.blit(self.scoretext, (600, 38))
+
+
 #projectile classes        
 class Projectile(Entity):
     def __init__(self, x, y, xvel, yvel):
@@ -647,10 +692,7 @@ class Projectile(Entity):
                     self.kill()
                     
                 
-        if pygame.sprite.spritecollide(self,Globals.group_PLAYER, False):
-            self.kill()
-            self.yvel = 0
-        elif pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
+        if pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
             self.kill()
             self.yvel = 0
         self.collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
@@ -661,6 +703,9 @@ class Projectile(Entity):
             
         if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
             self.kill()    
+
+class EnemyProj(Projectile):
+    pass
                      
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):
@@ -746,7 +791,27 @@ class shoutProj(Projectile):
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
 
+class WikiProj(EnemyProj):
+    def __init__(self, x, y, xvel, yvel):
+        self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','Information'), 'Information', 3, '.bmp', (255,0,255))
+        self.image = self.imagelist[0]
+        self.numimages = 3
+        self.image_index = 0
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
+        Projectile.__init__(self, x, y, xvel, yvel)
+        self.damage = 2
+        self.gravity = False
+        
+    def animate(self):
+        self.image = self.imagelist[self.image_index]
+        if self.image_index < self.numimages: self.image_index += 1
+        else: self.image_index = 0
+        
+
 #other stuff
+
 class Coin(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL)
@@ -834,7 +899,9 @@ class narrator_bubble(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(x,y)
         
-#AI 
+
+#AI
+
 class Troll(Entity):
     def __init__(self, x, y, facingL, patrolblock):
         Entity.__init__(self, Globals.group_AI)
@@ -874,11 +941,14 @@ class Troll(Entity):
         self.x = self.rect.x
         self.y = self.rect.y
         self.stunned = False
-        self.currentevent = 'checkdist'
+        self.currentevent = 'patrol'
         self.distance = 0
         self.patrolblock = patrolblock
         self.can_die = True
         self.can_stun = True        
+        self.xlist = []
+        self.ylist = []
+        self.damage_on_contact = False
         
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
@@ -891,7 +961,7 @@ class Troll(Entity):
                 self.image_index = 0
     
     def update(self):
-        self.rect= pygame.Rect(self.image.get_rect())
+        self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
         self.event()
         
@@ -939,18 +1009,16 @@ class Troll(Entity):
         
                 
         self.x = self.rect.x
-        self.y = self.rect.y
-      
-        
+        self.y = self.rect.y        
+
     def event(self):  
-        self.object_between()
         self.distance = self.calculate_range()[0]
         if self.distance < 17 and not self.currentevent == 'explode' and not self.currentevent == 'stunned':
             if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
                 if not self.object_between(): 
                     self.currentevent = 'charge'
-        
-        elif not self.currentevent == 'pausing' and not self.currentevent == 'explode' and not self.currentevent == 'stunned': self.currentevent = 'patrol'
+                    if self.rect.x > Globals.player.rect.x: self.xvel = -7
+                    else: self.xvel = 7
         
         if self.currentevent == 'charge':
             if self.rect.colliderect(Globals.player.rect):
@@ -964,16 +1032,17 @@ class Troll(Entity):
                 
                 if self.can_damage:
                     self.can_damage = False
-                    Globals.player.health -= 4
+                    self.damage_player()
                     self.damage(1000)
-                '''elif abs(self.rect.y - Globals.player.rect.y) > 20:
-                self.currentevent = 'patrol'
-            elif abs(self.rect.x - Globals.player.x) == 0:
-                self.xvel = 0'''
-            elif Globals.player.rect.x > self.rect.x:
-                self.xvel = 7
-            else:
-                self.xvel = -7
+            if self.facingL and self.rect.x <= self.patrolblock.rect.x:
+                self.currentevent = 'pausing'
+                self.xvel = 0
+                self.yvel = 0
+                
+            elif not self.facingL and self.rect.x + self.rect.width >= self.patrolblock.rect.x + self.patrolblock.rect.width:
+                self.currentevent = 'pausing'
+                self.xvel = 0
+                self.yvel = 0
                 
                 
         elif self.currentevent == 'patrol':
@@ -1028,8 +1097,14 @@ class Troll(Entity):
             
     def damage_player(self):
         Globals.player.health -= 4
-    
-    
+        Globals.player.sliding = True
+        if self.rect.x > Globals.player.rect.x:
+            Globals.player.xvel = -9
+            Globals.player.yvel =-4
+        else:
+            Globals.player.xvel = 9
+            Globals.player.yvel = -4
+       
     def change_image(self, image):
         
         if not self.imagename == image:
@@ -1064,12 +1139,10 @@ class Troll(Entity):
         self.ylist = []
         try:
             gradient = float(self.playery)/float(self.playerx)
-            if self.playerx < 15:
-                if 0 < self.playerx: self.xlist = [x for x in functions.xfrange(0, self.playerx, 0.1)]
-                else: return True
-            else:
-                if 0 < self.playerx: self.xlist = [x for x in range(0, self.playerx, 1)]
-                else: self.xlist = [x for x in range(0, self.playerx, -1)]
+            if 0 < self.playerx: self.xlist = [x for x in functions.xfrange(0, self.playerx, 0.1)]
+            else: 
+                self.xlist = [x for x in functions.xfrange(self.playerx, 0, 0.1)]
+                
             for value in self.xlist:
                 self.ypoint = gradient * value
                 self.ylist.append(self.ypoint)
@@ -1088,6 +1161,270 @@ class Troll(Entity):
     def stun(self):
         self.currentevent = 'stunned'
         self.xvel = 0
-        self.can_stun= False
+        self.can_stun = False
+
+class Wikipedia(Entity):
+    def __init__(self, x, y, patroldist):
+        Entity.__init__(self, Globals.group_AI)
+        self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','Wikipedia','Wikipedia.bmp'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
+        self.patroldist = patroldist
+        self.currentevent = 'patroldown'
+        self.patrolspeed = 1
+        self.patrolled = 0
+        self.xvel = 0
+        self.yvel = 0
+        self.stuntimer = 80
+        self.stuncounter = 0
+        self.down = True
+        self.can_stun = True
+        self.health = 5
+        self.can_damage = True
+        self.damage_on_contact = True
+    
+    def damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.kill()
+
+    def update(self):
+        self.event()
+        self.rect.x += self.xvel
+        self.rect.y += self.yvel
+        
+    def animate(self):
+        pass 
+    
+    def event(self):
+        if self.currentevent == 'patroldown':
+            if self.patrolled >= self.patroldist:
+                self.currentevent = 'patrolup'
+                self.patrolled = 0
+                self.shoot(False)
+                self.down = False
+                
+            else:
+                self.yvel = self.patrolspeed
+                self.patrolled += self.patrolspeed
+        
+        elif self.currentevent == 'patrolup':
+            if self.patrolled >= self.patroldist:
+                self.currentevent = 'patroldown'
+                self.patrolled = 0
+                self.shoot(True)
+                self.down = True
+                
+            else:
+                self.yvel = -self.patrolspeed
+                self.patrolled += self.patrolspeed
+                
+        elif self.currentevent == 'stunned':
+            if self.stuncounter == self.stuntimer:
+                self.stuncounter = 0
+                self.patrolspeed = 1
+                self.can_stun = True
+                if self.down: self.currentevent = 'patroldown'
+                else: self.currentevent = 'patrolup'
+            else: self.stuncounter += 1
+    def shoot(self, up):
+        if up:
+            proj1 = WikiProj(self.rect.x - 32, self.rect.y, -4, 0)
+            proj2 = WikiProj(self.rect.x + self.rect.width, self.rect.y, 4, 0)
+        else:
+            proj1 = WikiProj(self.rect.x - 32, self.rect.y + self.rect.height - 32, -4, 0)
+            proj2 = WikiProj(self.rect.x + self.rect.width, self.rect.y + self.rect.height - 32, 4, 0)
+    
+    def stun(self):
+        self.currentevent = 'stunned'
+        self.can_stun = False
+        self.xvel = 0
+        self.yvel = 0
+        self.patrolspeed = 0
+        print 'Stunned'
+        
+class InternetBoss(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_AI)
+        #load images
+        self.imageloc = os.path.join('Resources','Stage 1 Resources','Boss','Bitmaps')
+        self.imagepaths = {   'dashL':(os.path.join(self.imageloc,'DashL'), 'Bossdash', 3),
+                              'dashR':(os.path.join(self.imageloc,'DashR'), 'BossdashR', 3),
+                              'idleL':(os.path.join(self.imageloc,'IdlingL'), 'idleL', 5),
+                              'idleR':(os.path.join(self.imageloc,'IdlingR'), 'idleR', 5),
+                              'spit':(os.path.join(self.imageloc,'Spit'), 'SpitL', 15),
+                              'die':(os.path.join(self.imageloc,'Die'), 'Bossdie', 29),
+   
+                          }
+        self.images = {}
+        self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
+        #set the current image to the loaded one
+        self.imageindex = 0
+        self.imagename = 'idleR'
+        self.image = self.images[self.imagename][0]
+        self.numimages = len(self.images[self.imagename]) - 1
+        
+        #collision box
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x, y))
+        
+        #other variables
+        self.can_stun = False
+        self.currentevent = 'create_stage'
+        self.can_damage = True
+        self.health = 1
+        self.damage_on_contact = True
+        self.xvel = 0.0
+        self.yvel = 0.0
+        self.facingL = True
+        self.pausetimer = 120
+        self.pausecounter = 0
+        self.x = x
+        self.y = y
+        self.blockcounter = 20
+        self.blocktimer = 0
+        self.healthbar = EnemyHealthBar(30,15, 680, self.health, 'BOSS HEALTH: ')
+        self.first_blocks = False
+        self.numcycles = 0
+        
+    def update(self):
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((self.x, self.y))
+        self.event()
+        
+        self.rect.x += self.xvel
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that troll is colliding with
+        for block in block_hit_list: #iterate through the list
+            #Collision moving right means that troll collided with left side of block
+            if self.xvel > 0:
+                self.rect.right = block.rect.left #set right side to left side of block
+            elif self.xvel < 0:
+                #Collision moving left means player collided with right side of block
+                self.rect.left = block.rect.right #set left side to right side of block
+        
+        
+        #animations
+        if self.facingL and not self.currentevent == 'die' and not self.currentevent == 'spit':
+            if self.xvel == 0:
+                if not self.imagename == 'idleL':
+                    self.change_image('idleL')
+            else:
+                if not self.imagename == 'dashL':
+                    self.change_image('dashL')
+        elif not self.facingL and not self.currentevent == 'die' and not self.currentevent == 'spit':
+            if self.xvel == 0:
+                if not self.imagename == 'idleR':
+                    self.change_image('idleR')
+            else:
+                if not self.imagename == 'dashR':
+                    self.change_image('dashR')
+        
+                
+        self.x = self.rect.x
+        self.y = self.rect.y        
+    
+    def event(self):
+        if self.currentevent == 'pause_intro':
+            if self.pausecounter == self.pausetimer:
+                self.pausetimer = 0
+                self.currentevent = 'create_stage'
+            else: self.pausetimer += 1
+            
+        elif self.currentevent == 'create_stage':
+            Globals.player.arrowkey_enabled = False
+            Globals.player.can_attack = False
+            if self.blocktimer == self.blockcounter:
+                self.blocktimer = 0
+                if self.first_blocks:
+                    if self.numcycles < 9:
+                        self.door1.add_one_vert_top()
+                        self.door2.add_one_vert_top()
+                        self.numcycles += 1
+                    else: 
+                        self.currentevent ='pausing'
+                        Globals.player.arrowkey_enabled = True
+                        Globals.player.can_attack = True
+                else: 
+                    self.first_blocks = True
+                    self.door1 = Door(0*32, 11*32,1,1, 1)
+                    self.door2 = Door(24*32, 11*32,1,1, 1)
+
+            else: self.blocktimer += 1
+        
+        elif self.currentevent == 'dashL':
+            pass
+        
+        elif self.currentevent == 'dashR':
+            pass
+        
+        elif self.currentevent == 'pausing':
+            if self.pausecounter == self.pausetimer:
+                self.pausetimer = 0
+                if self.facingL: self.currentevent = 'dashR'
+                else: self.currentevent = 'dashL'
+            else: self.pausetimer += 1
+        
+    
+    def stun(self):
+        pass
+    
+    def damage(self, damage):
+        self.health -= damage
+        self.healthbar.damage(damage)
+        if self.health <= 0 and not self.currentevent == 'die':
+            self.currentevent = 'die'
+            self.change_image('die')
+            self.healthbar.kill()
+            Globals.player.arrowkey_enabled = False
+            Globals.player.can_attack = False
+            
+    def animate(self):
+        self.image = self.images[self.imagename][self.imageindex]
+        if self.imageindex < self.numimages: 
+            self.imageindex += 1
+        else: 
+            if self.imagename == 'die':
+                key1 = key(self.rect.center[0], self.rect.center[1], 1)
+                Globals.player.arrowkey_enabled = True
+                Globals.player.can_attack = True
+                self.kill()
+                
+            else:
+                self.imageindex = 0
+        
+    def change_image(self, image):
+        self.imageindex = 0 #reset the image position
+        self.imagename = image #change the image list
+        self.image = self.images[self.imagename][0] #set the image to the first image in the list
+        self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
+        
+    def create_stage(self):
+        pass
+        
+class EnemyHealthBar(Entity):
+    def __init__(self, x, y, length, health, caption = None):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.health = health
+        self.maxhealth = health
+        self.image = pygame.Surface((length, 30))
+        self.rect = pygame.Rect((x, y), (length, 100))
+        self.rect.move_ip(x, y)
+        self.image.fill((0,255,0))
+        self.length = length
+        if not caption == None:
+            self.image.blit(Constants.spleentext.render(caption, 0, (0,0,0)), (10, 8)) #load the text 
+            self.caption = True
+            self.captiontext = caption
+        else: self.caption = False    
+        
+        
+    
+    def damage(self, damage):
+        self.health -= damage
+        self.image.fill((255,0,0))
+        self.percentage = float(self.health)/float(self.maxhealth)
+        pygame.draw.rect(self.image, (0,255,0), pygame.Rect(0,0, self.percentage * self.length, 30))
+        if self.caption: self.image.blit(Constants.spleentext.render(self.captiontext, 0, (0,0,0)), (10, 8)) #load the text 
             
         

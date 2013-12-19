@@ -40,6 +40,13 @@ def load_imageset(imagedict):
     return images
 
 def xfrange(start, stop, step):
-    while start < stop:
-        yield start
-        start += step
+    if step > 0:
+        while start < stop:
+            yield start
+            start += step
+          
+    else:
+        while start < stop:
+            yield start
+            start -= step
+            

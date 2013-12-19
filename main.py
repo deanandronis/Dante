@@ -7,7 +7,6 @@ import pygame, sys, os, math, datetime
 from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
 from random import randrange
-from socket import meth
 from Entities import Camera
 
 
@@ -31,7 +30,7 @@ screen = pygame.display.set_mode(WINDOW_SIZE) #creates the window
 clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_1() #load level 1
+stage_1.boss_1() #load level 1
 
 
 
@@ -47,10 +46,10 @@ while not done:
         elif event.type == pygame.KEYDOWN and not Globals.key_pause:
             if event.key == pygame.K_LEFT:
                 if Globals.player.arrowkey_enabled:
-                    Globals.player.xvel = -5 #left arrow key down; set player's horizontal velocity to -5 (5 units/cycle left)
+                    Globals.player.xvel = -5.0 #left arrow key down; set player's horizontal velocity to -5 (5 units/cycle left)
             elif event.key == pygame.K_RIGHT:
                 if Globals.player.arrowkey_enabled:
-                    Globals.player.xvel = 5 #right arrow key pressed; set player's horizontal velocity to 5 (5 units/cycle right)
+                    Globals.player.xvel = 5.0 #right arrow key pressed; set player's horizontal velocity to 5 (5 units/cycle right)
             elif event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
                     if Globals.player.touching_ground: #check to see if player is touching ground
@@ -122,7 +121,8 @@ while not done:
         
 
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
-        if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) and ticktimer%6==0) and not Globals.key_pause: item.animate()
+        if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) or isinstance(item, Entities.WikiProj) and ticktimer%6==0) and not Globals.key_pause: item.animate()
+        
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
@@ -130,6 +130,7 @@ while not done:
         if not Globals.key_pause:
             item.update()
             if ticktimer%6==0: item.animate()
+
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
     for item in Globals.group_SPECIAL:
         if not Globals.key_pause:
