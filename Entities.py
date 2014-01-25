@@ -8,6 +8,8 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
+from pygame.tests.run_tests__tests.everything import sleep_test
+from msilib.schema import SelfReg
 
 
 #base class for shit
@@ -37,6 +39,7 @@ class Player(Entity):
         self.sliding = False
         self.slideduration = 0
         self.slidetimer = 0
+        self.can_damage = True
         
         #load images
         '''
@@ -95,6 +98,7 @@ class Player(Entity):
                 self.xvel = 0
                 self.sliding = False
                 self.arrowkey_enabled = True
+                self.can_damage = True
         
         #move x and check for collision
         self.rect.x += self.xvel
@@ -171,15 +175,31 @@ class Player(Entity):
             elif self.imagename == 'slashR' and self.imageindex > 6 and item.rect.x > self.rect.x and item.can_damage and self.slash_damage:
                 item.damage(5)
                 self.slash_damage = False
-            elif self.rect.x < item.rect.x:
+            elif self.rect.x < item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = -8
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
-            elif self.rect.x > item.rect.x:
+            elif self.rect.x > item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = 9
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
-        
+            elif self.rect.x < item.rect.x and isinstance(item, Boss):
+                self.sliding = True
+                self.xvel = -15
+                self.yvel =- 5
+                self.rect.x = item.rect.x - self.rect.width - 3
+                if self.can_damage: 
+                    self.can_damage = False
+                    self.health -= 3
+            elif self.rect.x > item.rect.x and isinstance(item, Boss):
+                self.sliding = True
+                self.xvel = 15
+                self.yvel = -5
+                self.rect.x = item.rect.x + item.rect.width
+                if self.can_damage: 
+                    self.health -= 3
+                    self.can_damage = False
+                
         for item in Globals.group_PROJECTILES:
             if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
                 self.health -= item.damage
@@ -1244,7 +1264,10 @@ class Wikipedia(Entity):
         self.patrolspeed = 0
         print 'Stunned'
         
-class InternetBoss(Entity):
+class Boss(Entity):
+    pass
+        
+class InternetBoss(Boss):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_AI)
         #load images
@@ -1255,13 +1278,18 @@ class InternetBoss(Entity):
                               'idleR':(os.path.join(self.imageloc,'IdlingR'), 'idleR', 5),
                               'spit':(os.path.join(self.imageloc,'Spit'), 'SpitL', 15),
                               'die':(os.path.join(self.imageloc,'Die'), 'Bossdie', 29),
+                              'smash':(os.path.join(self.imageloc,'Smash'), 'BossSmash', 11),
+                              'shout':(os.path.join(self.imageloc,'Shout'), 'BossShout', 15),
+                              'lift':(os.path.join(self.imageloc,'Lift'), 'Bosslift', 2),
+                              
    
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
+        self.images['hold'] = [functions.get_image(os.path.join(self.imageloc, 'Smash','BossSmash11.bmp'), (255,0,255))]
         #set the current image to the loaded one
         self.imageindex = 0
-        self.imagename = 'idleR'
+        self.imagename = 'idleL'
         self.image = self.images[self.imagename][0]
         self.numimages = len(self.images[self.imagename]) - 1
         
@@ -1271,7 +1299,7 @@ class InternetBoss(Entity):
         
         #other variables
         self.can_stun = False
-        self.currentevent = 'create_stage'
+        self.currentevent = 'pause_intro'
         self.can_damage = True
         self.health = 1
         self.damage_on_contact = True
@@ -1287,11 +1315,13 @@ class InternetBoss(Entity):
         self.healthbar = EnemyHealthBar(30,15, 680, self.health, 'BOSS HEALTH: ')
         self.first_blocks = False
         self.numcycles = 0
-        
+        self.touchingwalls = False
+        self.intro = True
+   
     def update(self):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
-        self.event()
+        self.touchingwalls = False
         
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that troll is colliding with
@@ -1299,26 +1329,29 @@ class InternetBoss(Entity):
             #Collision moving right means that troll collided with left side of block
             if self.xvel > 0:
                 self.rect.right = block.rect.left #set right side to left side of block
+                self.touchingwalls = True
             elif self.xvel < 0:
                 #Collision moving left means player collided with right side of block
                 self.rect.left = block.rect.right #set left side to right side of block
+                self.touchingwalls = True
         
-        
+        self.event()
         #animations
-        if self.facingL and not self.currentevent == 'die' and not self.currentevent == 'spit':
-            if self.xvel == 0:
-                if not self.imagename == 'idleL':
-                    self.change_image('idleL')
-            else:
-                if not self.imagename == 'dashL':
-                    self.change_image('dashL')
-        elif not self.facingL and not self.currentevent == 'die' and not self.currentevent == 'spit':
-            if self.xvel == 0:
-                if not self.imagename == 'idleR':
-                    self.change_image('idleR')
-            else:
-                if not self.imagename == 'dashR':
-                    self.change_image('dashR')
+        if not self.intro:
+            if self.facingL and not self.currentevent == 'die' and not self.currentevent == 'spit':
+                if self.xvel == 0:
+                    if not self.imagename == 'idleL':
+                        self.change_image('idleL')
+                else:
+                    if not self.imagename == 'dashL':
+                        self.change_image('dashL')
+            elif not self.facingL and not self.currentevent == 'die' and not self.currentevent == 'spit':
+                if self.xvel == 0:
+                    if not self.imagename == 'idleR':
+                        self.change_image('idleR')
+                else:
+                    if not self.imagename == 'dashR':
+                        self.change_image('dashR')
         
                 
         self.x = self.rect.x
@@ -1327,9 +1360,9 @@ class InternetBoss(Entity):
     def event(self):
         if self.currentevent == 'pause_intro':
             if self.pausecounter == self.pausetimer:
-                self.pausetimer = 0
-                self.currentevent = 'create_stage'
-            else: self.pausetimer += 1
+                self.pausecounter = 0
+                self.change_image('smash')
+            else: self.pausecounter += 1
             
         elif self.currentevent == 'create_stage':
             Globals.player.arrowkey_enabled = False
@@ -1342,9 +1375,8 @@ class InternetBoss(Entity):
                         self.door2.add_one_vert_top()
                         self.numcycles += 1
                     else: 
-                        self.currentevent ='pausing'
-                        Globals.player.arrowkey_enabled = True
-                        Globals.player.can_attack = True
+                        self.currentevent = 'roar'
+                        self.change_image('lift')
                 else: 
                     self.first_blocks = True
                     self.door1 = Door(0*32, 11*32,1,1, 1)
@@ -1352,22 +1384,54 @@ class InternetBoss(Entity):
 
             else: self.blocktimer += 1
         
-        elif self.currentevent == 'dashL':
-            pass
+        elif self.currentevent == 'intropause':
+            if self.pausetimer % self.pausecounter == 0:
+                self.currentevent ='dashL'
+                Globals.player.arrowkey_enabled = True
+                Globals.player.can_attack = True
+                self.intro = False
+            else:self.pausecounter += 1
         
+        elif self.currentevent == 'dashL':
+            self.facingL = True
+            if self.rect.colliderect(Globals.player.rect):
+                self.currentevent = 'pausing'
+                self.pausetimer = 120
+                self.xvel = 0
+                self.facingL = False
+
+            else:
+                if self.touchingwalls:
+                    self.currentevent = 'pausing'
+                    self.pausetimer = 120
+                    self.xvel = 0
+                    self.facingL = False
+                
+                else:
+                    self.xvel = -7
         elif self.currentevent == 'dashR':
-            pass
+            self.facingL = False
+            if self.touchingwalls:
+                self.currentevent = 'pausing'
+                self.pausetimer = 120
+                self.xvel = 0
+                self.facingL = True
+                
+            else:
+                self.xvel = 7
         
         elif self.currentevent == 'pausing':
             if self.pausecounter == self.pausetimer:
-                self.pausetimer = 0
-                if self.facingL: self.currentevent = 'dashR'
+                self.pausecounter = 0
+                if not self.facingL: self.currentevent = 'dashR'
                 else: self.currentevent = 'dashL'
-            else: self.pausetimer += 1
+            else: 
+                self.pausecounter += 1
+                
         
     
     def stun(self):
-        pass
+        pass    
     
     def damage(self, damage):
         self.health -= damage
@@ -1376,6 +1440,7 @@ class InternetBoss(Entity):
             self.currentevent = 'die'
             self.change_image('die')
             self.healthbar.kill()
+            self.xvel = 0
             Globals.player.arrowkey_enabled = False
             Globals.player.can_attack = False
             
@@ -1389,6 +1454,18 @@ class InternetBoss(Entity):
                 Globals.player.arrowkey_enabled = True
                 Globals.player.can_attack = True
                 self.kill()
+            
+            elif self.imagename == 'smash': 
+                self.currentevent = 'create_stage'
+                self.change_image('hold')
+            
+            elif self.imagename == 'lift':
+                self.currentevent = 'roar'
+                self.change_image('shout')
+            
+            elif self.imagename == 'shout':
+                self.currentevent = 'intropause'
+                self.change_image('idleL')
                 
             else:
                 self.imageindex = 0
