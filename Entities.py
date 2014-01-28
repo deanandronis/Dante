@@ -185,6 +185,8 @@ class Player(Entity):
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
             elif self.rect.x < item.rect.x and isinstance(item, Boss):
                 self.sliding = True
+                self.attacking = False
+                self.can_attack = True
                 self.xvel = -15
                 self.yvel =- 5
                 self.rect.x = item.rect.x - self.rect.width - 3
@@ -193,6 +195,8 @@ class Player(Entity):
                     self.health -= 3
             elif self.rect.x > item.rect.x and isinstance(item, Boss):
                 self.sliding = True
+                self.attacking = False
+                self.can_attack = True
                 self.xvel = 15
                 self.yvel = -5
                 self.rect.x = item.rect.x + item.rect.width
@@ -1270,6 +1274,7 @@ class Boss(Entity):
 class InternetBoss(Boss):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_AI)
+        
         #load images
         self.imageloc = os.path.join('Resources','Stage 1 Resources','Boss','Bitmaps')
         self.imagepaths = {   'dashL':(os.path.join(self.imageloc,'DashL'), 'Bossdash', 3),
@@ -1287,6 +1292,7 @@ class InternetBoss(Boss):
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
         self.images['hold'] = [functions.get_image(os.path.join(self.imageloc, 'Smash','BossSmash11.bmp'), (255,0,255))]
+        
         #set the current image to the loaded one
         self.imageindex = 0
         self.imagename = 'idleL'
@@ -1298,7 +1304,7 @@ class InternetBoss(Boss):
         self.rect.move_ip((x, y))
         
         #other variables
-        self.can_stun = False
+        self.can_stun = True
         self.currentevent = 'pause_intro'
         self.can_damage = True
         self.health = 1
@@ -1317,6 +1323,9 @@ class InternetBoss(Boss):
         self.numcycles = 0
         self.touchingwalls = False
         self.intro = True
+        
+        Globals.player.arrowkey_enabled = False
+        Globals.player.can_attack = False
    
     def update(self):
         self.rect = pygame.Rect(self.image.get_rect())
@@ -1365,8 +1374,6 @@ class InternetBoss(Boss):
             else: self.pausecounter += 1
             
         elif self.currentevent == 'create_stage':
-            Globals.player.arrowkey_enabled = False
-            Globals.player.can_attack = False
             if self.blocktimer == self.blockcounter:
                 self.blocktimer = 0
                 if self.first_blocks:
@@ -1427,12 +1434,15 @@ class InternetBoss(Boss):
                 else: self.currentevent = 'dashL'
             else: 
                 self.pausecounter += 1
-                
-        
-    
+                      
     def stun(self):
-        pass    
-    
+        if self.currentevent == 'dashL':
+            self.currentevent = 'pausing'    
+            self.currentevent = 'pausing'
+            self.pausetimer = 120
+            self.xvel = 0
+            self.facingL = False
+      
     def damage(self, damage):
         self.health -= damage
         self.healthbar.damage(damage)
@@ -1443,14 +1453,15 @@ class InternetBoss(Boss):
             self.xvel = 0
             Globals.player.arrowkey_enabled = False
             Globals.player.can_attack = False
-            
+            Globals.player.xvel = 0
+                    
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex]
         if self.imageindex < self.numimages: 
             self.imageindex += 1
         else: 
             if self.imagename == 'die':
-                key1 = key(self.rect.center[0], self.rect.center[1], 1)
+                goal = goal_piece(self.rect.center[0], self.rect.center[1])
                 Globals.player.arrowkey_enabled = True
                 Globals.player.can_attack = True
                 self.kill()
@@ -1481,7 +1492,7 @@ class InternetBoss(Boss):
         
 class EnemyHealthBar(Entity):
     def __init__(self, x, y, length, health, caption = None):
-        Entity.__init__(self, Globals.group_SPECIAL)
+        Entity.__init__(self, Globals.group_DRAWONLY)
         self.health = health
         self.maxhealth = health
         self.image = pygame.Surface((length, 30))
