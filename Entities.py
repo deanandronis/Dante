@@ -721,9 +721,10 @@ class Projectile(Entity):
             self.yvel = 0
         self.collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
         for item in self.collidearray:
-            item.damage(self.damage)
-            self.kill()
-            if self.can_stun and item.can_stun: item.stun()
+            if not isinstance(self, EnemyProj):
+                item.damage(self.damage)
+                self.kill()
+                if self.can_stun and item.can_stun: item.stun()
             
         if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
             self.kill()    
@@ -835,6 +836,24 @@ class WikiProj(EnemyProj):
         
 
 #other stuff
+
+class Fireball(EnemyProj):
+    def __init__(self, x, y, xvel, yvel):
+        self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','TrollFlame'), 'TrollFlame', 3, '.bmp', (255,0,255))
+        self.image = self.imagelist[0]
+        self.numimages = 3
+        self.image_index = 0
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
+        Projectile.__init__(self, x, y, xvel, yvel)
+        self.damage = 3
+        self.gravity = False
+    
+    def animate(self):
+        self.image = self.imagelist[self.image_index]
+        if self.image_index < self.numimages: self.image_index += 1
+        else: self.image_index = 0
 
 class Coin(Entity):
     def __init__(self, x, y):
@@ -1393,7 +1412,7 @@ class InternetBoss(Boss):
         
         elif self.currentevent == 'intropause':
             if self.pausetimer % self.pausecounter == 0:
-                self.currentevent ='dashL'
+                self.currentevent ='determine_attack'
                 Globals.player.arrowkey_enabled = True
                 Globals.player.can_attack = True
                 self.intro = False
@@ -1431,10 +1450,18 @@ class InternetBoss(Boss):
             if self.pausecounter == self.pausetimer:
                 self.pausecounter = 0
                 if not self.facingL: self.currentevent = 'dashR'
-                else: self.currentevent = 'dashL'
+                else: self.currentevent = 'determine_attack'
             else: 
                 self.pausecounter += 1
-                      
+        
+        elif self.currentevent == 'determine_attack':
+            self.randnum = randrange(1, 3, 1)
+            if self.randnum >= 6: self.currentevent = 'dashL'
+            else: self.currentevent = 'spit'
+            
+        elif self.currentevent == 'spit':
+            if not self.imagename == 'spit': self.change_image('spit')
+        
     def stun(self):
         if self.currentevent == 'dashL':
             self.currentevent = 'pausing'    
@@ -1478,6 +1505,11 @@ class InternetBoss(Boss):
                 self.currentevent = 'intropause'
                 self.change_image('idleL')
                 
+            elif self.imagename == 'spit':
+                self.fireball()
+                self.currentevent = 'pausing'
+                self.change_image('idleL')
+                
             else:
                 self.imageindex = 0
         
@@ -1487,8 +1519,16 @@ class InternetBoss(Boss):
         self.image = self.images[self.imagename][0] #set the image to the first image in the list
         self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
         
-    def create_stage(self):
-        pass
+    def fireball(self):
+        self.xpos = self.rect.x
+        self.ypos = self.rect.y + self.rect.height/3
+        self.playerx = (Globals.player.rect.x + Globals.player.rect.width/2) - self.xpos
+        self.playery = (Globals.player.rect.y + Globals.player.rect.height/2) - self.ypos
+        angle_to_player = math.atan2(self.playerx, self.playery)
+        self.projxvel = 10*math.cos(angle_to_player)
+        self.projyvel = 10*math.sin(angle_to_player)
+        fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel)
+        
         
 class EnemyHealthBar(Entity):
     def __init__(self, x, y, length, health, caption = None):

@@ -15,7 +15,7 @@ def next_level():
     if Globals.stage == 1:
         if Globals.level == 1:
             Globals.clear_groups()
-            stage_1.level_2()
+            stage_1.boss_1()
 
 #Variable init
 pygame.init() #initialise pygame modules
