@@ -8,6 +8,7 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
+from msilib.schema import SelfReg
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -37,6 +38,8 @@ class Player(Entity):
         self.slideduration = 0
         self.slidetimer = 0
         self.can_damage = True
+        self.accel = 0
+        self.decelerate = False
         
         #load images
         '''
@@ -96,8 +99,30 @@ class Player(Entity):
                 self.sliding = False
                 self.arrowkey_enabled = True
                 self.can_damage = True
-        
+        if self.decelerate and not self.sliding:
+            if self.xvel < -0.4:
+                    self.xvel += 0.23
+            elif self.xvel > 0.4:
+                self.xvel -= 0.23
+            else: self.xvel = 0
+
+            
         #move x and check for collision
+        if not self.sliding and not self.decelerate:
+            if self.xvel < 0:
+                if self.xvel > -7: 
+                    self.xvel += self.accel
+                    self.accel -= 0.02
+                else: 
+                    self.xvel = -7
+                    self.accel = 0
+            elif self.xvel > 0:
+                if self.xvel < 7: 
+                    self.xvel += self.accel
+                    self.accel += 0.02
+                else: 
+                    self.xvel = 7
+                    self.accel = 0
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
         for block in block_hit_list: #iterate through the list
@@ -175,13 +200,16 @@ class Player(Entity):
             elif self.rect.x < item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = -8
+                self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
             elif self.rect.x > item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = 9
+                self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
             elif self.rect.x < item.rect.x and isinstance(item, Boss):
                 self.sliding = True
+                self.accel = 0
                 self.attacking = False
                 self.can_attack = True
                 self.xvel = -15
@@ -194,6 +222,7 @@ class Player(Entity):
                 self.sliding = True
                 self.attacking = False
                 self.can_attack = True
+                self.accel = 0
                 self.xvel = 15
                 self.yvel = -5
                 self.rect.x = item.rect.x + item.rect.width
@@ -249,38 +278,40 @@ class Player(Entity):
                 if self.facing_right:
                     if not self.imagename == 'spinR':
                         self.change_image('spinR')
-                        self.rect.x -= 14
+                        self.rect.x -= 8
                 else:
                     if not self.imagename == 'spinL':
                         self.change_image('spinL')
-                        self.rect.x -= 14
+                        self.rect.x -= 8
             elif self.attack == 'slash':
                 if self.facing_right:
                     if not self.imagename == 'slashR':
                         self.change_image('slashR')
-                        self.rect.x -= 14
+                        self.rect.x -= 3
                         self.slash_damage = True
                 else:
                     if not self.imagename == 'slashL':
                         self.change_image('slashL')
-                        self.rect.x -= 14
+                        self.rect.x -= 13
                         self.slash_damage = True
             elif self.attack == 'shout':
                 if self.facing_right:
                     if not self.imagename == 'shoutR':
                         self.change_image('shoutR')
+                        self.rect.x += 3
                 else:
                     if not self.imagename == 'shoutL':
                         self.change_image('shoutL')
-                        self.rect.x -= 14
+                        self.rect.x -= 4
             elif self.attack == 'lazer':
                 if self.facing_right:
                     if not self.imagename == 'shoutR':
                         self.change_image('shoutR')
+                        self.rect.x += 3
                 else:
                     if not self.imagename == 'shoutL':
                         self.change_image('shoutL')
-                        self.rect.x -= 14
+                        self.rect.x -= 4
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
@@ -292,8 +323,8 @@ class Player(Entity):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
         if self.imageindex == self.numimages: 
             if self.imagename == 'spinR':
-                self.rect.x += 15
-                self.x += 14
+                self.rect.x += 8
+                self.x += 8
                 self.change_image('idleR')
                 self.attack = None
                 self.attacking = False
@@ -301,8 +332,8 @@ class Player(Entity):
                 self.arrowkey_enabled = True
                 
             elif self.imagename == 'spinL':
-                self.rect.x += 14
-                self.x += 14
+                self.rect.x += 8
+                self.x += 8
                 self.change_image('idleL')
                 self.attack = None
                 self.attacking = False
@@ -318,42 +349,44 @@ class Player(Entity):
                 self.can_attack = True
                 self.arrowkey_enabled = True
             elif self.imagename == 'slashL':
-                self.rect.x += 19
-                self.x += 19
+                self.rect.x -= 3
+                self.x -= 3
                 self.change_image('idleL')
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
             elif self.imagename == 'shoutL' and self.attack == 'shout':
-                self.rect.x += 19
-                self.x += 19
+                self.rect.x += 3
+                self.x += 3
                 self.change_image('idleL')
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-                shoutproj = shoutProj(self.rect.x - 20, self.rect.y + 10, True)
+                
             elif self.imagename == 'shoutR' and self.attack == 'shout':
-                self.rect.x += 0
-                self.x += 0
-                self.change_image('idleR')
-                self.attack = None
-                self.attacking = False
-                self.can_attack = True
-                self.arrowkey_enabled = True
-                shoutproj = shoutProj(self.rect.x + self.rect.width - 3, self.rect.y + 8, False)
-            elif self.imagename == "shoutR" and self.attack == 'lazer':
+                self.rect.x -= 3
+                self.x -= 3
                 self.change_image('idleR')
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
                 
+            elif self.imagename == "shoutR" and self.attack == 'lazer':
+                self.change_image('idleR')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = True
+                self.arrowkey_enabled = True
+                self.rect.x -= 3
+                self.x -= 3
+                
             elif self.imagename == "shoutL" and self.attack == 'lazer':
                 self.change_image('idleL')
-                self.rect.x += 19
-                self.x += 19
+                self.rect.x += 3
+                self.x += 3
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
@@ -371,14 +404,21 @@ class Player(Entity):
                 self.imageindex += 1
         
         elif self.imagename == 'shoutL' and self.attack == 'lazer' and self.imageindex == 7:
-            laser = lazer(self.rect.x, self.rect.y + 11, True)
+            laser = lazer(self.rect.x + 6, self.rect.y + 15, True)
             self.imageindex += 1
         
         elif self.imagename == 'shoutR' and self.attack == 'lazer' and self.imageindex == 7:
-            laser = lazer(self.rect.x + self.rect.width - 14, self.rect.y + 11, False)
+            laser = lazer(self.rect.x + self.rect.width - 10, self.rect.y + 13, False)
             self.imageindex += 1
-            
-            
+        
+        elif self.imagename == 'shoutL' and self.attack == 'shout' and self.imageindex == 7:
+            shoutproj = shoutProj(self.rect.x - 20, self.rect.y + 13, True)
+            self.imageindex += 1
+        
+        elif self.imagename == 'shoutR' and self.attack == 'shout' and self.imageindex == 7:
+            shoutproj = shoutProj(self.rect.x + self.rect.width - 1, self.rect.y + 13, False)
+            self.imageindex += 1    
+        
             
         else: self.imageindex += 1  #otherwise, allow the next rotation
         
@@ -888,7 +928,7 @@ class lazer(Entity):
         else: 
             self.range = 800
             self.interval = 1
-        self.lazerimage = functions.get_image(os.path.join('Resources','Projectiles','Lazer fragment.png'), (255,0,255))
+        self.lazerimage = functions.create_image_list(os.path.join('Resources','Projectiles','Lazer fragments'), 'frag_', 5, '.bmp', (255,0,255))
         for i in range(0, self.range, self.interval):
             self.rect = pygame.Rect(x + i, y, 1, 11)
             if pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) or pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False) or self.rect.x == 0 or self.rect.x == Globals.camera.xbounds[1]:
@@ -896,8 +936,22 @@ class lazer(Entity):
                 break
             
         self.image = pygame.Surface((abs(self.range), 11))
-        for i in range(1, self.range, self.interval):
-            self.image.blit(self.lazerimage, (abs(i), 0))
+        if left:
+            for i in range(0, self.range, self.interval):
+                if i == self.range + 1: self.image.blit(self.lazerimage[0], (abs(i), 0))
+                elif i == self.range + 2: self.image.blit(self.lazerimage[1], (abs(i), 0))
+                elif i == self.range + 3: self.image.blit(self.lazerimage[2], (abs(i), 0))
+                elif i == self.range + 4: self.image.blit(self.lazerimage[3], (abs(i), 0))
+                else: self.image.blit(self.lazerimage[5], (abs(i), 0))
+        else: 
+            for i in range(0, self.range, self.interval):
+                if abs(i) == 0: self.image.blit(self.lazerimage[0], (abs(i), 0))
+                elif abs(i) == 1: self.image.blit(self.lazerimage[1], (abs(i), 0))
+                elif abs(i) == 2: self.image.blit(self.lazerimage[2], (abs(i), 0))
+                elif abs(i) == 3: self.image.blit(self.lazerimage[3], (abs(i), 0))
+                else: self.image.blit(self.lazerimage[5], (abs(i), 0))
+            
+
         self.rect = self.image.get_rect()
         if left: self.rect.move_ip(x + self.range,y)
         else: self.rect.move_ip(x,y)

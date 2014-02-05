@@ -46,10 +46,18 @@ while not done:
         elif event.type == pygame.KEYDOWN and not Globals.key_pause:
             if event.key == pygame.K_LEFT:
                 if Globals.player.arrowkey_enabled:
-                    Globals.player.xvel = -5.0 #left arrow key down; set player's horizontal velocity to -5 (5 units/cycle left)
+                    if not Globals.player.xvel > 0: 
+                        Globals.player.xvel = -2.0 #left arrow key down
+                        Globals.player.accel = -0.02    
+                    else: Globals.player.accel = -0.1
+                    Globals.player.decelerate = False                
             elif event.key == pygame.K_RIGHT:
                 if Globals.player.arrowkey_enabled:
-                    Globals.player.xvel = 5.0 #right arrow key pressed; set player's horizontal velocity to 5 (5 units/cycle right)
+                    if not Globals.player.xvel < 0: 
+                        Globals.player.xvel = 2.0 #right arrow key pressed
+                        Globals.player.accel = 0.02  
+                    else: Globals.player.accel = -0.1
+                    Globals.player.decelerate = False
             elif event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
                     if Globals.player.touching_ground: #check to see if player is touching ground
@@ -92,10 +100,12 @@ while not done:
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT: #left key released
                 if not Globals.player.xvel > 0 and Globals.player.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
-                    Globals.player.xvel = 0 
+                    Globals.player.accel = 0
+                    Globals.player.decelerate = True
             elif event.key == pygame.K_RIGHT and Globals.player.arrowkey_enabled: #right key released
                 if not Globals.player.xvel < 0: #set the player's horizontal velocity to 0 if player isn't moving left
-                    Globals.player.xvel = 0
+                    Globals.player.accel = 0
+                    Globals.player.decelerate = True
             elif event.key == pygame.K_DOWN:
                 pass
         
