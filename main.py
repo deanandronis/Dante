@@ -30,7 +30,7 @@ screen = pygame.display.set_mode(WINDOW_SIZE) #creates the window
 clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 Globals.camera = Entities.Camera() #create the camera
-stage_1.boss_1() #load level 1
+stage_1.level_1() #load level 1
 
 
 

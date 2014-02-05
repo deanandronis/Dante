@@ -8,9 +8,6 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
-from pygame.tests.run_tests__tests.everything import sleep_test
-from msilib.schema import SelfReg
-
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -49,21 +46,21 @@ class Player(Entity):
         image = images[imagename][imageindex]
         numimages = len(images[imagename]) - 1
         '''
-        self.imageloc = os.path.join('Resources','Max Bo','Bitmap')
-        self.imagepaths = {   'runL':(os.path.join(self.imageloc,'RunningL'), 'RunningL', 8),
-                              'runR':(os.path.join(self.imageloc,'RunningR'), 'RunningR', 8),
-                              'idleL':(os.path.join(self.imageloc,'IdlingL'), 'idlingL', 19),
-                              'idleR':(os.path.join(self.imageloc,'IdlingR'), 'idlingR', 19),
+        self.imageloc = os.path.join('Resources','New Max')
+        self.imagepaths = {   'runL':(os.path.join(self.imageloc,'RunL'), 'RunL', 9),
+                              'runR':(os.path.join(self.imageloc,'RunR'), 'RunR', 9),
+                              'idleL':(os.path.join(self.imageloc,'IdleL'), 'idleL', 0),
+                              'idleR':(os.path.join(self.imageloc,'IdleR'), 'idleR', 0),
                               'jumpL':(os.path.join(self.imageloc,'JumpL'), 'jumpL', 0),
                               'jumpR':(os.path.join(self.imageloc,'JumpR'), 'jumpR', 0),
-                              'deathL':(os.path.join(self.imageloc, 'DeathL'), 'DeathL', 30),
-                              'deathR':(os.path.join(self.imageloc, 'DeathR'), 'DeathR', 30),
-                              'slashL':(os.path.join(self.imageloc, 'NailslashL'), 'NailslashL', 13),
-                              'slashR':(os.path.join(self.imageloc, 'NailslashR'), 'NailslashR', 13),
-                              'spinL':(os.path.join(self.imageloc, 'spinL'), 'spinL', 19),
-                              'spinR':(os.path.join(self.imageloc, 'spinR'), 'spinR', 19),
-                              'shoutL':(os.path.join(self.imageloc, 'shoutL'), 'shoutL', 7),
-                              'shoutR':(os.path.join(self.imageloc, 'shoutR'), 'shoutR', 7),
+                              'deathL':(os.path.join(self.imageloc, 'DieL'), 'DieL', 30),
+                              'deathR':(os.path.join(self.imageloc, 'DieR'), 'DieR', 30),
+                              'slashL':(os.path.join(self.imageloc, 'SlashL'), 'NailL', 13),
+                              'slashR':(os.path.join(self.imageloc, 'SlashR'), 'NailR', 13),
+                              'spinL':(os.path.join(self.imageloc, 'SpinL'), 'SpinL', 20),
+                              'spinR':(os.path.join(self.imageloc, 'spinR'), 'spinR', 20),
+                              'shoutL':(os.path.join(self.imageloc, 'shoutL'), 'shoutL', 15),
+                              'shoutR':(os.path.join(self.imageloc, 'shoutR'), 'shoutR', 15),
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
@@ -302,7 +299,7 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-                self.create_projectile()
+                
             elif self.imagename == 'spinL':
                 self.rect.x += 14
                 self.x += 14
@@ -311,7 +308,7 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-                self.create_projectile()
+                
             elif self.imagename == 'slashR':
                 self.rect.x += 20
                 self.x += 20
@@ -352,7 +349,7 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-                laser = lazer(self.rect.x + self.rect.width - 14, self.rect.y + 11, False)
+                
             elif self.imagename == "shoutL" and self.attack == 'lazer':
                 self.change_image('idleL')
                 self.rect.x += 19
@@ -361,10 +358,28 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-                laser = lazer(self.rect.x, self.rect.y + 11, True)
                 
+    
             else:
                 self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
+        elif self.imagename == 'spinL' and self.imageindex == 15:
+                self.create_projectile()
+                self.imageindex += 1
+            
+        elif self.imagename == 'spinR' and self.imageindex == 15:
+                self.create_projectile()
+                self.imageindex += 1
+        
+        elif self.imagename == 'shoutL' and self.attack == 'lazer' and self.imageindex == 7:
+            laser = lazer(self.rect.x, self.rect.y + 11, True)
+            self.imageindex += 1
+        
+        elif self.imagename == 'shoutR' and self.attack == 'lazer' and self.imageindex == 7:
+            laser = lazer(self.rect.x + self.rect.width - 14, self.rect.y + 11, False)
+            self.imageindex += 1
+            
+            
+            
         else: self.imageindex += 1  #otherwise, allow the next rotation
         
 
