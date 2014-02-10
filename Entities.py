@@ -40,6 +40,8 @@ class Player(Entity):
         self.can_damage = True
         self.accel = 0
         self.decelerate = False
+        self.sprinting = False
+        self.animatetimer = 6
         
         #load images
         '''
@@ -99,30 +101,57 @@ class Player(Entity):
                 self.sliding = False
                 self.arrowkey_enabled = True
                 self.can_damage = True
+                
         if self.decelerate and not self.sliding:
-            if self.xvel < -0.4:
-                    self.xvel += 0.23
-            elif self.xvel > 0.4:
-                self.xvel -= 0.23
-            else: self.xvel = 0
-
+            if self.sprinting:
+                if self.xvel < -0.45:
+                        self.xvel += 0.13
+                elif self.xvel > 0.45:
+                    self.xvel -= 0.13
+                else: self.xvel = 0
+            else:
+                if self.xvel < -0.4:
+                        self.xvel += 0.23
+                elif self.xvel > 0.4:
+                    self.xvel -= 0.23
+                else: self.xvel = 0
             
-        #move x and check for collision
-        if not self.sliding and not self.decelerate:
+        #calculate acceleration
+        if not self.sliding and not self.decelerate and not self.sprinting:
+            if self.xvel < 0:
+                if self.xvel > -3: 
+                    self.xvel += self.accel
+                    if self.accel < 0: self.accel -= 0.01
+                    elif self.accel > 0: self.accel += 0.01
+                else: 
+                    self.xvel = -3
+                    self.accel = 0
+            elif self.xvel > 0:
+                if self.xvel < 3: 
+                    self.xvel += self.accel
+                    if self.accel > 0: self.accel += 0.01
+                    elif self.accel < 0: self.accel -= 0.01
+                else: 
+                    self.xvel = 3
+                    self.accel = 0
+        if not self.sliding and not self.decelerate and self.sprinting:
             if self.xvel < 0:
                 if self.xvel > -7: 
                     self.xvel += self.accel
-                    self.accel -= 0.02
+                    if self.accel < 0: self.accel -= 0.02
+                    elif self.accel > 0: self.accel += 0.01
                 else: 
                     self.xvel = -7
                     self.accel = 0
             elif self.xvel > 0:
                 if self.xvel < 7: 
                     self.xvel += self.accel
-                    self.accel += 0.02
+                    if self.accel > 0: self.accel += 0.02
+                    elif self.accel < 0: self.accel -= 0.01
                 else: 
                     self.xvel = 7
-                    self.accel = 0
+                    self.accel = 0            
+        #move x and check for collision
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
         for block in block_hit_list: #iterate through the list
@@ -238,41 +267,79 @@ class Player(Entity):
         #determine sprite set
         if not self.attacking:
             if self.touching_ground: #set of ground sprites
-                if self.xvel > 0: #sprite should be running right
-                    if not self.imagename == 'runR':
-                        self.change_image('runR')
-                        self.facing_right = True
-                elif self.xvel < 0: #sprite should be running left
-                    if not self.imagename == 'runL':
-                        self.change_image('runL')
-                        self.facing_right = False
-                else: #player is stationary; check direction for sprite
-                    if self.facing_right == True: #sprite should be idling right
-                        if not self.imagename == 'idleR':
-                            self.change_image('idleR')
+                if not self.accel == 0:
+                    if self.accel > 0: #sprite should be running right
+                        if not self.imagename == 'runR':
+                            self.change_image('runR')
                             self.facing_right = True
-                    elif self.facing_right == False: #sprite should be idling left
-                        if not self.imagename == 'idleL':
-                            self.change_image('idleL')
+                    elif self.accel < 0: #sprite should be running left
+                        if not self.imagename == 'runL':
+                            self.change_image('runL')
                             self.facing_right = False
+                    else: #player is stationary; check direction for sprite
+                        if self.facing_right == True: #sprite should be idling right
+                            if not self.imagename == 'idleR':
+                                self.change_image('idleR')
+                                self.facing_right = True
+                        elif self.facing_right == False: #sprite should be idling left
+                            if not self.imagename == 'idleL':
+                                self.change_image('idleL')
+                                self.facing_right = False
+                else:
+                    if self.xvel > 0: #sprite should be running right
+                        if not self.imagename == 'runR':
+                            self.change_image('runR')
+                            self.facing_right = True
+                    elif self.xvel < 0: #sprite should be running left
+                        if not self.imagename == 'runL':
+                            self.change_image('runL')
+                            self.facing_right = False
+                    else: #player is stationary; check direction for sprite
+                        if self.facing_right == True: #sprite should be idling right
+                            if not self.imagename == 'idleR':
+                                self.change_image('idleR')
+                                self.facing_right = True
+                        elif self.facing_right == False: #sprite should be idling left
+                            if not self.imagename == 'idleL':
+                                self.change_image('idleL')
+                                self.facing_right = False
             else: #set of mid-air sprites
-                if self.xvel > 0: #sprite should be jumping right
-                    if not self.imagename == "jumpR":
-                            self.change_image('jumpR')
-                            self.facing_right = True
-                elif self.xvel < 0: #sprite should be jumping left
-                    if not self.imagename == 'jumpL':
-                            self.change_image('jumpL')
-                            self.facing_right = False
-                else: #check direction player is facing
-                    if self.facing_right == True: #sprite should be jumping right
+                if self.accel == 0:
+                    if self.xvel > 0: #sprite should be jumping right
                         if not self.imagename == "jumpR":
-                            self.change_image('jumpR')
-                            self.facing_right = True
-                    else: #sprite should be jumping left
+                                self.change_image('jumpR')
+                                self.facing_right = True
+                    elif self.xvel < 0: #sprite should be jumping left
                         if not self.imagename == 'jumpL':
-                            self.change_image('jumpL')
-                            self.facing_right = False
+                                self.change_image('jumpL')
+                                self.facing_right = False
+                    else: #check direction player is facing
+                        if self.facing_right == True: #sprite should be jumping right
+                            if not self.imagename == "jumpR":
+                                self.change_image('jumpR')
+                                self.facing_right = True
+                        else: #sprite should be jumping left
+                            if not self.imagename == 'jumpL':
+                                self.change_image('jumpL')
+                                self.facing_right = False
+                else:
+                    if self.xvel > 0: #sprite should be jumping right
+                        if not self.imagename == "jumpR":
+                                self.change_image('jumpR')
+                                self.facing_right = True
+                        elif self.xvel < 0: #sprite should be jumping left
+                            if not self.imagename == 'jumpL':
+                                    self.change_image('jumpL')
+                                    self.facing_right = False
+                        else: #check direction player is facing
+                            if self.facing_right == True: #sprite should be jumping right
+                                if not self.imagename == "jumpR":
+                                    self.change_image('jumpR')
+                                    self.facing_right = True
+                            else: #sprite should be jumping left
+                                if not self.imagename == 'jumpL':
+                                    self.change_image('jumpL')
+                                    self.facing_right = False
         else:
             if self.attack == 'spin':
                 if self.facing_right:

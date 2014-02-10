@@ -48,15 +48,19 @@ while not done:
                 if Globals.player.arrowkey_enabled:
                     if not Globals.player.xvel > 0: 
                         Globals.player.xvel = -2.0 #left arrow key down
-                        Globals.player.accel = -0.02    
-                    else: Globals.player.accel = -0.1
+                        Globals.player.accel = -0.02  
+                    else: 
+                        if Globals.player.sprinting: Globals.player.accel = -0.01
+                        else: Globals.player.accel = -0.08
                     Globals.player.decelerate = False                
             elif event.key == pygame.K_RIGHT:
                 if Globals.player.arrowkey_enabled:
                     if not Globals.player.xvel < 0: 
                         Globals.player.xvel = 2.0 #right arrow key pressed
-                        Globals.player.accel = 0.02  
-                    else: Globals.player.accel = -0.1
+                        Globals.player.accel = 0.02
+                    else: 
+                        if Globals.player.sprinting: Globals.player.accel = 0.01
+                        else: Globals.player.accel = 0.08
                     Globals.player.decelerate = False
             elif event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
@@ -90,6 +94,19 @@ while not done:
                     Globals.player.arrowkey_enabled = False
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
+            elif event.key == pygame.K_SPACE: 
+                if not Globals.player.sprinting:
+                    if Globals.player.xvel > 0: 
+                        Globals.player.accel = 0.03
+                        Globals.player.sprinting = True
+                    elif Globals.player.xvel < 0:
+                        Globals.player.accel = -0.03    
+                        Globals.player.sprinting = True
+                    else:
+                        Globals.player.sprinting = True
+                else:
+                    Globals.player.sprinting = False
+                    
             
             #cheat keys        
             elif event.key == pygame.K_HOME: Globals.player.yvel = -12
@@ -108,13 +125,14 @@ while not done:
                     Globals.player.decelerate = True
             elif event.key == pygame.K_DOWN:
                 pass
+           
         
     
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps))) #set the window caption 
     
-    if ticktimer%6 == 0 and not Globals.key_pause: 
+    if ticktimer%Globals.player.animatetimer == 0 and not Globals.key_pause: 
         for item in Globals.group_PLAYER: #animate the player every 6 cycles
             item.animate()
     if not Globals.key_pause:
