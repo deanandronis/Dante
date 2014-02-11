@@ -107,6 +107,7 @@ while not done:
                 else:
                     Globals.player.sprinting = False
                     
+                    
             
             #cheat keys        
             elif event.key == pygame.K_HOME: Globals.player.yvel = -12

@@ -124,16 +124,21 @@ class Player(Entity):
                     if self.accel < 0: self.accel -= 0.01
                     elif self.accel > 0: self.accel += 0.01
                 else: 
-                    self.xvel = -3
-                    self.accel = 0
+                    if self.xvel < -3:
+                        self.xvel += 0.16
+                    else: self.xvel = 0
+
             elif self.xvel > 0:
                 if self.xvel < 3: 
                     self.xvel += self.accel
                     if self.accel > 0: self.accel += 0.01
                     elif self.accel < 0: self.accel -= 0.01
                 else: 
-                    self.xvel = 3
-                    self.accel = 0
+                    if self.xvel > 3:
+                        self.xvel -= 0.16
+                    else: self.xvel = 0
+                        
+
         if not self.sliding and not self.decelerate and self.sprinting:
             if self.xvel < 0:
                 if self.xvel > -7: 
@@ -141,7 +146,6 @@ class Player(Entity):
                     if self.accel < 0: self.accel -= 0.02
                     elif self.accel > 0: self.accel += 0.01
                 else: 
-                    self.xvel = -7
                     self.accel = 0
             elif self.xvel > 0:
                 if self.xvel < 7: 
@@ -149,8 +153,7 @@ class Player(Entity):
                     if self.accel > 0: self.accel += 0.02
                     elif self.accel < 0: self.accel -= 0.01
                 else: 
-                    self.xvel = 7
-                    self.accel = 0            
+                    self.accel = 0        
         #move x and check for collision
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
@@ -220,10 +223,10 @@ class Player(Entity):
         #calculate damage with AI units
         collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
         for item in collidearray:
-            if self.imagename == 'slashL' and self.imageindex > 6 and item.rect.x < self.rect.x and item.can_damage and self.slash_damage:
+            if self.imagename == 'slashL' and self.imageindex > 5 and item.rect.x < self.rect.x and item.can_damage and self.slash_damage:
                 item.damage(5)
                 self.slash_damage = False
-            elif self.imagename == 'slashR' and self.imageindex > 6 and item.rect.x > self.rect.x and item.can_damage and self.slash_damage:
+            elif self.imagename == 'slashR' and self.imageindex > 5 and item.rect.x > self.rect.x and item.can_damage and self.slash_damage:
                 item.damage(5)
                 self.slash_damage = False
             elif self.rect.x < item.rect.x and not isinstance(item, Boss):
