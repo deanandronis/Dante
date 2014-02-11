@@ -6,16 +6,28 @@ Created on 31/10/2013
 import pygame, os, sys, Entities, functions, Constants, Globals
 
 def level_1():
-    floor_platform = Entities.Platform(4*32,12*32, 50,5)
-    end_block = Entities.goal_piece(51*32, 11*32)
-    death_block = Entities.damage_tile(14*32,11*32)
+    #render floors
+    floor_1 = Entities.Platform(4*32,12*32, 52,5)
+    floor_2 = Entities.Platform(63*32, 12*32, 5, 5)
+    floor_3 = Entities.Platform(78*32, 12*32, 24, 5)
+    floor_4 = Entities.Platform(20*32, 10*32, 15, 1)
+    Floor_5 = Entities.Platform(40*32, 7*32, 10, 1)
+    
+    #render enemies, coins etc
+    #coins
+    for i in range(1,4):
+        coin = Entities.Coin(48*32, (i+3)*32)
+        coin = Entities.Coin(49*32, (i+3)*32)
+    
+    coin = Entities.Coin(43*32, 9*32)
+    coin = Entities.Coin(46*32, 9*32)
+    coin = Entities.Coin(49*32, 9*32)
+    
+    #other stuff
     Globals.player = Entities.Player(10*32,32*10)
     Globals.hud = Entities.hud()
-    Globals.camera.xbounds = (0, 58*32)
+    Globals.camera.xbounds = (0, 106*32)
     Globals.camera.ybounds = (0, 640)
-    small_plat = Entities.Platform(10*32, 5*32, 10, 2)
-    troll = Entities.Troll(15*32, 3*32 + 16, True, small_plat)
-    wiki = Entities.Wikipedia(15*32, 8*32, 50)
     
 def level_2():
     floor_platform = Entities.Platform(32,16*32,30,1)

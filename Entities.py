@@ -120,22 +120,22 @@ class Player(Entity):
         #calculate acceleration
         if not self.sliding and not self.decelerate and not self.sprinting:
             if self.xvel < 0:
-                if self.xvel > -3: 
+                if self.xvel > -4: 
                     self.xvel += self.accel
                     if self.accel < 0: self.accel -= 0.01
                     elif self.accel > 0: self.accel += 0.01
                 else: 
-                    if self.xvel < -3:
+                    if self.xvel < -4:
                         self.xvel += 0.16
                     else: self.xvel = 0
 
             elif self.xvel > 0:
-                if self.xvel < 3: 
+                if self.xvel < 4: 
                     self.xvel += self.accel
                     if self.accel > 0: self.accel += 0.01
                     elif self.accel < 0: self.accel -= 0.01
                 else: 
-                    if self.xvel > 3:
+                    if self.xvel > 4:
                         self.xvel -= 0.16
                     else: self.xvel = 0
                         
@@ -163,19 +163,48 @@ class Player(Entity):
             if not self.attacking:
                 if self.xvel > 0:
                     self.rect.right = block.rect.left #set right side of player to left side of block
+                    self.accel = 0
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+                    
                 elif self.xvel < 0:
                     #Collision moving left means player collided with right side of block
                     self.rect.left = block.rect.right #set left side of player to right side of block
+                    self.accel = 0
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+                    
             elif self.imagename == 'spinL' or self.imagename == 'slashL' or self.imagename == 'shoutL':
                 if self.rect.x > block.rect.x:
-                    self.rect.left = block.rect.right
+                    self.rect.left = block.rect.right 
+                    self.accel = 0
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+                    
                 else:
-                    self.rect.right = block.rect.left
+                    self.rect.right = block.rect.left 
+                    self.accel = 0
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+                    
             elif self.imagename == 'spinR' or self.imagename == 'slashR' or self.imagename == 'shoutR':
                 if self.rect.x < block.rect.x:
                     self.rect.right = block.rect.left
+                    self.accel = 0
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+                    
                 else:
                     self.rect.left = block.rect.right
+                    self.accel = 0
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
         
         #apply gravity
         if self.yvel < 10:

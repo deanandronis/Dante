@@ -115,6 +115,10 @@ while not done:
     elif not keypressed[K_RIGHT] and Globals.player.keys['right'] == True:     
         Globals.player.right_released()
         Globals.player.keys['right'] = False
+        
+    elif not keypressed[K_RIGHT] and not keypressed[K_LEFT] and not Globals.player.decelerate and not Globals.player.sliding:
+        Globals.player.decelerate = True
+        Globals.player.accel = 0
     
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS
