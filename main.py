@@ -35,6 +35,7 @@ stage_1.level_1() #load level 1
 
 
 while not done:
+    keypressed = pygame.key.get_pressed()
     #test next level
     if Globals.player.next_level == True:
         Globals.player.next_level = False
@@ -44,25 +45,7 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: done = True #exit the game if player presses cross button
         elif event.type == pygame.KEYDOWN and not Globals.key_pause:
-            if event.key == pygame.K_LEFT:
-                if Globals.player.arrowkey_enabled:
-                    if not Globals.player.xvel > 0: 
-                        Globals.player.xvel = -2.0 #left arrow key down
-                        Globals.player.accel = -0.02  
-                    else: 
-                        if Globals.player.sprinting: Globals.player.accel = -0.01
-                        else: Globals.player.accel = -0.08
-                    Globals.player.decelerate = False                
-            elif event.key == pygame.K_RIGHT:
-                if Globals.player.arrowkey_enabled:
-                    if not Globals.player.xvel < 0: 
-                        Globals.player.xvel = 2.0 #right arrow key pressed
-                        Globals.player.accel = 0.02
-                    else: 
-                        if Globals.player.sprinting: Globals.player.accel = 0.01
-                        else: Globals.player.accel = 0.08
-                    Globals.player.decelerate = False
-            elif event.key == pygame.K_UP:#up arrow key pressed
+            if event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
                     if Globals.player.touching_ground: #check to see if player is touching ground
                         Globals.player.yvel = -12 #accelerate the player upwards
@@ -115,19 +98,23 @@ while not done:
             elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             elif event.key == pygame.K_F12: coin = Entities.Coin(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT: #left key released
-                if not Globals.player.xvel > 0 and Globals.player.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
-                    Globals.player.accel = 0
-                    Globals.player.decelerate = True
-            elif event.key == pygame.K_RIGHT and Globals.player.arrowkey_enabled: #right key released
-                if not Globals.player.xvel < 0: #set the player's horizontal velocity to 0 if player isn't moving left
-                    Globals.player.accel = 0
-                    Globals.player.decelerate = True
-            elif event.key == pygame.K_DOWN:
-                pass
            
-        
+    #movement
+    if keypressed[K_LEFT] and Globals.player.keys['left'] == False:
+                Globals.player.left_pressed()     
+                Globals.player.keys['left'] = True
+                
+    elif not keypressed[K_LEFT] and Globals.player.keys['left'] == True:
+            Globals.player.left_released()                
+            Globals.player.keys['left'] = False
+            
+    elif keypressed[K_RIGHT] and not keypressed[K_LEFT] and Globals.player.keys['right'] == False:
+            Globals.player.right_pressed()
+            Globals.player.keys['right'] = True
+            
+    elif not keypressed[K_RIGHT] and Globals.player.keys['right'] == True:     
+        Globals.player.right_released()
+        Globals.player.keys['right'] = False
     
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS

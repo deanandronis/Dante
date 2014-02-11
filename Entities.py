@@ -20,6 +20,7 @@ class Player(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_PLAYER) #adds the player to the group Globals.group_PLAYER
         #Global variables for Character
+        self.keys = {'left':False, 'right':False}
         self.startpoint = (x,y) #starting location of the character
         self.xvel = 0.0 #horizontal velocity 
         self.yvel = 0.0 #vertical velocity
@@ -588,6 +589,36 @@ class Player(Entity):
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     tv = Television(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
+
+    def right_pressed(self):
+        if self.arrowkey_enabled:
+                if not self.xvel < 0: 
+                    self.xvel = 2.0 #right arrow key pressed
+                    self.accel = 0.02
+                else: 
+                    if self.sprinting: self.accel = 0.01
+                    else: self.accel = 0.08
+                self.decelerate = False
+                
+    def left_pressed(self):
+        if self.arrowkey_enabled:
+                    if not self.xvel > 0: 
+                        self.xvel = -2.0 #left arrow key down
+                        self.accel = -0.02  
+                    else: 
+                        if self.sprinting: self.accel = -0.01
+                        else: self.accel = -0.08
+                    self.decelerate = False
+                    
+    def left_released(self):
+        if not self.xvel > 0 and self.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
+                self.accel = 0
+                self.decelerate = True
+                
+    def right_released(self):
+        if not self.xvel < 0: #set the player's horizontal velocity to 0 if player isn't moving left
+            self.accel = 0
+            self.decelerate = True
 
 #collision shit
 class Platform(Entity):
