@@ -1724,8 +1724,8 @@ class InternetBoss(Boss):
         self.playerx = (Globals.player.rect.x + Globals.player.rect.width/2) - self.xpos
         self.playery = (Globals.player.rect.y + Globals.player.rect.height/2) - self.ypos
         angle_to_player = math.atan2(self.playerx, self.playery)
-        self.projxvel = 10*math.cos(angle_to_player)
-        self.projyvel = 10*math.sin(angle_to_player)
+        self.projxvel = -1*10*math.cos(angle_to_player)
+        self.projyvel = -1*10*math.sin(angle_to_player)
         fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel)
         
         
