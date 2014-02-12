@@ -5,6 +5,9 @@ Created on 31/10/2013
 '''
 import pygame, os, sys, Entities, functions, Constants, Globals
 
+def main_menu():
+    pass
+
 def level_1():
     #render floors
     floor_1 = Entities.Platform(4*32,12*32, 52,5)
