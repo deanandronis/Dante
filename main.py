@@ -29,6 +29,7 @@ global screen, clock #variables for the screen and game timer
 screen = pygame.display.set_mode(WINDOW_SIZE) #creates the window
 clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
+mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
 stage_1.boss_1() #load level 1
 
@@ -109,7 +110,9 @@ while not done:
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
             elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             elif event.key == pygame.K_F12: coin = Entities.Coin(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
-            
+        
+        elif event.type == MOUSEBUTTONDOWN: 
+            mousex, mousey = event.pos
            
     #movement
     if keypressed[K_LEFT] and Globals.player.keys['left'] == False:
@@ -170,6 +173,12 @@ while not done:
         if isinstance(item, Entities.key): item.update()
         if isinstance(item, Entities.hud): screen.blit(item.image, item.rect) #draw the HUD to the screen
         else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
+    
+    for item in Globals.group_BUTTON:
+        screen.blit(item.image, item.pos)
+        if item.rect.collidepoint((mousex, mousey)): 
+            (mousex, mousey) = (0,0)
+            item.clicked()
 
     for item in Globals.group_DRAWONLY: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
 

@@ -1785,4 +1785,42 @@ class EnemyHealthBar(Entity):
             pygame.draw.rect(self.image, (0,255,0), pygame.Rect(0,0, self.percentage * self.length, 30))
         if self.caption: self.image.blit(Constants.spleentext.render(self.captiontext, 0, (0,0,0)), (10, 8)) #load the text 
             
+#Buttons
+class Button(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self, Globals.group_BUTTON)
+        self.rect = self.image.get_rect()
+        self.rect.move_ip(x, y)
+        self.pos = (x, y)
         
+class Menu_PlayButt(Button):
+    def __init__(self, x, y):
+        self.image = functions.get_image(os.path.join('Resources','General Resources','Buttons','PlayButt.bmp'), (255,0,255))
+        Button.__init__(self, x, y)
+        
+    def clicked(self):
+        print "Play button clicked"
+        
+class Menu_InfoButt(Button):
+    def __init__(self, x, y):
+        self.image = functions.get_image(os.path.join('Resources','General Resources','Buttons','InfoButt.bmp'), (255,0,255))
+        Button.__init__(self, x, y)
+        
+    def clicked(self):
+        print "info button clicked"
+
+class Menu_ScoresButt(Button):
+    def __init__(self, x, y):
+        self.image = functions.get_image(os.path.join('Resources','General Resources','Buttons','ScoresButt.bmp'), (255,0,255))
+        Button.__init__(self, x, y)
+        
+    def clicked(self):
+        print "Scores button clicked"
+        
+class Menu_QuitButt(Button):
+    def __init__(self, x, y):
+        self.image = functions.get_image(os.path.join('Resources','General Resources','Buttons','QuitButt.bmp'), (255,0,255))
+        Button.__init__(self, x, y)
+        
+    def clicked(self):
+        print "Quit button clicked"
