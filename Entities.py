@@ -67,6 +67,8 @@ class Player(Entity):
                               'spinR':(os.path.join(self.imageloc, 'spinR'), 'spinR', 20),
                               'shoutL':(os.path.join(self.imageloc, 'shoutL'), 'shoutL', 15),
                               'shoutR':(os.path.join(self.imageloc, 'shoutR'), 'shoutR', 15),
+                              'teabagL':(os.path.join(self.imageloc, 'teabagL'), 'teabagL', 0),
+                              'teabagR':(os.path.join(self.imageloc, 'teabagR'), 'teabagR', 0),
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
@@ -412,6 +414,16 @@ class Player(Entity):
                     if not self.imagename == 'shoutL':
                         self.change_image('shoutL')
                         self.rect.x -= 4
+                        
+            elif self.attack == 'teabag':
+                if self.facing_right:
+                    if not self.imagename == 'teabagR':
+                        self.change_image('teabagR')
+                        self.rect.x += 3
+                else:
+                    if not self.imagename == 'teabagL':
+                        self.change_image('teabagL')
+                        self.rect.x -= 4
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
@@ -492,6 +504,12 @@ class Player(Entity):
                 self.can_attack = True
                 self.arrowkey_enabled = True
                 
+            elif self.imagename == "Teabag":
+                self.change_image('teabag')
+                self.attack = None
+                self.attacking = False
+                self.can_attack = False
+                self.arrowkey_enabled = False
     
             else:
                 self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
@@ -521,7 +539,7 @@ class Player(Entity):
         
             
         else: self.imageindex += 1  #otherwise, allow the next rotation
-        
+   
 
     def reset(self):
         self.rect.x = self.startpoint[0] #go back to the start point
@@ -1528,7 +1546,7 @@ class InternetBoss(Boss):
         self.can_stun = True
         self.currentevent = 'pause_intro'
         self.can_damage = True
-        self.health = 1
+        self.health = 40
         self.damage_on_contact = True
         self.xvel = 0.0
         self.yvel = 0.0
@@ -1546,7 +1564,7 @@ class InternetBoss(Boss):
         self.intro = True
         
         Globals.player.arrowkey_enabled = False
-        Globals.player.can_attack = False
+        #Globals.player.can_attack = False
    
     def update(self):
         self.rect = pygame.Rect(self.image.get_rect())
@@ -1618,13 +1636,14 @@ class InternetBoss(Boss):
                 Globals.player.arrowkey_enabled = True
                 Globals.player.can_attack = True
                 self.intro = False
+                self.pausecounter = 0
             else:self.pausecounter += 1
         
         elif self.currentevent == 'dashL':
             self.facingL = True
             if self.rect.colliderect(Globals.player.rect):
                 self.currentevent = 'pausing'
-                self.pausetimer = 120
+                self.pausetimer = 60
                 self.xvel = 0
                 self.facingL = False
 
@@ -1656,8 +1675,16 @@ class InternetBoss(Boss):
             else: 
                 self.pausecounter += 1
         
+        elif self.currentevent == 'stun':
+            if self.pausecounter == self.pausetimer:
+                self.pausecounter = 0
+                if self.facingL: self.currentevent = 'dashR'
+                else: self.currentevent = 'determine_attack'
+            else: 
+                self.pausecounter += 1
+        
         elif self.currentevent == 'determine_attack':
-            self.randnum = randrange(1, 7, 1)
+            self.randnum = randrange(1, 12, 1)
             if self.randnum >= 6: self.currentevent = 'dashL'
             else: self.currentevent = 'spit'
             
@@ -1666,11 +1693,9 @@ class InternetBoss(Boss):
         
     def stun(self):
         if self.currentevent == 'dashL':
-            self.currentevent = 'pausing'    
-            self.currentevent = 'pausing'
+            self.currentevent = 'stun'
             self.pausetimer = 120
             self.xvel = 0
-            self.facingL = False
       
     def damage(self, damage):
         self.health -= damage
@@ -1678,7 +1703,6 @@ class InternetBoss(Boss):
         if self.health <= 0 and not self.currentevent == 'die':
             self.currentevent = 'die'
             self.change_image('die')
-            self.healthbar.kill()
             self.xvel = 0
             Globals.player.arrowkey_enabled = False
             Globals.player.can_attack = False
@@ -1688,11 +1712,15 @@ class InternetBoss(Boss):
         self.image = self.images[self.imagename][self.imageindex]
         if self.imageindex < self.numimages: 
             self.imageindex += 1
+            if self.imagename == 'spit' and self.imageindex == 13:
+                self.fireball()
+            
         else: 
             if self.imagename == 'die':
                 goal = goal_piece(self.rect.center[0], self.rect.center[1])
                 Globals.player.arrowkey_enabled = True
                 Globals.player.can_attack = True
+                self.healthbar.kill()
                 self.kill()
             
             elif self.imagename == 'smash': 
@@ -1708,7 +1736,6 @@ class InternetBoss(Boss):
                 self.change_image('idleL')
                 
             elif self.imagename == 'spit':
-                self.fireball()
                 self.currentevent = 'pausing'
                 self.change_image('idleL')
                 
@@ -1722,14 +1749,15 @@ class InternetBoss(Boss):
         self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
         
     def fireball(self):
-        self.xpos = self.rect.x
-        self.ypos = self.rect.y + self.rect.height/3
+        self.xpos = self.rect.x + 33
+        self.ypos = self.rect.y + self.rect.height/3 + 18
         self.playerx = (Globals.player.rect.x + Globals.player.rect.width/2) - self.xpos
-        self.playery = (Globals.player.rect.y + Globals.player.rect.height/2) - self.ypos
-        angle_to_player = math.atan2(self.playery, self.playerx)
-        self.projxvel = 18*math.cos(angle_to_player)
-        self.projyvel = 18*math.sin(angle_to_player)
-        fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel, angle_to_player*2.3)
+        self.playery = (Globals.player.rect.y + 19) - self.ypos
+        angle_to_player = math.atan2(self.playery,self.playerx)
+        self.projxvel = 19*math.cos(angle_to_player)
+        self.projyvel = 19*math.sin(angle_to_player)
+        dis_to_player = math.sqrt((self.playerx)**2 + (self.playery)**2)
+        fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel, 850*angle_to_player/dis_to_player)
         
 class EnemyHealthBar(Entity):
     def __init__(self, x, y, length, health, caption = None):
@@ -1752,8 +1780,9 @@ class EnemyHealthBar(Entity):
     def damage(self, damage):
         self.health -= damage
         self.image.fill((255,0,0))
-        self.percentage = float(self.health)/float(self.maxhealth)
-        pygame.draw.rect(self.image, (0,255,0), pygame.Rect(0,0, self.percentage * self.length, 30))
+        if self.health > 0:
+            self.percentage = float(self.health)/float(self.maxhealth)
+            pygame.draw.rect(self.image, (0,255,0), pygame.Rect(0,0, self.percentage * self.length, 30))
         if self.caption: self.image.blit(Constants.spleentext.render(self.captiontext, 0, (0,0,0)), (10, 8)) #load the text 
             
         
