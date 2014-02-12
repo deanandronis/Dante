@@ -1023,7 +1023,7 @@ class WikiProj(EnemyProj):
 #other stuff
 
 class Fireball(EnemyProj):
-    def __init__(self, x, y, xvel, yvel):
+    def __init__(self, x, y, xvel, yvel, angle):
         self.imagelist = functions.create_image_list(os.path.join('Resources','Projectiles','Bitmap','TrollFlame'), 'TrollFlame', 3, '.bmp', (255,0,255))
         self.image = self.imagelist[0]
         self.numimages = 3
@@ -1034,9 +1034,12 @@ class Fireball(EnemyProj):
         Projectile.__init__(self, x, y, xvel, yvel)
         self.damage = 3
         self.gravity = False
+        self.angle = angle
+        self.image = pygame.transform.rotate(self.image, self.angle)
     
     def animate(self):
         self.image = self.imagelist[self.image_index]
+        self.image = pygame.transform.rotate(self.image, self.angle)
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
 
@@ -1654,7 +1657,7 @@ class InternetBoss(Boss):
                 self.pausecounter += 1
         
         elif self.currentevent == 'determine_attack':
-            self.randnum = randrange(1, 3, 1)
+            self.randnum = randrange(1, 7, 1)
             if self.randnum >= 6: self.currentevent = 'dashL'
             else: self.currentevent = 'spit'
             
@@ -1723,11 +1726,10 @@ class InternetBoss(Boss):
         self.ypos = self.rect.y + self.rect.height/3
         self.playerx = (Globals.player.rect.x + Globals.player.rect.width/2) - self.xpos
         self.playery = (Globals.player.rect.y + Globals.player.rect.height/2) - self.ypos
-        angle_to_player = math.atan2(self.playerx, self.playery)
-        self.projxvel = -1*10*math.cos(angle_to_player)
-        self.projyvel = -1*10*math.sin(angle_to_player)
-        fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel)
-        
+        angle_to_player = math.atan2(self.playery, self.playerx)
+        self.projxvel = 18*math.cos(angle_to_player)
+        self.projyvel = 18*math.sin(angle_to_player)
+        fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel, angle_to_player*2.3)
         
 class EnemyHealthBar(Entity):
     def __init__(self, x, y, length, health, caption = None):
