@@ -149,8 +149,18 @@ while not done:
     Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
     Globals.hud.update(Globals.player.health) #redraw the hud elements
     
+    
+    
     #Draw elements to screen       
     screen.fill((0,0,0)) #wipe the screen
+    
+    for item in Globals.group_BG:
+        if item.move_with_camera:
+            screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
+        else: 
+            screen.blit(item.image, (item.pos)) #account for Globals.camera location
+
+    
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
         

@@ -107,54 +107,54 @@ class Player(Entity):
                 
         if self.decelerate and not self.sliding:
             if self.sprinting:
-                if self.xvel < -0.45:
-                        self.xvel += 0.13
-                elif self.xvel > 0.45:
-                    self.xvel -= 0.13
+                if self.xvel < -0.3:
+                        self.xvel += 0.087
+                elif self.xvel > 0.3:
+                    self.xvel -= 0.087
                 else: self.xvel = 0
             else:
-                if self.xvel < -0.4:
-                        self.xvel += 0.23
-                elif self.xvel > 0.4:
-                    self.xvel -= 0.23
+                if self.xvel < -0.267:
+                        self.xvel += 0.153
+                elif self.xvel > 0.267:
+                    self.xvel -= 0.153
                 else: self.xvel = 0
             
         #calculate acceleration
         if not self.sliding and not self.decelerate and not self.sprinting:
             if self.xvel < 0:
-                if self.xvel > -4: 
+                if self.xvel > -2.67: 
                     self.xvel += self.accel
-                    if self.accel < 0: self.accel -= 0.01
-                    elif self.accel > 0: self.accel += 0.01
+                    if self.accel < 0: self.accel -= 0.006
+                    elif self.accel > 0: self.accel += 0.006
                 else: 
-                    if self.xvel < -4:
-                        self.xvel += 0.16
+                    if self.xvel < -2.67:
+                        self.xvel += 0.107
                     else: self.xvel = 0
 
             elif self.xvel > 0:
-                if self.xvel < 4: 
+                if self.xvel < 2.67: 
                     self.xvel += self.accel
-                    if self.accel > 0: self.accel += 0.01
-                    elif self.accel < 0: self.accel -= 0.01
+                    if self.accel > 0: self.accel += 0.006
+                    elif self.accel < 0: self.accel -= 0.006
                 else: 
-                    if self.xvel > 4:
-                        self.xvel -= 0.16
+                    if self.xvel > 2.67:
+                        self.xvel -= 0.107
                     else: self.xvel = 0
                         
 
         if not self.sliding and not self.decelerate and self.sprinting:
             if self.xvel < 0:
-                if self.xvel > -7: 
+                if self.xvel > -5: 
                     self.xvel += self.accel
-                    if self.accel < 0: self.accel -= 0.02
-                    elif self.accel > 0: self.accel += 0.01
+                    if self.accel < 0: self.accel -= 0.013
+                    elif self.accel > 0: self.accel += 0.006
                 else: 
                     self.accel = 0
             elif self.xvel > 0:
-                if self.xvel < 7: 
+                if self.xvel < 5: 
                     self.xvel += self.accel
-                    if self.accel > 0: self.accel += 0.02
-                    elif self.accel < 0: self.accel -= 0.01
+                    if self.accel > 0: self.accel += 0.013
+                    elif self.accel < 0: self.accel -= 0.006
                 else: 
                     self.accel = 0        
         #move x and check for collision
@@ -640,21 +640,21 @@ class Player(Entity):
     def right_pressed(self):
         if self.arrowkey_enabled:
                 if not self.xvel < 0: 
-                    self.xvel = 2.0 #right arrow key pressed
-                    self.accel = 0.02
+                    self.xvel = 1.33 #right arrow key pressed
+                    self.accel = 0.0133
                 else: 
-                    if self.sprinting: self.accel = 0.01
-                    else: self.accel = 0.08
+                    if self.sprinting: self.accel = 0.006
+                    else: self.accel = 0.0533
                 self.decelerate = False
                 
     def left_pressed(self):
         if self.arrowkey_enabled:
                     if not self.xvel > 0: 
-                        self.xvel = -2.0 #left arrow key down
-                        self.accel = -0.02  
+                        self.xvel = -1.33 #left arrow key down
+                        self.accel = -0.0133 
                     else: 
-                        if self.sprinting: self.accel = -0.01
-                        else: self.accel = -0.08
+                        if self.sprinting: self.accel = -0.006
+                        else: self.accel = -0.0533
                     self.decelerate = False
                     
     def left_released(self):
@@ -1165,6 +1165,15 @@ class narrator_bubble(Entity):
 
 #AI
 
+class Background(pygame.sprite.Sprite):
+    def __init__(self, image, loc, move_with_camera=True):
+        pygame.sprite.Sprite.__init__(self, Globals.group_BG)
+        self.move_with_camera = move_with_camera
+        self.image = functions.get_image(image, (255,0,255))
+        self.rect = self.image.get_rect()       
+        self.rect.move_ip(loc) 
+        self.pos = (self.rect.x, self.rect.y)
+
 class Troll(Entity):
     def __init__(self, x, y, facingL, patrolblock):
         Entity.__init__(self, Globals.group_AI)
@@ -1525,13 +1534,12 @@ class InternetBoss(Boss):
                               'smash':(os.path.join(self.imageloc,'Smash'), 'BossSmash', 11),
                               'shout':(os.path.join(self.imageloc,'Shout'), 'BossShout', 15),
                               'lift':(os.path.join(self.imageloc,'Lift'), 'Bosslift', 2),
-                              
+                              'hold':(os.path.join(self.imageloc, 'BossDoorWait'),'BossDoorWait', 9)                              
    
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
-        self.images['hold'] = [functions.get_image(os.path.join(self.imageloc, 'Smash','BossSmash11.bmp'), (255,0,255))]
-        
+                
         #set the current image to the loaded one
         self.imageindex = 0
         self.imagename = 'idleL'
