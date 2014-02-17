@@ -12,7 +12,7 @@ def level_1():
     #render floors
     floor_1 = Entities.Platform(4*32,12*32, 52,5)
     floor_2 = Entities.Platform(63*32, 12*32, 5, 5)
-    floor_3 = Entities.Platform(77*32, 12*32, 25, 5)
+    floor_3 = Entities.Platform(75*32, 12*32, 27, 5)
     floor_4 = Entities.Platform(20*32, 10*32, 15, 1)
     Floor_5 = Entities.Platform(40*32, 7*32, 10, 1)
     
@@ -20,12 +20,14 @@ def level_1():
         #coins
     for i in range(1,4):
         coin = Entities.Coin(48*32, (i+3)*32)
-        coin = Entities.Coin(49*32, (i+3)*32)
-    
+        coin = Entities.Coin(49*32, (i+3)*32) 
     coin = Entities.Coin(43*32, 9*32)
     coin = Entities.Coin(46*32, 9*32)
     coin = Entities.Coin(49*32, 9*32)
     
+        #enemies
+    wiki = Entities.Wikipedia(44*32, 3*32, 2*32)
+    troll = Entities.Troll(27*32,8*32, True, floor_4)
         #specials
     goalpiece = Entities.goal_piece(101*32,10*32)    
     

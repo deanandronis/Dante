@@ -31,7 +31,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.boss_1() #load level 1
+stage_1.level_1() #load level 1
 
 
 
@@ -57,6 +57,7 @@ while not done:
                     Globals.player.attack = 'slash'
                     Globals.player.attacking = True
                     Globals.player.can_attack = False
+                    Globals.player.sprinting = False
             elif event.key == pygame.K_x: #x key pressed - spin
                 if Globals.player.can_attack:
                     Globals.player.attack = 'spin'
@@ -79,7 +80,7 @@ while not done:
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
             elif event.key == pygame.K_SPACE: 
-                if not Globals.player.sprinting:
+                if not Globals.player.sprinting and not Globals.player.attacking:
                     if Globals.player.xvel > 0: 
                         Globals.player.accel = 0.03
                         Globals.player.sprinting = True
@@ -165,10 +166,7 @@ while not done:
         screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
         
 
-    for item in Globals.group_PROJECTILES: #draw the projectiles to screen
-        if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) or isinstance(item, Entities.WikiProj) and ticktimer%6==0) and not Globals.key_pause: item.animate()
-        
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+   
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_AI:
@@ -183,6 +181,11 @@ while not done:
         if isinstance(item, Entities.key): item.update()
         if isinstance(item, Entities.hud): screen.blit(item.image, item.rect) #draw the HUD to the screen
         else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
+    
+    for item in Globals.group_PROJECTILES: #draw the projectiles to screen
+        if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) or isinstance(item, Entities.WikiProj) and ticktimer%6==0) and not Globals.key_pause: item.animate()
+        
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_BUTTON:
         screen.blit(item.image, item.pos)

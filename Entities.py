@@ -266,11 +266,14 @@ class Player(Entity):
                 self.xvel = -8
                 self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
+                if isinstance(item, Troll): item.health -= 10
             elif self.rect.x > item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = 9
                 self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
+                if isinstance(item, Troll): item.health -= 10
+
             elif self.rect.x < item.rect.x and isinstance(item, Boss):
                 self.sliding = True
                 self.accel = 0
@@ -1179,12 +1182,12 @@ class Troll(Entity):
         Entity.__init__(self, Globals.group_AI)
         #load images
         self.imageloc = os.path.join('Resources','Stage 1 Resources','Troll','Bitmaps')
-        self.imagepaths = {   'walkL':(os.path.join(self.imageloc,'WalkL'), 'TrollWalkL', 3),
-                              'walkR':(os.path.join(self.imageloc,'WalkR'), 'TrollWalkR', 3),
-                              'idleL':(os.path.join(self.imageloc,'WalkL'), 'TrollWalkL', 0),
-                              'idleR':(os.path.join(self.imageloc,'WalkR'), 'TrollWalkR', 0),
-                              'explodeL':(os.path.join(self.imageloc,'ExplodeL'), 'TrollExplodeL', 9),
-                              'explodeR':(os.path.join(self.imageloc,'ExplodeR'), 'TrollExplodeR', 9)
+        self.imagepaths = {   'walkL':(os.path.join(self.imageloc,'TrollWalkL'), 'TrollWalkL', 3),
+                              'walkR':(os.path.join(self.imageloc,'TrollWalkR'), 'TrollWalkR', 3),
+                              'idleL':(os.path.join(self.imageloc,'TrollstandL'), 'TrollStandL', 0),
+                              'idleR':(os.path.join(self.imageloc,'TrollStandR'), 'TrollStandR', 0),
+                              'explodeL':(os.path.join(self.imageloc,'TrollExplodeL'), 'TrollExplodeL', 5),
+                              'explodeR':(os.path.join(self.imageloc,'TrollExplodeR'), 'TrollExplodeR', 5)
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #populates self.images with a dictionary of the above images with format 'imagename':image
@@ -1262,6 +1265,9 @@ class Troll(Entity):
                 self.rect.top = block.rect.bottom  #set top to the bottom of block
                 self.yvel = 0 #stop vertical movement
 
+        if self.rect.colliderect(Globals.player.rect):
+            self.currentevent = 'explode'
+
         #animations
         
         if self.facingL and not self.currentevent == 'explode':
@@ -1286,11 +1292,12 @@ class Troll(Entity):
     def event(self):  
         self.distance = self.calculate_range()[0]
         if self.distance < 17 and not self.currentevent == 'explode' and not self.currentevent == 'stunned':
-            if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
-                if not self.object_between(): 
-                    self.currentevent = 'charge'
-                    if self.rect.x > Globals.player.rect.x: self.xvel = -7
-                    else: self.xvel = 7
+            if (self.facingL and Globals.player.rect.x < self.rect.x) or (not self.facingL and Globals.player.rect.x > self.rect.x):
+                if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
+                    if not self.object_between(): 
+                        self.currentevent = 'charge'
+                        if self.rect.x > Globals.player.rect.x: self.xvel = -7
+                        else: self.xvel = 7
         
         if self.currentevent == 'charge':
             if self.rect.colliderect(Globals.player.rect):
@@ -1572,7 +1579,7 @@ class InternetBoss(Boss):
         self.intro = True
         
         Globals.player.arrowkey_enabled = False
-        #Globals.player.can_attack = False
+        Globals.player.can_attack = False
    
     def update(self):
         self.rect = pygame.Rect(self.image.get_rect())
