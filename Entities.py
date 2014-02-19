@@ -266,13 +266,11 @@ class Player(Entity):
                 self.xvel = -8
                 self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
-                if isinstance(item, Troll): item.health -= 10
             elif self.rect.x > item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = 9
                 self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
-                if isinstance(item, Troll): item.health -= 10
 
             elif self.rect.x < item.rect.x and isinstance(item, Boss):
                 self.sliding = True
@@ -1211,7 +1209,7 @@ class Troll(Entity):
         self.range_to_character = 0
         self.wall_separating = False
         self.health = 3
-        self.pausecycles = 0
+        self.pausecycles = 1
         self.can_damage = True
         self.x = self.rect.x
         self.y = self.rect.y
@@ -1265,8 +1263,9 @@ class Troll(Entity):
                 self.rect.top = block.rect.bottom  #set top to the bottom of block
                 self.yvel = 0 #stop vertical movement
 
-        if self.rect.colliderect(Globals.player.rect):
-            self.currentevent = 'explode'
+        if self.rect.y + self.rect.height <= Globals.camera.ybounds[0] or self.rect.y >= Globals.camera.ybounds[1] or self.rect.x + self.rect.width <= Globals.camera.xbounds[0] or self.rect.x >= Globals.camera.xbounds[1]:
+            self.kill()
+        
 
         #animations
         
@@ -1289,39 +1288,16 @@ class Troll(Entity):
         self.x = self.rect.x
         self.y = self.rect.y        
 
-    def event(self):  
+    def event(self): 
+        print self.currentevent 
         self.distance = self.calculate_range()[0]
         if self.distance < 17 and not self.currentevent == 'explode' and not self.currentevent == 'stunned':
             if (self.facingL and Globals.player.rect.x < self.rect.x) or (not self.facingL and Globals.player.rect.x > self.rect.x):
-                if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width < self.patrolblock.rect.x):
+                if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width/2 < self.patrolblock.rect.x):
                     if not self.object_between(): 
                         self.currentevent = 'charge'
                         if self.rect.x > Globals.player.rect.x: self.xvel = -7
                         else: self.xvel = 7
-        
-        if self.currentevent == 'charge':
-            if self.rect.colliderect(Globals.player.rect):
-                self.currentevent = 'explode'
-                if Globals.player.rect.x > self.rect.x:
-                    pass
-                else:
-                    pass
-                self.xvel = 0
-                self.yvel = 0
-                
-                if self.can_damage:
-                    self.can_damage = False
-                    self.damage_player()
-                    self.damage(1000)
-            if self.facingL and self.rect.x <= self.patrolblock.rect.x:
-                self.currentevent = 'pausing'
-                self.xvel = 0
-                self.yvel = 0
-                
-            elif not self.facingL and self.rect.x + self.rect.width >= self.patrolblock.rect.x + self.patrolblock.rect.width:
-                self.currentevent = 'pausing'
-                self.xvel = 0
-                self.yvel = 0
                 
                 
         elif self.currentevent == 'patrol':
