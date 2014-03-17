@@ -11,6 +11,7 @@ def main_menu():
 def level_1():
     #render floors
     floor_1 = Entities.Platform(4*32,12*32, 52,5)
+    '''
     floor_2 = Entities.Platform(63*32, 12*32, 5, 5)
     floor_3 = Entities.Platform(75*32, 12*32, 27, 5)
     floor_4 = Entities.Platform(20*32, 10*32, 15, 1)
@@ -30,7 +31,7 @@ def level_1():
     troll = Entities.Troll(27*32,8*32, True, floor_4)
         #specials
     goalpiece = Entities.goal_piece(101*32,10*32)    
-    
+    '''
     #other stuff
     Globals.player = Entities.Player(10*32,32*10)
     Globals.hud = Entities.hud()

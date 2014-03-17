@@ -81,17 +81,28 @@ while not done:
                     Globals.player.xvel = 0
             elif event.key == pygame.K_SPACE: 
                 if not Globals.player.sprinting and not Globals.player.attacking:
-                    if Globals.player.xvel > 0: 
-                        Globals.player.accel = 0.03
+                    if Globals.player.xvel > 0 and Globals.player.touching_ground: 
                         Globals.player.sprinting = True
-                    elif Globals.player.xvel < 0:
-                        Globals.player.accel = -0.03    
+                        Globals.player.right_pressed()
+                        Globals.player.xvel_min = -8
+                        Globals.player.xvel_max = 8
+
+                    elif Globals.player.xvel < 0 and Globals.player.touching_ground:
                         Globals.player.sprinting = True
+                        Globals.player.left_pressed()
+                        Globals.player.xvel_min = -8
+                        Globals.player.xvel_max = 8
+
                     else:
-                        Globals.player.sprinting = True
+                        if Globals.player.touching_ground: 
+                            Globals.player.sprinting = True
+                            Globals.player.xvel_min = -8
+                            Globals.player.xvel_max = 8
+
                 else:
-                    Globals.player.sprinting = False
-                    
+                    Globals.player.sprinting = False   
+                    Globals.player.xvel_min = -5
+                    Globals.player.xvel_max = 5               
                     
             
             #cheat keys        
@@ -116,7 +127,7 @@ while not done:
             mousex, mousey = event.pos
            
     #movement
-    if keypressed[K_LEFT] and Globals.player.keys['left'] == False:
+    if keypressed[K_LEFT] and not Globals.player.keys['right'] == True:
                 Globals.player.left_pressed()     
                 Globals.player.keys['left'] = True
                 
@@ -124,7 +135,7 @@ while not done:
             Globals.player.left_released()                
             Globals.player.keys['left'] = False
             
-    elif keypressed[K_RIGHT] and not keypressed[K_LEFT] and Globals.player.keys['right'] == False:
+    elif keypressed[K_RIGHT] and Globals.player.keys['left'] == False:
             Globals.player.right_pressed()
             Globals.player.keys['right'] = True
             
@@ -132,9 +143,6 @@ while not done:
         Globals.player.right_released()
         Globals.player.keys['right'] = False
         
-    elif not keypressed[K_RIGHT] and not keypressed[K_LEFT] and not Globals.player.decelerate and not Globals.player.sliding:
-        Globals.player.decelerate = True
-        Globals.player.accel = 0
     
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS

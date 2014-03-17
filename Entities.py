@@ -8,7 +8,6 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
-from msilib.schema import SelfReg
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -43,6 +42,9 @@ class Player(Entity):
         self.decelerate = False
         self.sprinting = False
         self.animatetimer = 6
+        self.co_friction = 0.6
+        self.xvel_max = 5
+        self.xvel_min = -5
         
         #load images
         '''
@@ -86,6 +88,7 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
+        self.frictionlist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
         self.xvel = float(self.xvel)
         if self.rect.y > Globals.hud.rect.y:
             self.health -= 4
@@ -94,71 +97,56 @@ class Player(Entity):
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
         self.rect.move_ip(self.x, self.y) #set the collision box location
+        print self.xvel, self.accel, self.sprinting
+        #friction
+        if self.frictionlist:
+            self.touching_ground = True
+            if self.xvel > 0.5: self.accel -= self.frictionlist[0].co_friction
+            elif self.xvel < -0.5: self.accel += self.frictionlist[0].co_friction
+            elif self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
+                self.xvel = 0 
+                self.accel = 0
+                if self.sliding: self.sliding = False
         
-        #check and apply slide
-        if self.sliding:
-            self.arrowkey_enabled = False
-            self.xvel -= self.xvel/10
-            if abs(self.xvel) < 1.5: 
-                self.xvel = 0
-                self.sliding = False
-                self.arrowkey_enabled = True
-                self.can_damage = True
-                
-        if self.decelerate and not self.sliding:
-            if self.sprinting:
-                if self.xvel < -0.3:
-                        self.xvel += 0.087
-                elif self.xvel > 0.3:
-                    self.xvel -= 0.087
-                else: self.xvel = 0
-            else:
-                if self.xvel < -0.267:
-                        self.xvel += 0.153
-                elif self.xvel > 0.267:
-                    self.xvel -= 0.153
-                else: self.xvel = 0
-            
-        #calculate acceleration
-        if not self.sliding and not self.decelerate and not self.sprinting:
-            if self.xvel < 0:
-                if self.xvel > -2.67: 
-                    self.xvel += self.accel
-                    if self.accel < 0: self.accel -= 0.006
-                    elif self.accel > 0: self.accel += 0.006
-                else: 
-                    if self.xvel < -2.67:
-                        self.xvel += 0.107
-                    else: self.xvel = 0
-
-            elif self.xvel > 0:
-                if self.xvel < 2.67: 
-                    self.xvel += self.accel
-                    if self.accel > 0: self.accel += 0.006
-                    elif self.accel < 0: self.accel -= 0.006
-                else: 
-                    if self.xvel > 2.67:
-                        self.xvel -= 0.107
-                    else: self.xvel = 0
-                        
-
-        if not self.sliding and not self.decelerate and self.sprinting:
-            if self.xvel < 0:
-                if self.xvel > -5: 
-                    self.xvel += self.accel
-                    if self.accel < 0: self.accel -= 0.013
-                    elif self.accel > 0: self.accel += 0.006
-                else: 
-                    self.accel = 0
-            elif self.xvel > 0:
-                if self.xvel < 5: 
-                    self.xvel += self.accel
-                    if self.accel > 0: self.accel += 0.013
-                    elif self.accel < 0: self.accel -= 0.006
-                else: 
-                    self.accel = 0        
+        #acceleration:
+        if not self.xvel + self.accel > self.xvel_max and not self.xvel + self.accel < self.xvel_min:
+            self.xvel += self.accel
+        elif self.xvel + self.accel > self.xvel_max + 0.5 or self.xvel + self.accel < self.xvel_min - 0.5:
+            self.xvel -= self.accel
+            print True
+        
         #move x and check for collision
         self.rect.x += self.xvel
+        self.check_x_coll()
+        #apply gravity
+        if self.yvel < 10:
+            self.yvel += abs(self.yvel) / 40 + 0.36
+      
+                
+        #move y and check for collisions
+        self.rect.y += self.yvel
+        self.check_y_coll()
+        self.collide_SPECIAL()
+                
+        
+        
+        #calculate damage with AI units
+        self.collide_AI()
+                
+        for item in Globals.group_PROJECTILES:
+            if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
+                self.health -= item.damage
+                item.kill()
+                
+        #determine sprite set
+        self.check_sprites()
+        #set position
+        self.x = self.rect.x
+        self.y = self.rect.y
+        if self.health < 0:
+            self.health = 0
+        
+    def check_x_coll(self):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
         for block in block_hit_list: #iterate through the list
             #Collision moving right means that player collided with left side of block
@@ -207,14 +195,8 @@ class Player(Entity):
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
-        
-        #apply gravity
-        if self.yvel < 10:
-            self.yvel += abs(self.yvel) / 40 + 0.36
-      
-                
-        #move y and check for collisions
-        self.rect.y += self.yvel
+    
+    def check_y_coll(self):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
         for block in block_hit_list: #iterate over list
             # check collision
@@ -224,35 +206,9 @@ class Player(Entity):
                 self.onGround = True #player is on ground
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
-                self.yvel = 0 #stop vertical movement
-                
-       
-        for item in Globals.group_SPECIAL: #iterate through special items
-            if isinstance(item, hud) and self.rect.colliderect(item.rect): #if player is colliding with the hud
-                self.reset() #reset position 
-                self.health -= 3 #damage
-                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
-            elif isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
-                self.next_level = True
-                item.kill()
-            elif isinstance(item, damage_tile) and self.rect.colliderect(item.rect):
-                self.health -= 1 
-                item.kill()
-                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
-            elif isinstance(item, key) and self.rect.colliderect(item.rect):
-                item.destroy = True
-                item.image = functions.get_image(os.path.join('Resources','General Resources','InvisibleTile.png'),(255,0,255))
-            elif isinstance(item, Coin) and self.rect.colliderect(item.rect):
-                Globals.score += 5
-                item.kill()
-                
-                
-        if not self.touching_ground: #check to see if player is within 20 pixels of a ground block 
-            for item in Globals.group_COLLIDEBLOCKS:
-                if self.rect.y < item.rect.y + item.rect.height and item.rect.y - 20 < self.rect.y + self.rect.height and self.rect.x + self.rect.width > item.rect.x and self.rect.x < item.rect.x + item.rect.width:
-                    self.touching_ground = True
+                self.yvel = 0 #stop vertical movement    
         
-        #calculate damage with AI units
+    def collide_AI(self):
         collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
         for item in collidearray:
             if self.imagename == 'slashL' and self.imageindex > 5 and item.rect.x < self.rect.x and item.can_damage and self.slash_damage:
@@ -294,143 +250,26 @@ class Player(Entity):
                 if self.can_damage: 
                     self.health -= 3
                     self.can_damage = False
-                
-        for item in Globals.group_PROJECTILES:
-            if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
-                self.health -= item.damage
-                item.kill()
-                
-        #determine sprite set
-        if not self.attacking:
-            if self.touching_ground: #set of ground sprites
-                if not self.accel == 0:
-                    if self.accel > 0: #sprite should be running right
-                        if not self.imagename == 'runR':
-                            self.change_image('runR')
-                            self.facing_right = True
-                    elif self.accel < 0: #sprite should be running left
-                        if not self.imagename == 'runL':
-                            self.change_image('runL')
-                            self.facing_right = False
-                    else: #player is stationary; check direction for sprite
-                        if self.facing_right == True: #sprite should be idling right
-                            if not self.imagename == 'idleR':
-                                self.change_image('idleR')
-                                self.facing_right = True
-                        elif self.facing_right == False: #sprite should be idling left
-                            if not self.imagename == 'idleL':
-                                self.change_image('idleL')
-                                self.facing_right = False
-                else:
-                    if self.xvel > 0: #sprite should be running right
-                        if not self.imagename == 'runR':
-                            self.change_image('runR')
-                            self.facing_right = True
-                    elif self.xvel < 0: #sprite should be running left
-                        if not self.imagename == 'runL':
-                            self.change_image('runL')
-                            self.facing_right = False
-                    else: #player is stationary; check direction for sprite
-                        if self.facing_right == True: #sprite should be idling right
-                            if not self.imagename == 'idleR':
-                                self.change_image('idleR')
-                                self.facing_right = True
-                        elif self.facing_right == False: #sprite should be idling left
-                            if not self.imagename == 'idleL':
-                                self.change_image('idleL')
-                                self.facing_right = False
-            else: #set of mid-air sprites
-                if self.accel == 0:
-                    if self.xvel > 0: #sprite should be jumping right
-                        if not self.imagename == "jumpR":
-                                self.change_image('jumpR')
-                                self.facing_right = True
-                    elif self.xvel < 0: #sprite should be jumping left
-                        if not self.imagename == 'jumpL':
-                                self.change_image('jumpL')
-                                self.facing_right = False
-                    else: #check direction player is facing
-                        if self.facing_right == True: #sprite should be jumping right
-                            if not self.imagename == "jumpR":
-                                self.change_image('jumpR')
-                                self.facing_right = True
-                        else: #sprite should be jumping left
-                            if not self.imagename == 'jumpL':
-                                self.change_image('jumpL')
-                                self.facing_right = False
-                else:
-                    if self.xvel > 0: #sprite should be jumping right
-                        if not self.imagename == "jumpR":
-                                self.change_image('jumpR')
-                                self.facing_right = True
-                        elif self.xvel < 0: #sprite should be jumping left
-                            if not self.imagename == 'jumpL':
-                                    self.change_image('jumpL')
-                                    self.facing_right = False
-                        else: #check direction player is facing
-                            if self.facing_right == True: #sprite should be jumping right
-                                if not self.imagename == "jumpR":
-                                    self.change_image('jumpR')
-                                    self.facing_right = True
-                            else: #sprite should be jumping left
-                                if not self.imagename == 'jumpL':
-                                    self.change_image('jumpL')
-                                    self.facing_right = False
-        else:
-            if self.attack == 'spin':
-                if self.facing_right:
-                    if not self.imagename == 'spinR':
-                        self.change_image('spinR')
-                        self.rect.x -= 8
-                else:
-                    if not self.imagename == 'spinL':
-                        self.change_image('spinL')
-                        self.rect.x -= 8
-            elif self.attack == 'slash':
-                if self.facing_right:
-                    if not self.imagename == 'slashR':
-                        self.change_image('slashR')
-                        self.rect.x -= 3
-                        self.slash_damage = True
-                else:
-                    if not self.imagename == 'slashL':
-                        self.change_image('slashL')
-                        self.rect.x -= 13
-                        self.slash_damage = True
-            elif self.attack == 'shout':
-                if self.facing_right:
-                    if not self.imagename == 'shoutR':
-                        self.change_image('shoutR')
-                        self.rect.x += 3
-                else:
-                    if not self.imagename == 'shoutL':
-                        self.change_image('shoutL')
-                        self.rect.x -= 4
-            elif self.attack == 'lazer':
-                if self.facing_right:
-                    if not self.imagename == 'shoutR':
-                        self.change_image('shoutR')
-                        self.rect.x += 3
-                else:
-                    if not self.imagename == 'shoutL':
-                        self.change_image('shoutL')
-                        self.rect.x -= 4
-                        
-            elif self.attack == 'teabag':
-                if self.facing_right:
-                    if not self.imagename == 'teabagR':
-                        self.change_image('teabagR')
-                        self.rect.x += 3
-                else:
-                    if not self.imagename == 'teabagL':
-                        self.change_image('teabagL')
-                        self.rect.x -= 4
-        #set position
-        self.x = self.rect.x
-        self.y = self.rect.y
-        if self.health < 0:
-            self.health = 0
         
+    def collide_SPECIAL(self):
+        for item in Globals.group_SPECIAL: #iterate through special items
+            if isinstance(item, hud) and self.rect.colliderect(item.rect): #if player is colliding with the hud
+                self.reset() #reset position 
+                self.health -= 3 #damage
+                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
+            elif isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
+                self.next_level = True
+                item.kill()
+            elif isinstance(item, damage_tile) and self.rect.colliderect(item.rect):
+                self.health -= 1 
+                item.kill()
+                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
+            elif isinstance(item, key) and self.rect.colliderect(item.rect):
+                item.destroy = True
+                item.image = functions.get_image(os.path.join('Resources','General Resources','InvisibleTile.png'),(255,0,255))
+            elif isinstance(item, Coin) and self.rect.colliderect(item.rect):
+                Globals.score += 5
+                item.kill()
         
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
@@ -541,7 +380,151 @@ class Player(Entity):
             
         else: self.imageindex += 1  #otherwise, allow the next rotation
    
-
+    def check_sprites(self):
+        if not self.attacking:
+            if self.touching_ground: #set of ground sprites
+                if not self.accel == 0 and not self.keys['left'] == False and not self.keys['right'] == False:
+                    if self.accel > 0: #sprite should be running right
+                        if not self.imagename == 'runR':
+                            self.change_image('runR')
+                            self.facing_right = True
+                    elif self.accel < 0: #sprite should be running left
+                        if not self.imagename == 'runL':
+                            self.change_image('runL')
+                            self.facing_right = False
+                    else: #player is stationary; check direction for sprite
+                        if self.facing_right == True: #sprite should be idling right
+                            if not self.imagename == 'idleR':
+                                self.change_image('idleR')
+                                self.facing_right = True
+                        elif self.facing_right == False: #sprite should be idling left
+                            if not self.imagename == 'idleL':
+                                self.change_image('idleL')
+                                self.facing_right = False
+                elif not self.accel == 0 and self.keys['left'] == False and self.keys['right'] == False:
+                    if self.xvel > 0: #sprite should be running right
+                        if not self.imagename == 'runR':
+                            self.change_image('runR')
+                            self.facing_right = True
+                    elif self.xvel < 0: #sprite should be running left
+                        if not self.imagename == 'runL':
+                            self.change_image('runL')
+                            self.facing_right = False
+                    else: #player is stationary; check direction for sprite
+                        if self.facing_right == True: #sprite should be idling right
+                            if not self.imagename == 'idleR':
+                                self.change_image('idleR')
+                                self.facing_right = True
+                        elif self.facing_right == False: #sprite should be idling left
+                            if not self.imagename == 'idleL':
+                                self.change_image('idleL')
+                                self.facing_right = False
+            
+                else:
+                    if self.xvel > 0: #sprite should be running right
+                        if not self.imagename == 'runR':
+                            self.change_image('runR')
+                            self.facing_right = True
+                    elif self.xvel < 0: #sprite should be running left
+                        if not self.imagename == 'runL':
+                            self.change_image('runL')
+                            self.facing_right = False
+                    else: #player is stationary; check direction for sprite
+                        if self.facing_right == True: #sprite should be idling right
+                            if not self.imagename == 'idleR':
+                                self.change_image('idleR')
+                                self.facing_right = True
+                        elif self.facing_right == False: #sprite should be idling left
+                            if not self.imagename == 'idleL':
+                                self.change_image('idleL')
+                                self.facing_right = False
+            else: #set of mid-air sprites
+                if self.accel == 0:
+                    if self.xvel > 0: #sprite should be jumping right
+                        if not self.imagename == "jumpR":
+                                self.change_image('jumpR')
+                                self.facing_right = True
+                    elif self.xvel < 0: #sprite should be jumping left
+                        if not self.imagename == 'jumpL':
+                                self.change_image('jumpL')
+                                self.facing_right = False
+                    else: #check direction player is facing
+                        if self.facing_right == True: #sprite should be jumping right
+                            if not self.imagename == "jumpR":
+                                self.change_image('jumpR')
+                                self.facing_right = True
+                        else: #sprite should be jumping left
+                            if not self.imagename == 'jumpL':
+                                self.change_image('jumpL')
+                                self.facing_right = False
+                else:
+                    if self.xvel > 0: #sprite should be jumping right
+                        if not self.imagename == "jumpR":
+                                self.change_image('jumpR')
+                                self.facing_right = True
+                        elif self.xvel < 0: #sprite should be jumping left
+                            if not self.imagename == 'jumpL':
+                                    self.change_image('jumpL')
+                                    self.facing_right = False
+                        else: #check direction player is facing
+                            if self.facing_right == True: #sprite should be jumping right
+                                if not self.imagename == "jumpR":
+                                    self.change_image('jumpR')
+                                    self.facing_right = True
+                            else: #sprite should be jumping left
+                                if not self.imagename == 'jumpL':
+                                    self.change_image('jumpL')
+                                    self.facing_right = False
+        else:
+            if self.attack == 'spin':
+                if self.facing_right:
+                    if not self.imagename == 'spinR':
+                        self.change_image('spinR')
+                        self.rect.x -= 8
+                else:
+                    if not self.imagename == 'spinL':
+                        self.change_image('spinL')
+                        self.rect.x -= 8
+            elif self.attack == 'slash':
+                if self.facing_right:
+                    if not self.imagename == 'slashR':
+                        self.change_image('slashR')
+                        self.rect.x -= 3
+                        self.slash_damage = True
+                else:
+                    if not self.imagename == 'slashL':
+                        self.change_image('slashL')
+                        self.rect.x -= 13
+                        self.slash_damage = True
+            elif self.attack == 'shout':
+                if self.facing_right:
+                    if not self.imagename == 'shoutR':
+                        self.change_image('shoutR')
+                        self.rect.x += 3
+                else:
+                    if not self.imagename == 'shoutL':
+                        self.change_image('shoutL')
+                        self.rect.x -= 4
+            elif self.attack == 'lazer':
+                if self.facing_right:
+                    if not self.imagename == 'shoutR':
+                        self.change_image('shoutR')
+                        self.rect.x += 3
+                else:
+                    if not self.imagename == 'shoutL':
+                        self.change_image('shoutL')
+                        self.rect.x -= 4
+                        
+            elif self.attack == 'teabag':
+                if self.facing_right:
+                    if not self.imagename == 'teabagR':
+                        self.change_image('teabagR')
+                        self.rect.x += 3
+                else:
+                    if not self.imagename == 'teabagL':
+                        self.change_image('teabagL')
+                        self.rect.x -= 4
+       
     def reset(self):
         self.rect.x = self.startpoint[0] #go back to the start point
         self.rect.y = self.startpoint[1] 
@@ -550,7 +533,6 @@ class Player(Entity):
         self.xvel= 0 #stop velocities
         self.yvel = 0
         
-    
     def change_image(self, image):
         self.imageindex = 0 #reset the image position
         self.imagename = image #change the image list
@@ -639,34 +621,36 @@ class Player(Entity):
                     tv = Television(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
 
     def right_pressed(self):
-        if self.arrowkey_enabled:
+        if self.arrowkey_enabled and not self.sliding:
                 if not self.xvel < 0: 
-                    self.xvel = 1.33 #right arrow key pressed
-                    self.accel = 0.0133
+                    if self.sprinting:
+                        self.accel = 0.6
+                    else:
+                        self.accel = 0.3
                 else: 
-                    if self.sprinting: self.accel = 0.006
-                    else: self.accel = 0.0533
+                    if self.sprinting: self.accel = 0.3
+                    else: self.accel = 0.3
                 self.decelerate = False
                 
     def left_pressed(self):
-        if self.arrowkey_enabled:
+        if self.arrowkey_enabled and not self.sliding:
                     if not self.xvel > 0: 
-                        self.xvel = -1.33 #left arrow key down
-                        self.accel = -0.0133 
+                        if self.sprinting:
+                            self.accel = -0.6
+                        else:
+                            self.accel = -0.3
                     else: 
-                        if self.sprinting: self.accel = -0.006
-                        else: self.accel = -0.0533
+                        if self.sprinting: self.accel = -0.3
+                        else: self.accel = -0.3
                     self.decelerate = False
                     
     def left_released(self):
-        if not self.xvel > 0 and self.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving right
+        if not self.xvel > 0 and self.arrowkey_enabled and not self.sliding: #set the player's horizontal velocity to 0 if player isn't moving right
                 self.accel = 0
-                self.decelerate = True
                 
     def right_released(self):
-        if not self.xvel < 0: #set the player's horizontal velocity to 0 if player isn't moving left
+        if not self.xvel < 0 and not self.sliding and self.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving left
             self.accel = 0
-            self.decelerate = True
 
 #collision shit
 class Platform(Entity):
@@ -701,7 +685,7 @@ class Platform(Entity):
                 self.image.blit(self.images[5], (0,0))
                 for rows in range(0, blocksdown):
                     self.image.blit(self.images[4], (0,rows*32))
-    
+            self.co_friction = 0.01
             self.rect = pygame.Rect(self.image.get_rect())
             self.rect.move_ip(x,y)
             self.pos = (self.rect.x, self.rect.y)
@@ -768,6 +752,7 @@ class Door(Entity):
         self.width = blocksacross*32
         self.height = blocksdown*32
         self.index = index
+        self.co_friction = 0.01
     
     def remove_one_horiz(self):
         if self.width == 32: 
