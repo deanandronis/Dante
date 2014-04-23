@@ -81,29 +81,26 @@ while not done:
                     Globals.player.xvel = 0
             elif event.key == pygame.K_SPACE: 
                 if not Globals.player.sprinting and not Globals.player.attacking:
-                    if Globals.player.xvel > 0 and Globals.player.touching_ground: 
+                    if Globals.player.accel > 0 and Globals.player.touching_ground: 
                         Globals.player.sprinting = True
-                        Globals.player.right_pressed()
-                        Globals.player.xvel_min = -8
-                        Globals.player.xvel_max = 8
+                        Globals.player.xvel_min = -6.5 / Globals.player.co_friction
+                        Globals.player.xvel_max = 6.5 / Globals.player.co_friction
 
-                    elif Globals.player.xvel < 0 and Globals.player.touching_ground:
+                    elif Globals.player.accel < 0 and Globals.player.touching_ground:
                         Globals.player.sprinting = True
-                        Globals.player.left_pressed()
-                        Globals.player.xvel_min = -8
-                        Globals.player.xvel_max = 8
+                        Globals.player.xvel_min = -6.5 / Globals.player.co_friction
+                        Globals.player.xvel_max = 6.5 / Globals.player.co_friction
 
                     else:
                         if Globals.player.touching_ground: 
                             Globals.player.sprinting = True
-                            Globals.player.xvel_min = -8
-                            Globals.player.xvel_max = 8
+                            Globals.player.xvel_min = -6.5 / Globals.player.co_friction
+                            Globals.player.xvel_max = 6.5 / Globals.player.co_friction
 
                 else:
                     Globals.player.sprinting = False   
-                    Globals.player.xvel_min = -5
-                    Globals.player.xvel_max = 5               
-                    
+                    Globals.player.xvel_min = -5 / Globals.player.co_friction
+                    Globals.player.xvel_max = 5 / Globals.player.co_friction
             
             #cheat keys        
             elif event.key == pygame.K_t:
@@ -135,14 +132,19 @@ while not done:
             Globals.player.left_released()                
             Globals.player.keys['left'] = False
             
-    elif keypressed[K_RIGHT] and Globals.player.keys['left'] == False:
+    if keypressed[K_RIGHT] and Globals.player.keys['left'] == False:
             Globals.player.right_pressed()
             Globals.player.keys['right'] = True
             
     elif not keypressed[K_RIGHT] and Globals.player.keys['right'] == True:     
         Globals.player.right_released()
         Globals.player.keys['right'] = False
-        
+    
+    if not keypressed[K_RIGHT] and not keypressed[K_LEFT]:
+        if Globals.player.keys['left']: 
+            Globals.player.left_released()
+        if Globals.player.keys['right']: 
+            Globals.player.right_released()        
     
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS

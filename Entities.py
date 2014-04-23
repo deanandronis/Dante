@@ -38,11 +38,10 @@ class Player(Entity):
         self.slideduration = 0
         self.slidetimer = 0
         self.can_damage = True
-        self.accel = 0
         self.decelerate = False
         self.sprinting = False
         self.animatetimer = 6
-        self.co_friction = 0.6
+        self.co_friction = float(0.6)
         self.xvel_max = 5
         self.xvel_min = -5
         
@@ -88,7 +87,8 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
-        self.frictionlist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
+        print self.keys
+        self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
         self.xvel = float(self.xvel)
         if self.rect.y > Globals.hud.rect.y:
             self.health -= 4
@@ -97,38 +97,22 @@ class Player(Entity):
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
         self.rect.move_ip(self.x, self.y) #set the collision box location
-        print self.xvel, self.accel, self.sprinting
         #friction
-        if self.frictionlist:
-            self.touching_ground = True
-            if self.xvel > 0.5: self.accel -= self.frictionlist[0].co_friction
-            elif self.xvel < -0.5: self.accel += self.frictionlist[0].co_friction
-            elif self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
-                self.xvel = 0 
-                self.accel = 0
-                if self.sliding: self.sliding = False
-        
-        #acceleration:
-        if not self.xvel + self.accel > self.xvel_max and not self.xvel + self.accel < self.xvel_min:
-            self.xvel += self.accel
-        elif self.xvel + self.accel > self.xvel_max + 0.5 or self.xvel + self.accel < self.xvel_min - 0.5:
-            self.xvel -= self.accel
-            print True
-        
+        if self.collidelist:
+            if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
+                self.xvel = 0      
+            self.touching_ground = True   
         #move x and check for collision
         self.rect.x += self.xvel
         self.check_x_coll()
         #apply gravity
         if self.yvel < 10:
             self.yvel += abs(self.yvel) / 40 + 0.36
-      
-                
+           
         #move y and check for collisions
         self.rect.y += self.yvel
         self.check_y_coll()
         self.collide_SPECIAL()
-                
-        
         
         #calculate damage with AI units
         self.collide_AI()
@@ -153,7 +137,6 @@ class Player(Entity):
             if not self.attacking:
                 if self.xvel > 0:
                     self.rect.right = block.rect.left #set right side of player to left side of block
-                    self.accel = 0
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
@@ -161,7 +144,6 @@ class Player(Entity):
                 elif self.xvel < 0:
                     #Collision moving left means player collided with right side of block
                     self.rect.left = block.rect.right #set left side of player to right side of block
-                    self.accel = 0
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
@@ -169,14 +151,12 @@ class Player(Entity):
             elif self.imagename == 'spinL' or self.imagename == 'slashL' or self.imagename == 'shoutL':
                 if self.rect.x > block.rect.x:
                     self.rect.left = block.rect.right 
-                    self.accel = 0
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
                     
                 else:
                     self.rect.right = block.rect.left 
-                    self.accel = 0
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
@@ -184,14 +164,12 @@ class Player(Entity):
             elif self.imagename == 'spinR' or self.imagename == 'slashR' or self.imagename == 'shoutR':
                 if self.rect.x < block.rect.x:
                     self.rect.right = block.rect.left
-                    self.accel = 0
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
                     
                 else:
                     self.rect.left = block.rect.right
-                    self.accel = 0
                     self.xvel = 0
                     self.keys['left'] = False
                     self.keys['right'] = False
@@ -220,17 +198,14 @@ class Player(Entity):
             elif self.rect.x < item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = -8
-                self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
             elif self.rect.x > item.rect.x and not isinstance(item, Boss):
                 self.sliding = True
                 self.xvel = 9
-                self.accel = 0
                 if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
 
             elif self.rect.x < item.rect.x and isinstance(item, Boss):
                 self.sliding = True
-                self.accel = 0
                 self.attacking = False
                 self.can_attack = True
                 self.xvel = -15
@@ -243,7 +218,6 @@ class Player(Entity):
                 self.sliding = True
                 self.attacking = False
                 self.can_attack = True
-                self.accel = 0
                 self.xvel = 15
                 self.yvel = -5
                 self.rect.x = item.rect.x + item.rect.width
@@ -383,12 +357,13 @@ class Player(Entity):
     def check_sprites(self):
         if not self.attacking:
             if self.touching_ground: #set of ground sprites
-                if not self.accel == 0 and not self.keys['left'] == False and not self.keys['right'] == False:
-                    if self.accel > 0: #sprite should be running right
+                if not self.xvel == 0 and not self.keys['left'] == False and not self.keys['right'] == False:
+                    if self.xvel > 0: #sprite should be running right
                         if not self.imagename == 'runR':
                             self.change_image('runR')
                             self.facing_right = True
-                    elif self.accel < 0: #sprite should be running left
+
+                    elif self.xvel < 0: #sprite should be running left
                         if not self.imagename == 'runL':
                             self.change_image('runL')
                             self.facing_right = False
@@ -401,7 +376,7 @@ class Player(Entity):
                             if not self.imagename == 'idleL':
                                 self.change_image('idleL')
                                 self.facing_right = False
-                elif not self.accel == 0 and self.keys['left'] == False and self.keys['right'] == False:
+                elif not self.xvel == 0 and self.keys['left'] == False and self.keys['right'] == False:
                     if self.xvel > 0: #sprite should be running right
                         if not self.imagename == 'runR':
                             self.change_image('runR')
@@ -439,7 +414,7 @@ class Player(Entity):
                                 self.change_image('idleL')
                                 self.facing_right = False
             else: #set of mid-air sprites
-                if self.accel == 0:
+                if self.xvel == 0:
                     if self.xvel > 0: #sprite should be jumping right
                         if not self.imagename == "jumpR":
                                 self.change_image('jumpR')
@@ -622,35 +597,19 @@ class Player(Entity):
 
     def right_pressed(self):
         if self.arrowkey_enabled and not self.sliding:
-                if not self.xvel < 0: 
-                    if self.sprinting:
-                        self.accel = 0.6
-                    else:
-                        self.accel = 0.3
-                else: 
-                    if self.sprinting: self.accel = 0.3
-                    else: self.accel = 0.3
-                self.decelerate = False
+                self.xvel = 3.5
                 
     def left_pressed(self):
         if self.arrowkey_enabled and not self.sliding:
-                    if not self.xvel > 0: 
-                        if self.sprinting:
-                            self.accel = -0.6
-                        else:
-                            self.accel = -0.3
-                    else: 
-                        if self.sprinting: self.accel = -0.3
-                        else: self.accel = -0.3
-                    self.decelerate = False
+                    self.xvel = -3.5
                     
     def left_released(self):
         if not self.xvel > 0 and self.arrowkey_enabled and not self.sliding: #set the player's horizontal velocity to 0 if player isn't moving right
-                self.accel = 0
+                self.xvel = 0
                 
     def right_released(self):
         if not self.xvel < 0 and not self.sliding and self.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving left
-            self.accel = 0
+            self.xvel = 0
 
 #collision shit
 class Platform(Entity):
@@ -685,7 +644,7 @@ class Platform(Entity):
                 self.image.blit(self.images[5], (0,0))
                 for rows in range(0, blocksdown):
                     self.image.blit(self.images[4], (0,rows*32))
-            self.co_friction = 0.01
+            self.co_friction = 1
             self.rect = pygame.Rect(self.image.get_rect())
             self.rect.move_ip(x,y)
             self.pos = (self.rect.x, self.rect.y)
@@ -752,7 +711,7 @@ class Door(Entity):
         self.width = blocksacross*32
         self.height = blocksdown*32
         self.index = index
-        self.co_friction = 0.01
+        self.co_friction = 1
     
     def remove_one_horiz(self):
         if self.width == 32: 
