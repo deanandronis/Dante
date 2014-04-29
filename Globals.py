@@ -25,6 +25,7 @@ group_AI = pygame.sprite.Group()
 group_DRAWONLY = pygame.sprite.Group()
 group_BG = pygame.sprite.Group()
 group_BUTTON = pygame.sprite.Group()
+group_BACKTILES = pygame.sprite.Group()
 
 def reset_all(): #reset all variables back to starting values
     global group_SPECIAL 

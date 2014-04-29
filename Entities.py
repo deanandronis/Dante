@@ -44,6 +44,7 @@ class Player(Entity):
         self.co_friction = float(0.6)
         self.xvel_max = 5
         self.xvel_min = -5
+        self.grav = True
         
         #load images
         '''
@@ -87,7 +88,6 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
-        print self.keys
         self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
         self.xvel = float(self.xvel)
         if self.rect.y > Globals.hud.rect.y:
@@ -106,7 +106,7 @@ class Player(Entity):
         self.rect.x += self.xvel
         self.check_x_coll()
         #apply gravity
-        if self.yvel < 10:
+        if self.yvel < 10 and self.grav:
             self.yvel += abs(self.yvel) / 40 + 0.36
            
         #move y and check for collisions
@@ -619,36 +619,56 @@ class Platform(Entity):
             if Globals.stage == 1:
                 self.imageloc = os.path.join('Resources','Stage 1 Resources','LevelTiles') #set the location for images
                 self.images = [
-                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_left_corner.png'), (255,0,255)),
-                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_centre1.png'), (255,0,255)),
-                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_centre2.png'), (255,0,255)),
-                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_right_corner.png'), (255,0,255)),
-                           functions.get_image(os.path.join(self.imageloc,'bottom_tile.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformL_EdgeBot.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBot1.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBot2.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBot3.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformR_EdgeBot.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'Floor_tile_single.png'), (255,0,255)),
                            ]
-            self.image = pygame.Surface((blocksacross*32,blocksdown*32))
+            self.image = pygame.Surface((blocksacross*32-16,blocksdown*56 + 8))
             if not blocksacross == 1:    
                 for rows in range(0,blocksdown):
                     for columns in range(0,blocksacross):
                         if rows == 0 and columns == 0:
-                            self.image.blit(self.images[0], (columns*32,rows*32))
+                            self.image.blit(self.images[0], (columns*32,rows*56))
+                            top = platformback(columns*32 + x, rows * 32 + y, 0)
                         elif rows == 0 and columns == blocksacross - 1:
-                            self.image.blit(self.images[3], (columns*32,rows*32))
-                        elif rows == 0 and columns%2 == 0:
-                            self.image.blit(self.images[1], (columns*32,rows*32))
-                        elif rows == 0 and columns%2 == 1:
-                            self.image.blit(self.images[1], (columns*32,rows*32))
+                            self.image.blit(self.images[4], (columns*32,rows*56))
+                            top = platformback(columns*32 + x, rows * 32 + y, 2)
+                        elif rows == 0 and columns%3 == 0:
+                            self.image.blit(self.images[1], (columns*32,rows*56))
+                            top = platformback(columns*32 + x, rows * 32 + y, 1)
+                        elif rows == 0 and columns%3 == 1:
+                            self.image.blit(self.images[2], (columns*32,rows*56))
+                            top = platformback(columns*32 + x, rows * 32 + y, 1)
+                        elif rows == 0 and columns%3 == 2:
+                            self.image.blit(self.images[3], (columns*32,rows*56))
+                            top = platformback(columns*32 + x, rows*56 + y, 1)
                         else:
-                            self.image.blit(self.images[4], (columns*32,rows*32))
+                            self.image.blit(self.images[5], (columns*32,rows*56))
             else:
                 self.image.blit(self.images[5], (0,0))
                 for rows in range(0, blocksdown):
-                    self.image.blit(self.images[4], (0,rows*32))
+                    self.image.blit(self.images[4], (0,rows*56))
             self.co_friction = 1
-            self.rect = pygame.Rect(self.image.get_rect())
-            self.rect.move_ip(x,y)
+            self.rect = pygame.Rect(x, y +8, blocksacross*32-16, blocksdown*56 - 8)
             self.pos = (self.rect.x, self.rect.y)
         
+class platformback(Entity):
+    def __init__(self, x, y, index):
+        Entity.__init__(self, Globals.group_BACKTILES)     
+        if index == 0:   
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformL_EdgeTop.bmp'), (255,0,255))
+        elif index == 1:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreTop.bmp'), (255,0,255))
+        elif index == 2:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTop.bmp'), (255,0,255))
+        self.pos = (x,y)
+        
+
+
 class damage_tile(Entity):
     def __init__(self,x,y):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
@@ -1120,7 +1140,7 @@ class Background(pygame.sprite.Sprite):
         self.pos = (self.rect.x, self.rect.y)
 
 class Troll(Entity):
-    def __init__(self, x, y, facingL, patrolblock):
+    def __init__(self, x, y, facingL, (leftpatrollimit, rightpatrollimit), (chasex, chasey, chasewidth, chaseheight)):
         Entity.__init__(self, Globals.group_AI)
         #load images
         self.imageloc = os.path.join('Resources','Stage 1 Resources','Troll','Bitmaps')
@@ -1150,22 +1170,21 @@ class Troll(Entity):
         self.yvel = 0.0
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
-        self.range_to_character = 0
-        self.wall_separating = False
         self.health = 3
         self.pausecycles = 1
         self.can_damage = True
         self.x = self.rect.x
         self.y = self.rect.y
         self.stunned = False
-        self.currentevent = 'patrol'
+        self.detected = False
+        self.status = 'patrol'
         self.distance = 0
-        self.patrolblock = patrolblock
+        self.patrollimits = (leftpatrollimit, rightpatrollimit)
         self.can_die = True
         self.can_stun = True        
-        self.xlist = []
-        self.ylist = []
         self.damage_on_contact = False
+        self.chaserect = pygame.Rect(chasex, chasey, chasewidth, chaseheight)
+        
         
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
@@ -1178,10 +1197,10 @@ class Troll(Entity):
                 self.image_index = 0
     
     def update(self):
+        print self.status
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
         self.event()
-        
         self.rect.x += self.xvel
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that troll is colliding with
         for block in block_hit_list: #iterate through the list
@@ -1210,17 +1229,17 @@ class Troll(Entity):
         if self.rect.y + self.rect.height <= Globals.camera.ybounds[0] or self.rect.y >= Globals.camera.ybounds[1] or self.rect.x + self.rect.width <= Globals.camera.xbounds[0] or self.rect.x >= Globals.camera.xbounds[1]:
             self.kill()
         
-
+        if self.chaserect.collidepoint((Globals.player.x, Globals.player.y)):
+            self.detected = True
         #animations
-        
-        if self.facingL and not self.currentevent == 'explode':
+        if self.facingL and not self.status == 'explode':
             if self.xvel == 0:
                 if not self.imagename == 'idleL':
                     self.change_image('idleL')
             else:
                 if not self.imagename == 'walkL':
                     self.change_image('walkL')
-        elif not self.facingL and not self.currentevent == 'explode':
+        elif not self.facingL and not self.status == 'explode':
             if self.xvel == 0:
                 if not self.imagename == 'idleR':
                     self.change_image('idleR')
@@ -1233,49 +1252,34 @@ class Troll(Entity):
         self.y = self.rect.y        
 
     def event(self): 
-        print self.currentevent 
-        self.distance = self.calculate_range()[0]
-        if self.distance < 17 and not self.currentevent == 'explode' and not self.currentevent == 'stunned':
-            if (self.facingL and Globals.player.rect.x < self.rect.x) or (not self.facingL and Globals.player.rect.x > self.rect.x):
-                if not self.currentevent == 'charge' and not (Globals.player.rect.x > self.patrolblock.rect.x + self.patrolblock.rect.width or Globals.player.rect.x + Globals.player.rect.width/2 < self.patrolblock.rect.x):
-                    if not self.object_between(): 
-                        self.currentevent = 'charge'
-                        if self.rect.x > Globals.player.rect.x: self.xvel = -7
-                        else: self.xvel = 7
+        if self.status == 'patrol':
+            if self.facingL:
+                self.xvel = -2
+                if self.rect.x < self.patrollimits[0]:
+                    self.status = 'stopL'
+                    self.xvel = 0
+            if not self.facingL:
+                self.xvel = 2
+                if self.rect.x + self.rect.width > self.patrollimits[1]:
+                    self.status = 'stopR'
+                    self.xvel = 0
+        elif self.status == 'stopL':
+            if self.pausecycles%180 == 0:
+                self.pausecycles = 1
+                self.status = 'patrol'
+                self.facingL = False
+            else: self.pausecycles += 1
+            
+        elif self.status == 'stopR':
+            if self.pausecycles%180 == 0:
+                self.pausecycles = 1
+                self.status = 'patrol'
+                self.facingL = True
+            else: self.pausecycles += 1  
                 
-                
-        elif self.currentevent == 'patrol':
-            if self.facingL: self.xvel = -3
-            else: self.xvel = 3
-                      
-            if self.facingL and self.rect.x <= self.patrolblock.rect.x:
-                self.currentevent = 'pausing'
-                self.xvel = 0
-                self.yvel = 0
-                
-            elif not self.facingL and self.rect.x + self.rect.width >= self.patrolblock.rect.x + self.patrolblock.rect.width:
-                self.currentevent = 'pausing'
-                self.xvel = 0
-                self.yvel = 0
-                
-        elif self.currentevent == 'pausing':
-            if self.pausecycles%140==0: 
-                self.currentevent = 'patrol'
-                if self.facingL: 
-                    self.facingL = False
-                else: 
-                    self.facingL = True
-            self.pausecycles += 1     
-        
-        elif self.currentevent == 'stunned':
-            if self.pausecycles%140==0: 
-                self.currentevent = 'patrol'
-                self.can_stun = True
-            self.pausecycles += 1         
                
     def damage(self, damage):
         self.health -= damage
-        
         if self.health <= 0 and self.can_die:
             self.can_die = False
             self.health = 0
@@ -1293,17 +1297,7 @@ class Troll(Entity):
                     self.x -= 18
                     self.rect.x -= 18
                     self.rect.y -= 16
-            
-    def damage_player(self):
-        Globals.player.health -= 4
-        Globals.player.sliding = True
-        if self.rect.x > Globals.player.rect.x:
-            Globals.player.xvel = -9
-            Globals.player.yvel =-4
-        else:
-            Globals.player.xvel = 9
-            Globals.player.yvel = -4
-       
+                   
     def change_image(self, image):
         
         if not self.imagename == image:
@@ -1311,52 +1305,7 @@ class Troll(Entity):
             self.imagename = image #change the image list
             self.image = self.images[self.imagename][0] #set the image to the first image in the list
             self.numimages = len(self.images[self.imagename]) - 1 #set the length of the list
-        
-    def calculate_range(self):
-        self.playerx = Globals.player.rect.x + Globals.player.rect.width/2
-        self.playery = Globals.player.rect.y + Globals.player.rect.height/2
-        self.xpos = self.rect.x + self.rect.width/2
-        self.ypos = self.rect.y + self.rect.height/2
-        
-        #calc horizontal and vertical distances
-        if self.xpos > self.playerx: self.xdist_to_character = self.xpos - self.playerx
-        else: self.xdist_to_character = self.playerx - self.xpos
-        if self.ypos > self.playery: self.ydist_to_character = self.ypos - self.playery
-        else: self.ydist_to_character = self.playery - self.ypos
-        
-        #calculate overall distance
-        self.dist_to_character = math.sqrt((self.ydist_to_character^2)+(self.xdist_to_character*2))
-        self.angle_to_character = math.atan2(self.ydist_to_character, self.xdist_to_character)
-        return [self.dist_to_character, self.angle_to_character]
-    
-    def object_between(self):
-        self.xpos = self.rect.x + self.rect.width/2
-        self.ypos = self.rect.y + self.rect.height/2
-        self.playerx = (Globals.player.rect.x + Globals.player.rect.width/2) - self.xpos
-        self.playery = (Globals.player.rect.y + Globals.player.rect.height/2) - self.ypos
-        self.collide = False
-        self.ylist = []
-        try:
-            gradient = float(self.playery)/float(self.playerx)
-            if 0 < self.playerx: self.xlist = [x for x in functions.xfrange(0, self.playerx, 0.1)]
-            else: 
-                self.xlist = [x for x in functions.xfrange(self.playerx, 0, 0.1)]
-                
-            for value in self.xlist:
-                self.ypoint = gradient * value
-                self.ylist.append(self.ypoint)
-            for key, value in enumerate(self.xlist):
-                for item in Globals.group_COLLIDEBLOCKS:
-                    if item.rect.collidepoint(value + self.xpos, self.ylist[key] + self.ypos):
-                        self.collide = True
-                        return self.collide
-                    else: pass
-            return self.collide
-            
-        except:
-            return True
-            print "Throw"
-        
+                    
     def stun(self):
         self.currentevent = 'stunned'
         self.xvel = 0

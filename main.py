@@ -45,6 +45,8 @@ while not done:
     #Get and check events:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: done = True #exit the game if player presses cross button
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            platf = Entities.platformback(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 2)
         elif event.type == pygame.KEYDOWN and not Globals.key_pause:
             if event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
@@ -79,30 +81,7 @@ while not done:
                     Globals.player.arrowkey_enabled = False
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
-            elif event.key == pygame.K_SPACE: 
-                if not Globals.player.sprinting and not Globals.player.attacking:
-                    if Globals.player.accel > 0 and Globals.player.touching_ground: 
-                        Globals.player.sprinting = True
-                        Globals.player.xvel_min = -6.5 / Globals.player.co_friction
-                        Globals.player.xvel_max = 6.5 / Globals.player.co_friction
-
-                    elif Globals.player.accel < 0 and Globals.player.touching_ground:
-                        Globals.player.sprinting = True
-                        Globals.player.xvel_min = -6.5 / Globals.player.co_friction
-                        Globals.player.xvel_max = 6.5 / Globals.player.co_friction
-
-                    else:
-                        if Globals.player.touching_ground: 
-                            Globals.player.sprinting = True
-                            Globals.player.xvel_min = -6.5 / Globals.player.co_friction
-                            Globals.player.xvel_max = 6.5 / Globals.player.co_friction
-
-                else:
-                    Globals.player.sprinting = False   
-                    Globals.player.xvel_min = -5 / Globals.player.co_friction
-                    Globals.player.xvel_max = 5 / Globals.player.co_friction
-            
-            #cheat keys        
+                        #cheat keys        
             elif event.key == pygame.K_t:
                 if Globals.player.can_attack:
                     Globals.player.attack = 'teabag'
@@ -119,7 +98,10 @@ while not done:
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
             elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             elif event.key == pygame.K_F12: coin = Entities.Coin(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
-        
+            elif event.key == pygame.K_F11: 
+                Globals.player.yvel = 0
+                if Globals.player.grav: Globals.player.grav = False
+                else: Globals.player.grav = True
         elif event.type == MOUSEBUTTONDOWN: 
             mousex, mousey = event.pos
            
@@ -170,21 +152,22 @@ while not done:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
         else: 
             screen.blit(item.image, (item.pos)) #account for Globals.camera location
-
+            
+    for item in Globals.group_BACKTILES: #draw the wall and floor objects to screen
+        screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
-        
 
-   
+    
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_AI:
         if not Globals.key_pause:
             item.update()
             if ticktimer%6==0: item.animate()
-
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
+        
     for item in Globals.group_SPECIAL:
         if not Globals.key_pause:
             if isinstance(item, Entities.movingtext): item.update()
@@ -194,7 +177,6 @@ while not done:
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) or isinstance(item, Entities.WikiProj) and ticktimer%6==0) and not Globals.key_pause: item.animate()
-        
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_BUTTON:
