@@ -34,17 +34,12 @@ class Player(Entity):
         self.slash_damage = True
         self.leftdown = False
         self.rightdown = False
-        self.sliding = False
         self.slideduration = 0
         self.slidetimer = 0
         self.can_damage = True
-        self.decelerate = False
-        self.sprinting = False
         self.animatetimer = 6
-        self.co_friction = float(0.6)
-        self.xvel_max = 5
-        self.xvel_min = -5
         self.grav = True
+        self.lock_midair = False
         
         #load images
         '''
@@ -88,6 +83,7 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
+        print self.lock_midair
         self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
         self.xvel = float(self.xvel)
         if self.rect.y > Globals.hud.rect.y:
@@ -113,10 +109,7 @@ class Player(Entity):
         self.rect.y += self.yvel
         self.check_y_coll()
         self.collide_SPECIAL()
-        
-        #calculate damage with AI units
-        self.collide_AI()
-                
+                        
         for item in Globals.group_PROJECTILES:
             if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
                 self.health -= item.damage
@@ -185,45 +178,6 @@ class Player(Entity):
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
                 self.yvel = 0 #stop vertical movement    
-        
-    def collide_AI(self):
-        collidearray = pygame.sprite.spritecollide(self, Globals.group_AI, False)
-        for item in collidearray:
-            if self.imagename == 'slashL' and self.imageindex > 5 and item.rect.x < self.rect.x and item.can_damage and self.slash_damage:
-                item.damage(5)
-                self.slash_damage = False
-            elif self.imagename == 'slashR' and self.imageindex > 5 and item.rect.x > self.rect.x and item.can_damage and self.slash_damage:
-                item.damage(5)
-                self.slash_damage = False
-            elif self.rect.x < item.rect.x and not isinstance(item, Boss):
-                self.sliding = True
-                self.xvel = -8
-                if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
-            elif self.rect.x > item.rect.x and not isinstance(item, Boss):
-                self.sliding = True
-                self.xvel = 9
-                if item.damage_on_contact and not self.imagename == 'slashL' and not self.imagename == 'slashR': self.health -= 3
-
-            elif self.rect.x < item.rect.x and isinstance(item, Boss):
-                self.sliding = True
-                self.attacking = False
-                self.can_attack = True
-                self.xvel = -15
-                self.yvel =- 5
-                self.rect.x = item.rect.x - self.rect.width - 3
-                if self.can_damage: 
-                    self.can_damage = False
-                    self.health -= 3
-            elif self.rect.x > item.rect.x and isinstance(item, Boss):
-                self.sliding = True
-                self.attacking = False
-                self.can_attack = True
-                self.xvel = 15
-                self.yvel = -5
-                self.rect.x = item.rect.x + item.rect.width
-                if self.can_damage: 
-                    self.health -= 3
-                    self.can_damage = False
         
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
@@ -596,19 +550,19 @@ class Player(Entity):
                     tv = Television(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
 
     def right_pressed(self):
-        if self.arrowkey_enabled and not self.sliding:
+        if self.arrowkey_enabled and not self.lock_midair:
                 self.xvel = 3.5
                 
     def left_pressed(self):
-        if self.arrowkey_enabled and not self.sliding:
+        if self.arrowkey_enabled and not self.lock_midair: 
                     self.xvel = -3.5
                     
     def left_released(self):
-        if not self.xvel > 0 and self.arrowkey_enabled and not self.sliding: #set the player's horizontal velocity to 0 if player isn't moving right
+        if not self.xvel > 0 and self.arrowkey_enabled and not self.lock_midair: #set the player's horizontal velocity to 0 if player isn't moving right
                 self.xvel = 0
                 
     def right_released(self):
-        if not self.xvel < 0 and not self.sliding and self.arrowkey_enabled: #set the player's horizontal velocity to 0 if player isn't moving left
+        if not self.xvel < 0 and self.arrowkey_enabled and not self.lock_midair: #set the player's horizontal velocity to 0 if player isn't moving left
             self.xvel = 0
 
 #collision shit
@@ -1229,8 +1183,9 @@ class Troll(Entity):
         if self.rect.y + self.rect.height <= Globals.camera.ybounds[0] or self.rect.y >= Globals.camera.ybounds[1] or self.rect.x + self.rect.width <= Globals.camera.xbounds[0] or self.rect.x >= Globals.camera.xbounds[1]:
             self.kill()
         
-        if self.chaserect.collidepoint((Globals.player.x, Globals.player.y)):
-            self.detected = True
+        if not self.status == 'runl' and not self.status == 'runr' and not self.status == 'explode' and self.chaserect.collidepoint((Globals.player.x, Globals.player.y)):
+            if self.facingL and Globals.player.rect.x < self.rect.x: self.status = 'detected'
+            elif not self.facingL and Globals.player.rect.x > self.rect.x: self.status = 'detected'
         #animations
         if self.facingL and not self.status == 'explode':
             if self.xvel == 0:
@@ -1276,14 +1231,29 @@ class Troll(Entity):
                 self.status = 'patrol'
                 self.facingL = True
             else: self.pausecycles += 1  
-                
-               
+        elif self.status == 'detected':
+            if Globals.player.rect.x > self.rect.x: 
+                self.status = 'runr'
+                self.rect.x += 5
+            elif Globals.player.rect.x < self.rect.x: 
+                self.status = 'runl'
+                self.rect.x -= 5
+        elif self.status == 'runr':
+            print 'running'
+            if self.rect.x + self.rect.width < self.patrollimits[1]: self.xvel = 4       
+            else: self.damage(100)
+        elif self.status == 'runl':
+            if self.rect.x > self.patrollimits[0]: self.xvel = -4
+            else: self.damage(100)
+        
+        
     def damage(self, damage):
         self.health -= damage
         if self.health <= 0 and self.can_die:
             self.can_die = False
             self.health = 0
-            self.currentevent = 'explode'
+            self.status = 'explode'
+            self.xvel = 0
             if self.facingL:
                 if not self.imagename == 'explodeL': 
                     self.change_image('explodeL')
@@ -1530,6 +1500,7 @@ class InternetBoss(Boss):
                 self.pausetimer = 60
                 self.xvel = 0
                 self.facingL = False
+                self.damage_player(4, 'left')
 
             else:
                 if self.touchingwalls:
@@ -1591,6 +1562,18 @@ class InternetBoss(Boss):
             Globals.player.arrowkey_enabled = False
             Globals.player.can_attack = False
             Globals.player.xvel = 0
+                    
+    def damage_player(self, damage, pushdirection):
+        if pushdirection == 'left':
+            Globals.player.xvel = -13
+            Globals.player.yvel = -14
+            Globals.player.health -= damage
+            Globals.player.lock_midair = True
+        elif pushdirection == 'right':
+            Globals.player.xvel = 15
+            Globals.player.yvel = -20
+            Globals.player.health -= damage
+            Globals.player.lock_midair = True
                     
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex]
