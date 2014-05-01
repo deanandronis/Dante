@@ -39,6 +39,7 @@ def level_1():
     Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 106*32)
     Globals.camera.ybounds = (0, 640)
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 3392, 640)
     
 def level_2():
     floor_platform = Entities.Platform(32,16*32,30,1)

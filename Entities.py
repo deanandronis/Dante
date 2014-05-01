@@ -8,6 +8,7 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
+from test.test_getargs2 import Int
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -857,6 +858,13 @@ class Projectile(Entity):
 class Boss(Entity):
     pass
 
+class Button(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self, Globals.group_BUTTON)
+        self.rect = self.image.get_rect()
+        self.rect.move_ip(x,y)
+        self.pos = (x,y)
+
 class EnemyHealthBar(Entity):
     def __init__(self, x, y, length, health, caption = None):
         Entity.__init__(self, Globals.group_DRAWONLY)
@@ -882,13 +890,16 @@ class EnemyHealthBar(Entity):
         if self.caption: self.image.blit(Constants.spleentext.render(self.captiontext, 0, (0,0,0)), (10, 8)) #load the text 
             
 class Background(pygame.sprite.Sprite):
-    def __init__(self, image, loc, move_with_camera=True):
+    def __init__(self, image, levelwidth, levelheight, move_with_camera=True):
         pygame.sprite.Sprite.__init__(self, Globals.group_BG)
         self.move_with_camera = move_with_camera
-        self.image = functions.get_image(image, (255,0,255))
-        self.rect = self.image.get_rect()       
-        self.rect.move_ip(loc) 
-        self.pos = (self.rect.x, self.rect.y)
+        self.image = pygame.Surface((levelwidth, levelheight))
+        for columns in range(0, int(math.ceil(levelwidth/64)), 1):
+            print "columns " + str(columns)
+            for rows in range(0, int(math.ceil(levelheight/64)), 1):
+                print "rows " + str(rows)
+                self.image.blit(image,(columns*64,rows*64))
+        self.pos = (0,0)
 
 class EnemyProj(Projectile):
     pass               
