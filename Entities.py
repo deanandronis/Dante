@@ -15,6 +15,7 @@ class Entity(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, *args)
         
 #Player class
+
 class Player(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_PLAYER) #adds the player to the group Globals.group_PLAYER
@@ -96,8 +97,10 @@ class Player(Entity):
         #friction
         if self.collidelist:
             if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
-                self.xvel = 0      
+                self.xvel = 0  
+                self.lock_midair = False    
             self.touching_ground = True   
+            
         #move x and check for collision
         self.rect.x += self.xvel
         self.check_x_coll()
@@ -565,7 +568,7 @@ class Player(Entity):
         if not self.xvel < 0 and self.arrowkey_enabled and not self.lock_midair: #set the player's horizontal velocity to 0 if player isn't moving left
             self.xvel = 0
 
-#collision shit
+#root classes
 class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown): 
             #get image
@@ -621,8 +624,6 @@ class platformback(Entity):
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTop.bmp'), (255,0,255))
         self.pos = (x,y)
         
-
-
 class damage_tile(Entity):
     def __init__(self,x,y):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
@@ -732,6 +733,7 @@ class Door(Entity):
         self.rect.move_ip(self.pos)
         
 #game essentials
+
 class Camera():
     def __init__(self):
         self.x = 0 #set the position of the camera
@@ -811,6 +813,7 @@ class hud(pygame.sprite.Sprite):
 
 
 #projectile classes        
+
 class Projectile(Entity):
     def __init__(self, x, y, xvel, yvel):
         Entity.__init__(self, Globals.group_PROJECTILES)
@@ -851,9 +854,52 @@ class Projectile(Entity):
         if self.rect.x + self.rect.width < Globals.camera.xbounds[0] or self.rect.x > Globals.camera.xbounds[1] or self.rect.y < Globals.camera.ybounds[0] or self.rect.y > Globals.camera.ybounds[1]:
             self.kill()    
 
-class EnemyProj(Projectile):
+class Boss(Entity):
     pass
-                     
+
+class EnemyHealthBar(Entity):
+    def __init__(self, x, y, length, health, caption = None):
+        Entity.__init__(self, Globals.group_DRAWONLY)
+        self.health = health
+        self.maxhealth = health
+        self.image = pygame.Surface((length, 30))
+        self.rect = pygame.Rect((x, y), (length, 100))
+        self.rect.move_ip(x, y)
+        self.image.fill((0,255,0))
+        self.length = length
+        if not caption == None:
+            self.image.blit(Constants.spleentext.render(caption, 0, (0,0,0)), (10, 8)) #load the text 
+            self.caption = True
+            self.captiontext = caption
+        else: self.caption = False    
+          
+    def damage(self, damage):
+        self.health -= damage
+        self.image.fill((255,0,0))
+        if self.health > 0:
+            self.percentage = float(self.health)/float(self.maxhealth)
+            pygame.draw.rect(self.image, (0,255,0), pygame.Rect(0,0, self.percentage * self.length, 30))
+        if self.caption: self.image.blit(Constants.spleentext.render(self.captiontext, 0, (0,0,0)), (10, 8)) #load the text 
+            
+class Background(pygame.sprite.Sprite):
+    def __init__(self, image, loc, move_with_camera=True):
+        pygame.sprite.Sprite.__init__(self, Globals.group_BG)
+        self.move_with_camera = move_with_camera
+        self.image = functions.get_image(image, (255,0,255))
+        self.rect = self.image.get_rect()       
+        self.rect.move_ip(loc) 
+        self.pos = (self.rect.x, self.rect.y)
+
+class EnemyProj(Projectile):
+    pass               
+
+
+
+
+
+
+
+#projectiles
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','PianoProjectile1.png'), (255,0,255)) #get the piano image
@@ -973,6 +1019,7 @@ class Fireball(EnemyProj):
         self.gravity = False
         self.angle = angle
         self.image = pygame.transform.rotate(self.image, self.angle)
+        self.numbounce = 3
     
     def animate(self):
         self.image = self.imagelist[self.image_index]
@@ -1035,6 +1082,7 @@ class lazer(Entity):
         collide = pygame.sprite.spritecollide(self, Globals.group_AI, False)
         for item in collide:
             item.damage(10)
+             
                    
 #Text classes
 class movingtext(Entity):
@@ -1080,19 +1128,9 @@ class narrator_bubble(Entity):
             self.image.blit(item, (12, 11 + index * 14))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(x,y)
-        
 
-#AI
 
-class Background(pygame.sprite.Sprite):
-    def __init__(self, image, loc, move_with_camera=True):
-        pygame.sprite.Sprite.__init__(self, Globals.group_BG)
-        self.move_with_camera = move_with_camera
-        self.image = functions.get_image(image, (255,0,255))
-        self.rect = self.image.get_rect()       
-        self.rect.move_ip(loc) 
-        self.pos = (self.rect.x, self.rect.y)
-
+#stage 1
 class Troll(Entity):
     def __init__(self, x, y, facingL, (leftpatrollimit, rightpatrollimit), (chasex, chasey, chasewidth, chaseheight)):
         Entity.__init__(self, Globals.group_AI)
@@ -1361,10 +1399,7 @@ class Wikipedia(Entity):
         self.yvel = 0
         self.patrolspeed = 0
         print 'Stunned'
-        
-class Boss(Entity):
-    pass
-        
+                
 class InternetBoss(Boss):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_AI)
@@ -1626,40 +1661,7 @@ class InternetBoss(Boss):
         dis_to_player = math.sqrt((self.playerx)**2 + (self.playery)**2)
         fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel, 850*angle_to_player/dis_to_player)
         
-class EnemyHealthBar(Entity):
-    def __init__(self, x, y, length, health, caption = None):
-        Entity.__init__(self, Globals.group_DRAWONLY)
-        self.health = health
-        self.maxhealth = health
-        self.image = pygame.Surface((length, 30))
-        self.rect = pygame.Rect((x, y), (length, 100))
-        self.rect.move_ip(x, y)
-        self.image.fill((0,255,0))
-        self.length = length
-        if not caption == None:
-            self.image.blit(Constants.spleentext.render(caption, 0, (0,0,0)), (10, 8)) #load the text 
-            self.caption = True
-            self.captiontext = caption
-        else: self.caption = False    
-        
-        
-    
-    def damage(self, damage):
-        self.health -= damage
-        self.image.fill((255,0,0))
-        if self.health > 0:
-            self.percentage = float(self.health)/float(self.maxhealth)
-            pygame.draw.rect(self.image, (0,255,0), pygame.Rect(0,0, self.percentage * self.length, 30))
-        if self.caption: self.image.blit(Constants.spleentext.render(self.captiontext, 0, (0,0,0)), (10, 8)) #load the text 
-            
-#Buttons
-class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self, Globals.group_BUTTON)
-        self.rect = self.image.get_rect()
-        self.rect.move_ip(x, y)
-        self.pos = (x, y)
-        
+#Buttons       
 class Menu_PlayButt(Button):
     def __init__(self, x, y):
         self.image = functions.get_image(os.path.join('Resources','General Resources','Buttons','PlayButt.bmp'), (255,0,255))
