@@ -85,7 +85,6 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
-        print self.lock_midair
         self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
         self.xvel = float(self.xvel)
         if self.rect.y > Globals.hud.rect.y:
@@ -582,10 +581,13 @@ class Platform(Entity):
                            functions.get_image(os.path.join(self.imageloc,'PlatformCentreBot2.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformCentreBot3.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformR_EdgeBot.bmp'), (255,0,255)),
-                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller1.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller2.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller3.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformR_EdgeBotFiller.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'Floor_tile_single.png'), (255,0,255)),
                            ]
-            self.image = pygame.Surface((blocksacross*32-16,blocksdown*56 + 8))
+            self.image = pygame.Surface((blocksacross*32-16,blocksdown*56))
             if not blocksacross == 1:    
                 for rows in range(0,blocksdown):
                     for columns in range(0,blocksacross):
@@ -605,14 +607,23 @@ class Platform(Entity):
                             self.image.blit(self.images[3], (columns*32,rows*56))
                             top = platformback(columns*32 + x, rows*56 + y, 1)
                         else:
-                            self.image.blit(self.images[5], (columns*32,rows*56))
+                            if columns == blocksacross - 1:
+                                self.image.blit(self.images[8], (columns*32, rows*55))
+                                top = platformback(columns*32 + x + 16, rows*55 + y+1, 3)
+                            elif columns % 3 == 0:
+                                self.image.blit(self.images[5], (columns*32,rows*56))
+                            elif columns % 3 == 1:
+                                self.image.blit(self.images[6], (columns*32,rows*56))
+                            elif columns % 3 == 2:
+                                self.image.blit(self.images[7], (columns*32,rows*56))                            
             else:
-                self.image.blit(self.images[5], (0,0))
+                self.image.blit(self.images[4], (0,0))
                 for rows in range(0, blocksdown):
-                    self.image.blit(self.images[4], (0,rows*56))
+                    self.image.blit(self.images[6], (0,rows*56))
+            self.image.set_colorkey((0,0,0))
             self.co_friction = 1
-            self.rect = pygame.Rect(x, y +8, blocksacross*32-16, blocksdown*56 - 8)
-            self.pos = (self.rect.x, self.rect.y)
+            self.rect = pygame.Rect(x + 16, y +8, blocksacross*32-32, blocksdown*56 - 8)
+            self.pos = (x, y + 8)
         
 class platformback(Entity):
     def __init__(self, x, y, index):
@@ -623,6 +634,9 @@ class platformback(Entity):
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreTop.bmp'), (255,0,255))
         elif index == 2:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTop.bmp'), (255,0,255))
+        elif index == 3:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTopFiller.bmp'), (255,0,255))    
+        
         self.pos = (x,y)
         
 class damage_tile(Entity):
@@ -895,9 +909,7 @@ class Background(pygame.sprite.Sprite):
         self.move_with_camera = move_with_camera
         self.image = pygame.Surface((levelwidth, levelheight))
         for columns in range(0, int(math.ceil(levelwidth/64)), 1):
-            print "columns " + str(columns)
             for rows in range(0, int(math.ceil(levelheight/64)), 1):
-                print "rows " + str(rows)
                 self.image.blit(image,(columns*64,rows*64))
         self.pos = (0,0)
 
@@ -1187,8 +1199,7 @@ class Troll(Entity):
         self.can_stun = True        
         self.damage_on_contact = False
         self.chaserect = pygame.Rect(chasex, chasey, chasewidth, chaseheight)
-        
-        
+            
     def animate(self):
         self.image = self.images[self.imagename][self.image_index]
         if self.image_index < self.numimages: 
@@ -1200,7 +1211,6 @@ class Troll(Entity):
                 self.image_index = 0
     
     def update(self):
-        print self.status
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((self.x, self.y))
         self.event()
@@ -1258,12 +1268,12 @@ class Troll(Entity):
     def event(self): 
         if self.status == 'patrol':
             if self.facingL:
-                self.xvel = -2
+                self.xvel = -1
                 if self.rect.x < self.patrollimits[0]:
                     self.status = 'stopL'
                     self.xvel = 0
             if not self.facingL:
-                self.xvel = 2
+                self.xvel = 1
                 if self.rect.x + self.rect.width > self.patrollimits[1]:
                     self.status = 'stopR'
                     self.xvel = 0
@@ -1288,14 +1298,16 @@ class Troll(Entity):
                 self.status = 'runl'
                 self.rect.x -= 5
         elif self.status == 'runr':
-            print 'running'
-            if self.rect.x + self.rect.width < self.patrollimits[1]: self.xvel = 4       
+            if self.rect.colliderect(Globals.player.rect): 
+                self.collide_player(0)
+            elif self.rect.x + self.rect.width < self.patrollimits[1]: self.xvel = 4       
             else: self.damage(100)
         elif self.status == 'runl':
-            if self.rect.x > self.patrollimits[0]: self.xvel = -4
+            if self.rect.colliderect(Globals.player.rect): 
+                self.collide_player(0)
+            elif self.rect.x > self.patrollimits[0]: self.xvel = -4
             else: self.damage(100)
-        
-        
+          
     def damage(self, damage):
         self.health -= damage
         if self.health <= 0 and self.can_die:
@@ -1316,7 +1328,12 @@ class Troll(Entity):
                     self.x -= 18
                     self.rect.x -= 18
                     self.rect.y -= 16
-                   
+              
+    def collide_player(self, damage):
+        if self.rect.x < Globals.player.rect.x: Globals.player.x = self.rect.right
+        elif self.rect.x > Globals.player.rect.x: Globals.player.x = self.rect.left - Globals.player.rect.width
+        Globals.player.health -= damage
+    
     def change_image(self, image):
         
         if not self.imagename == image:

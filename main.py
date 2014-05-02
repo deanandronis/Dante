@@ -45,8 +45,6 @@ while not done:
     #Get and check events:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: done = True #exit the game if player presses cross button
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            platf = Entities.platformback(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 2)
         elif event.type == pygame.KEYDOWN and not Globals.key_pause:
             if event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
@@ -156,12 +154,12 @@ while not done:
     for item in Globals.group_BACKTILES: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
     
+    for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
+        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+    
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
 
-    
-    for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     for item in Globals.group_AI:
         if not Globals.key_pause:
             item.update()

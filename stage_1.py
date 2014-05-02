@@ -11,7 +11,7 @@ def main_menu():
 def level_1():
     #render floors
     floor_1 = Entities.Platform(4*32,12*32, 52,5)
-    floor_2 = Entities.Platform(4*32, 5*32, 10, 1)
+    floor_2 = Entities.Platform(4*32, 5*32, 10, 2)
     troll = Entities.Troll(4*32,2*32, True, (4*32, 4*32 + 10*32), (4*32, 0, 14*32, 4*32))
     '''
     floor_2 = Entities.Platform(63*32, 12*32, 5, 5)
