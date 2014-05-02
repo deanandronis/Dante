@@ -1300,13 +1300,19 @@ class Troll(Entity):
         elif self.status == 'runr':
             if self.rect.colliderect(Globals.player.rect): 
                 self.collide_player(0)
-            elif self.rect.x + self.rect.width < self.patrollimits[1]: self.xvel = 4       
-            else: self.damage(100)
+            elif self.rect.right < self.patrollimits[1]: self.xvel = 4       
+            else: 
+                self.damage(100)
+                self.xvel = 0
+                self.rect.right = self.patrollimits[1]
         elif self.status == 'runl':
             if self.rect.colliderect(Globals.player.rect): 
                 self.collide_player(0)
             elif self.rect.x > self.patrollimits[0]: self.xvel = -4
-            else: self.damage(100)
+            else: 
+                self.rect.left = self.patrollimits[0]
+                self.xvel = 0
+                self.damage(100)
           
     def damage(self, damage):
         self.health -= damage
