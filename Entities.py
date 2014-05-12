@@ -8,7 +8,6 @@ import pygame, sys, os, math, textwrap
 from pygame.locals import *
 import functions, Constants, Globals
 from random import randrange, randint
-from test.test_getargs2 import Int
 
 #base class for shit
 class Entity(pygame.sprite.Sprite):
@@ -609,7 +608,7 @@ class Platform(Entity):
                         else:
                             if columns == blocksacross - 1:
                                 self.image.blit(self.images[8], (columns*32, rows*55))
-                                top = platformback(columns*32 + x + 16, rows*55 + y+1, 3)
+                                top = platformback(columns*32 + x + 16, rows*55 + y, 3)
                             elif columns % 3 == 0:
                                 self.image.blit(self.images[5], (columns*32,rows*56))
                             elif columns % 3 == 1:
@@ -911,6 +910,8 @@ class Background(pygame.sprite.Sprite):
         for columns in range(0, int(math.ceil(levelwidth/64)), 1):
             for rows in range(0, int(math.ceil(levelheight/64)), 1):
                 self.image.blit(image,(columns*64,rows*64))
+                
+        self.image.fill((255,0,255))  
         self.pos = (0,0)
 
 class EnemyProj(Projectile):
