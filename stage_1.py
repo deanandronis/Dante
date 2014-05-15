@@ -10,36 +10,19 @@ def main_menu():
 
 def level_1():
     #render floors
-    floor_1 = Entities.Platform(4*32,12*32, 52,5)
-    floor_2 = Entities.Platform(4*32, 5*32, 10, 2)
-    troll = Entities.Troll(4*32,2*32, True, (4*32, 4*32 + 10*32), (4*32, 0, 14*32, 4*32))
-    '''
-    floor_2 = Entities.Platform(63*32, 12*32, 5, 5)
-    floor_3 = Entities.Platform(75*32, 12*32, 27, 5)
-    floor_4 = Entities.Platform(20*32, 10*32, 15, 1)
-    Floor_5 = Entities.Platform(40*32, 7*32, 10, 1)
+    floor_1 = Entities.Platform(4*32, 22*32, 29, 4)
+    floor_2 = Entities.Platform(37*32, 22*32, 11, 4)
+    floor_3 = Entities.Platform(53*32, 22*32, 5, 4)
+    floor_4 = Entities.Platform(61*32,22*32, 1, 4)
     
-    #render enemies, coins etc
-        #coins
-    for i in range(1,4):
-        coin = Entities.Coin(48*32, (i+3)*32)
-        coin = Entities.Coin(49*32, (i+3)*32) 
-    coin = Entities.Coin(43*32, 9*32)
-    coin = Entities.Coin(46*32, 9*32)
-    coin = Entities.Coin(49*32, 9*32)
     
-        #enemies
-    wiki = Entities.Wikipedia(44*32, 3*32, 2*32)
-    troll = Entities.Troll(27*32,8*32, True, floor_4)
-        #specials
-    goalpiece = Entities.goal_piece(101*32,10*32)    
-    '''
     #other stuff
-    Globals.player = Entities.Player(10*32,32*10)
+    Globals.player = Entities.Player(4*32,20*32)
     Globals.hud = Entities.hud()
-    Globals.camera.xbounds = (0, 106*32)
-    Globals.camera.ybounds = (0, 640)
-    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 3392, 640)
+    Globals.camera.xbounds = (0, 70*32)
+    Globals.camera.ybounds = (0, 960)
+    killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 2240, 960)
     
 def level_2():
     floor_platform = Entities.Platform(32,16*32,30,1)

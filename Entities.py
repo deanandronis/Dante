@@ -86,10 +86,6 @@ class Player(Entity):
     def update(self):
         self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
         self.xvel = float(self.xvel)
-        if self.rect.y > Globals.hud.rect.y:
-            self.health -= 4
-            self.reset()
-            spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
         self.rect.move_ip(self.x, self.y) #set the collision box location
@@ -99,13 +95,14 @@ class Player(Entity):
                 self.xvel = 0  
                 self.lock_midair = False    
             self.touching_ground = True   
-            
+        
         #move x and check for collision
         self.rect.x += self.xvel
         self.check_x_coll()
         #apply gravity
         if self.yvel < 10 and self.grav:
-            self.yvel += abs(self.yvel) / 40 + 0.36
+            self.yvel += abs(self.yvel) / 30 + 0.22
+        else: self.yvel = 10
            
         #move y and check for collisions
         self.rect.y += self.yvel
@@ -173,13 +170,13 @@ class Player(Entity):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
         for block in block_hit_list: #iterate over list
             # check collision
+            self.touching_ground = True
             if self.yvel > 0: #top collision
                 self.rect.bottom = block.rect.top #set bottom of player to top of block
                 self.yvel = 0 #stop vertical movement
-                self.onGround = True #player is on ground
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
-                self.yvel = 0 #stop vertical movement    
+                self.yvel = 0 #stop vertical movement  
         
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
@@ -200,7 +197,10 @@ class Player(Entity):
             elif isinstance(item, Coin) and self.rect.colliderect(item.rect):
                 Globals.score += 5
                 item.kill()
-        
+            elif isinstance(item, kill_border) and self.rect.colliderect(item.rect):
+                self.reset()
+                self.health -= 3
+                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")        
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
         if self.imageindex == self.numimages: 
@@ -638,6 +638,11 @@ class platformback(Entity):
         
         self.pos = (x,y)
         
+class kill_border(Entity):
+    def __init__(self, (x,y), (length, height)):
+        self.rect = pygame.Rect((x,y),(length,height))
+        Entity.__init__(self, Globals.group_SPECIAL)
+        
 class damage_tile(Entity):
     def __init__(self,x,y):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
@@ -771,20 +776,26 @@ class Camera():
         elif player.rect.x + player.xvel < self.x + self.width*2/5: #if the player is in the left 2/5 of the window, move the camera
             self.x = player.rect.x - self.width*2/5
         
+        if player.rect.y + player.yvel + player.rect.height> self.y + self.height*3/5:
+            self.y = player.rect.y - self.height*3/5 + player.rect.height
+            
+        elif player.rect.y < self.y + self.height*2/5:
+            self.y = player.rect.y - self.height*2/5
+        
         if self.x + self.width > self.xbounds[1]: #check to see if the camera is within boundaries
             self.x = self.xbounds[1] - self.width
         elif self.x <= self.xbounds[0]:
             self.x = self.xbounds[0]
-        if self.y > self.ybounds[1]:
-            self.y = self.ybounds[1] + self.height
+        if self.y + self.height > self.ybounds[1]:
+            self.y = self.ybounds[1] - self.height
         elif self.y < self.ybounds[0]:
             self.y = self.ybounds[0]
-         
+        
 class hud(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, Globals.group_SPECIAL) #add the HUD to the Globals.group_SPECIAL group
         self.x = 0 #set the position of the HUD
-        self.y = 544
+        self.y = 480
         self.pos = (self.x,self.y) 
         if Globals.stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255)) #load the image
@@ -824,7 +835,8 @@ class hud(pygame.sprite.Sprite):
         self.score = 'Score: ' + str(Globals.score)
         self.scoretext = Constants.healthtext.render(self.score, 0, (255,253,255)) #load the text for the score
         self.image.blit(self.scoretext, (600, 38))
-
+        
+        self.rect.y = Globals.camera.y + 576 - 96
 
 #projectile classes        
 
@@ -910,8 +922,6 @@ class Background(pygame.sprite.Sprite):
         for columns in range(0, int(math.ceil(levelwidth/64)), 1):
             for rows in range(0, int(math.ceil(levelheight/64)), 1):
                 self.image.blit(image,(columns*64,rows*64))
-                
-        self.image.fill((255,0,255))  
         self.pos = (0,0)
 
 class EnemyProj(Projectile):

@@ -19,8 +19,8 @@ def next_level():
 
 #Variable init
 pygame.init() #initialise pygame modules
-WINDOW_WIDTH = 800 #25 blocks #variable to store the width of the window
-WINDOW_HEIGHT = 640 #20 blocks; HUD takes up bottom 3 #variable to store the height of the window
+WINDOW_WIDTH = 768 #variable to store the width of the window
+WINDOW_HEIGHT = 576 #HUD takes up bottom 3 #variable to store the height of the window
 WINDOW_SIZE = (WINDOW_WIDTH,WINDOW_HEIGHT) #window size
 BLOCK_SIZE = (BLOCK_WIDTH,BLOCK_HEIGHT) = 32,32 #size of the tiles in the game
 MAX_FPS = 60 #the max FPS the game will run at
@@ -152,30 +152,36 @@ while not done:
             screen.blit(item.image, (item.pos)) #account for Globals.camera location
             
     for item in Globals.group_BACKTILES: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
+        if item.pos[0] < Globals.camera.x + Globals.camera.width or item.pos[0] + item.image.get_width() > Globals.camera.x:
+            screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
+        if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
+            screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
 
     for item in Globals.group_AI:
         if not Globals.key_pause:
             item.update()
             if ticktimer%6==0: item.animate()
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
+        if item.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
+            screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
         
     for item in Globals.group_SPECIAL:
         if not Globals.key_pause:
             if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.key): item.update()
-        if isinstance(item, Entities.hud): screen.blit(item.image, item.rect) #draw the HUD to the screen
-        else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
+        if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
+            if isinstance(item, Entities.hud): screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
+            elif isinstance(item, Entities.kill_border): pass
+            else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
         if ((isinstance(item, Entities.Television) or isinstance(item, Entities.shoutProj)) or isinstance(item, Entities.WikiProj) and ticktimer%6==0) and not Globals.key_pause: item.animate()
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+        if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
+            screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_BUTTON:
         screen.blit(item.image, item.pos)
