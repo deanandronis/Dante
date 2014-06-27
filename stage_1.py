@@ -13,8 +13,12 @@ def level_1():
     floor_1 = Entities.Platform(4*32, 22*32, 29, 4)
     floor_2 = Entities.Platform(37*32, 22*32, 11, 4)
     floor_3 = Entities.Platform(53*32, 22*32, 5, 4)
-    floor_4 = Entities.Platform(61*32,22*32, 1, 4)
+    floor_4 = Entities.Platform(61*32,22*32, 2, 4)
     
+    #render thingses
+    troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
+    wiki = Entities.Wikipedia(55*32 + 16, 17*32, 3*32)
+    goalpiece = Entities.goal_piece(61*32 + 16, 21*32)
     
     #other stuff
     Globals.player = Entities.Player(4*32,20*32)

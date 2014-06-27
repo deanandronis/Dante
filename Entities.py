@@ -84,17 +84,12 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
-        self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1)]
+        
         self.xvel = float(self.xvel)
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
         self.rect.move_ip(self.x, self.y) #set the collision box location
-        #friction
-        if self.collidelist:
-            if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
-                self.xvel = 0  
-                self.lock_midair = False    
-            self.touching_ground = True   
+        
         
         #move x and check for collision
         self.rect.x += self.xvel
@@ -103,7 +98,7 @@ class Player(Entity):
         if self.yvel < 10 and self.grav:
             self.yvel += abs(self.yvel) / 30 + 0.22
         else: self.yvel = 10
-           
+        
         #move y and check for collisions
         self.rect.y += self.yvel
         self.check_y_coll()
@@ -114,6 +109,26 @@ class Player(Entity):
                 self.health -= item.damage
                 item.kill()
                 
+                
+        self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1 or x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1) or x.rect.collidepoint(self.rect.right - 2, self.rect.bottom + 1))]
+        print "tick"
+        for x in Globals.group_COLLIDEBLOCKS:
+            if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1):
+                print "A"
+                self.touching_ground = True
+            if x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1):
+                print "B"
+                self.touching_ground = True
+            if x.rect.collidepoint(self.rect.right - 1, self.rect.bottom + 1):
+                print "C"
+                self.touching_ground = True
+        if self.collidelist:
+            if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
+                self.xvel = 0  
+                self.lock_midair = False    
+            self.touching_ground = True   
+            
+            
         #determine sprite set
         self.check_sprites()
         #set position
@@ -170,27 +185,27 @@ class Player(Entity):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
         for block in block_hit_list: #iterate over list
             # check collision
-            self.touching_ground = True
+            #self.touching_ground = True
             if self.yvel > 0: #top collision
                 self.rect.bottom = block.rect.top #set bottom of player to top of block
                 self.yvel = 0 #stop vertical movement
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
                 self.yvel = 0 #stop vertical movement  
+        if self.rect.y + self.rect.height > Globals.camera.y + Globals.camera.height - 96:
+            self.health -= 3
+            self.reset()
+            self.create_spleen()
         
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
-            if isinstance(item, hud) and self.rect.colliderect(item.rect): #if player is colliding with the hud
-                self.reset() #reset position 
-                self.health -= 3 #damage
-                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
-            elif isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
+            if isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
                 self.next_level = True
                 item.kill()
             elif isinstance(item, damage_tile) and self.rect.colliderect(item.rect):
                 self.health -= 1 
                 item.kill()
-                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
+                self.create_spleen()
             elif isinstance(item, key) and self.rect.colliderect(item.rect):
                 item.destroy = True
                 item.image = functions.get_image(os.path.join('Resources','General Resources','InvisibleTile.png'),(255,0,255))
@@ -200,7 +215,7 @@ class Player(Entity):
             elif isinstance(item, kill_border) and self.rect.colliderect(item.rect):
                 self.reset()
                 self.health -= 3
-                spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")        
+                self.create_spleen()   
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
         if self.imageindex == self.numimages: 
@@ -566,6 +581,10 @@ class Player(Entity):
     def right_released(self):
         if not self.xvel < 0 and self.arrowkey_enabled and not self.lock_midair: #set the player's horizontal velocity to 0 if player isn't moving left
             self.xvel = 0
+    
+    def create_spleen(self):
+        spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
+
 
 #root classes
 class Platform(Entity):
@@ -793,7 +812,7 @@ class Camera():
         
 class hud(pygame.sprite.Sprite):
     def __init__(self):
-        pygame.sprite.Sprite.__init__(self, Globals.group_SPECIAL) #add the HUD to the Globals.group_SPECIAL group
+        pygame.sprite.Sprite.__init__(self, Globals.group_HUD)
         self.x = 0 #set the position of the HUD
         self.y = 480
         self.pos = (self.x,self.y) 
@@ -1384,6 +1403,8 @@ class Wikipedia(Entity):
         self.health = 5
         self.can_damage = True
         self.damage_on_contact = True
+        self.x = x
+        self.y = y
     
     def damage(self, damage):
         self.health -= damage
@@ -1391,9 +1412,12 @@ class Wikipedia(Entity):
             self.kill()
 
     def update(self):
-        self.event()
-        self.rect.x += self.xvel
-        self.rect.y += self.yvel
+        if self.rect.x < Globals.camera.x + Globals.camera.width and self.rect.x + self.rect.width > Globals.camera.x and self.rect.y + self.rect.height > Globals.camera.y and self.rect.y < Globals.camera.height + Globals.camera.y:
+            self.event()
+            self.rect.x += self.xvel
+            self.rect.y += self.yvel
+            self.x = self.rect.x
+            self.y = self.rect.y
         
     def animate(self):
         pass 

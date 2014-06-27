@@ -183,6 +183,9 @@ while not done:
         if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
     
+    for item in Globals.group_HUD:
+        screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
+    
     for item in Globals.group_BUTTON:
         screen.blit(item.image, item.pos)
         if item.rect.collidepoint((mousex, mousey)): 
