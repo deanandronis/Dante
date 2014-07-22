@@ -138,13 +138,12 @@ while not done:
         Globals.group_PROJECTILES.update()
     #Update the hud and Globals.camera
     Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
-    #Globals.hud.update(Globals.player.health) #redraw the hud elements
+    Globals.hud.update(Globals.player.health) #redraw the hud elements
     
     
     
     #Draw elements to screen       
     screen.fill((0,0,0)) #wipe the screen
-    
     
     for item in Globals.group_BG:
         if item.move_with_camera:
@@ -175,8 +174,8 @@ while not done:
             if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.key): item.update()
         if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
-            #if isinstance(item, Entities.hud): screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
-            if isinstance(item, Entities.kill_border): pass
+            if isinstance(item, Entities.hud): screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
+            elif isinstance(item, Entities.kill_border): pass
             else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
@@ -194,10 +193,6 @@ while not done:
             item.clicked()
 
     for item in Globals.group_DRAWONLY: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
-    
-    pygame.draw.rect(screen, (255,0,255), pygame.Rect((Globals.player.rect.x - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height - Globals.camera.y + 10), (3,3)))
-    pygame.draw.rect(screen, (255,0,255), pygame.Rect((Globals.player.rect.x + Globals.player.rect.width - Globals.camera.x, Globals.player.rect.y + Globals.player.rect.height - Globals.camera.y + 10), (3,3)))
-
 
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen

@@ -88,8 +88,9 @@ class Player(Entity):
         self.xvel = float(self.xvel)
         self.touching_ground = False #assume not touching ground unless colliding later on
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
-        self.rect.move_ip(self.x, self.y) #set the collision box locatio
-              
+        self.rect.move_ip(self.x, self.y) #set the collision box location
+        
+        
         #move x and check for collision
         self.rect.x += self.xvel
         self.check_x_coll()
@@ -107,9 +108,9 @@ class Player(Entity):
             if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
                 self.health -= item.damage
                 item.kill()
-               
+                
+                
         self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1 or x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1) or x.rect.collidepoint(self.rect.right - 2, self.rect.bottom + 1))]
-
         print "tick"
         for x in Globals.group_COLLIDEBLOCKS:
             if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1):
@@ -181,11 +182,9 @@ class Player(Entity):
                     self.keys['right'] = False
     
     def check_y_coll(self):
-        block_hit_list = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint((self.x, self.y + self.rect.height + 5)) or x.rect.collidepoint((self.x + self.rect.width, self.y + self.rect.height + 5))] #pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
-        if block_hit_list: self.touching_ground = True
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
         for block in block_hit_list: #iterate over list
             # check collision
-
             #self.touching_ground = True
             if self.yvel > 0: #top collision
                 self.rect.bottom = block.rect.top #set bottom of player to top of block
@@ -193,12 +192,11 @@ class Player(Entity):
             elif self.yvel < 0: #bottom collision
                 self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
                 self.yvel = 0 #stop vertical movement  
-                
         if self.rect.y + self.rect.height > Globals.camera.y + Globals.camera.height - 96:
             self.health -= 3
             self.reset()
             self.create_spleen()
-               
+        
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
             if isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
@@ -642,7 +640,7 @@ class Platform(Entity):
                     self.image.blit(self.images[6], (0,rows*56))
             self.image.set_colorkey((0,0,0))
             self.co_friction = 1
-            self.rect = pygame.Rect(x + 32, y +8, blocksacross*32-56, blocksdown*56 - 8)
+            self.rect = pygame.Rect(x + 16, y +8, blocksacross*32-32, blocksdown*56 - 8)
             self.pos = (x, y + 8)
         
 class platformback(Entity):
@@ -816,13 +814,14 @@ class hud(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, Globals.group_HUD)
         self.x = 0 #set the position of the HUD
-        self.y = Globals.camera.y + 576 - 96
+        self.y = 480
         self.pos = (self.x,self.y) 
         if Globals.stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255)) #load the image
         self.image = pygame.transform.scale(self.image, (800,96)) #scale the image to the window size
         self.backimagestore = self.image #create a backup of the background image
-        self.rect = pygame.Rect((0,0),(1,1)) #set the collision box to fit the image
+        self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
+        self.rect.move_ip(self.x, self.y) #move the collision box into position
         self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255)) #load the text for the health        
         
         #load relevant images
@@ -856,6 +855,7 @@ class hud(pygame.sprite.Sprite):
         self.scoretext = Constants.healthtext.render(self.score, 0, (255,253,255)) #load the text for the score
         self.image.blit(self.scoretext, (600, 38))
         
+        self.rect.y = Globals.camera.y + 576 - 96
 
 #projectile classes        
 
@@ -953,7 +953,6 @@ class EnemyProj(Projectile):
 
 
 #projectiles
-
 class Piano(Projectile):
     def __init__(self, x, y, xvel, yvel):
         self.image = functions.get_image(os.path.join('Resources','Projectiles','PianoProjectile1.png'), (255,0,255)) #get the piano image
@@ -1185,7 +1184,6 @@ class narrator_bubble(Entity):
 
 
 #stage 1
-
 class Troll(Entity):
     def __init__(self, x, y, facingL, (leftpatrollimit, rightpatrollimit), (chasex, chasey, chasewidth, chaseheight)):
         Entity.__init__(self, Globals.group_AI)
@@ -1733,7 +1731,6 @@ class InternetBoss(Boss):
         fireball = Fireball(self.xpos, self.ypos, self.projxvel, self.projyvel, 850*angle_to_player/dis_to_player)
         
 #Buttons       
-
 class Menu_PlayButt(Button):
     def __init__(self, x, y):
         self.image = functions.get_image(os.path.join('Resources','General Resources','Buttons','PlayButt.bmp'), (255,0,255))

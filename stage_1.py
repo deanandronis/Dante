@@ -22,10 +22,10 @@ def level_1():
     
     #other stuff
     Globals.player = Entities.Player(4*32,20*32)
+    Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 70*32)
     Globals.camera.ybounds = (0, 960)
-    #Globals.hud = Entities.hud()
-    #killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))
+    killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 2240, 960)
     
 def level_2():
