@@ -15,7 +15,7 @@ def next_level():
     if Globals.stage == 1:
         if Globals.level == 1:
             Globals.clear_groups()
-            stage_1.boss_1()
+            stage_1.level_1()
 
 #Variable init
 pygame.init() #initialise pygame modules
@@ -31,7 +31,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_1() #load level 1
+stage_1.level_trial() #load level 1
 
 
 
@@ -41,6 +41,7 @@ while not done:
     if Globals.player.next_level == True:
         Globals.player.next_level = False
         next_level()
+        
 
     #Get and check events:
     for event in pygame.event.get():
@@ -91,7 +92,13 @@ while not done:
                     Globals.player.attacking = False
                     Globals.player.arrowkey_enabled = True
                     Globals.player.can_attack = True
-                
+            
+            elif event.key == pygame.K_RETURN: 
+                for item in Globals.group_EVENTS:
+                    if item.waiting_for_proceed == True: 
+                        item.waiting_for_proceed = False
+                        
+                        item.next_event()
             elif event.key == pygame.K_HOME: Globals.player.yvel = -12
             elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
             elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
@@ -173,9 +180,9 @@ while not done:
         if not Globals.key_pause:
             if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.key): item.update()
-        if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
-            if isinstance(item, Entities.hud): screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
-            elif isinstance(item, Entities.kill_border): pass
+        if isinstance(item, Entities.event_trigger): pass
+        elif item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
+            if isinstance(item, Entities.kill_border): pass
             else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
@@ -185,6 +192,10 @@ while not done:
     
     for item in Globals.group_HUD:
         screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
+        
+    for item in Globals.group_NARRATOR:
+        if isinstance(item, Entities.Narrator): screen.blit(item.image, (697,497))
+        if isinstance(item, Entities.text_bubble): screen.blit(item.image, (item.rect.x, item.rect.y))
     
     for item in Globals.group_BUTTON:
         screen.blit(item.image, item.pos)

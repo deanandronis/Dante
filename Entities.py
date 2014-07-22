@@ -111,16 +111,12 @@ class Player(Entity):
                 
                 
         self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1 or x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1) or x.rect.collidepoint(self.rect.right - 2, self.rect.bottom + 1))]
-        print "tick"
         for x in Globals.group_COLLIDEBLOCKS:
             if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1):
-                print "A"
                 self.touching_ground = True
             if x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1):
-                print "B"
                 self.touching_ground = True
             if x.rect.collidepoint(self.rect.right - 1, self.rect.bottom + 1):
-                print "C"
                 self.touching_ground = True
         if self.collidelist:
             if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
@@ -216,6 +212,11 @@ class Player(Entity):
                 self.reset()
                 self.health -= 3
                 self.create_spleen()   
+            elif isinstance(item, event_trigger) and self.rect.colliderect(item.rect):
+                Globals.event_manager.trigger_event()
+                item.kill()
+                
+                
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
         if self.imageindex == self.numimages: 
@@ -603,10 +604,10 @@ class Platform(Entity):
                            functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller2.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller3.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformR_EdgeBotFiller.bmp'), (255,0,255)),
-                           functions.get_image(os.path.join(self.imageloc,'Floor_tile_single.png'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'LonePlatBot.bmp'), (255,0,255)),
                            ]
-            self.image = pygame.Surface((blocksacross*32-16,blocksdown*56))
             if not blocksacross == 1:    
+                self.image = pygame.Surface((blocksacross*32-16,blocksdown*56))
                 for rows in range(0,blocksdown):
                     for columns in range(0,blocksacross):
                         if rows == 0 and columns == 0:
@@ -635,12 +636,19 @@ class Platform(Entity):
                             elif columns % 3 == 2:
                                 self.image.blit(self.images[7], (columns*32,rows*56))                            
             else:
-                self.image.blit(self.images[4], (0,0))
-                for rows in range(0, blocksdown):
-                    self.image.blit(self.images[6], (0,rows*56))
+                if blocksdown == 1:
+                    self.image = pygame.Surface((128,64))
+                    self.image.blit(self.images[9], (0,0))
+                    top = platformback(x + 16,y,4)
+                else:
+                    self.image = pygame.Surface((64,blocksdown*56))
+                    self.image.blit(self.images[4], (0,0))
+                    for rows in range(0, blocksdown):
+                        self.image.blit(self.images[6], (0,rows*56))
             self.image.set_colorkey((0,0,0))
             self.co_friction = 1
-            self.rect = pygame.Rect(x + 16, y +8, blocksacross*32-32, blocksdown*56 - 8)
+            if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 48,64)
+            else: self.rect = pygame.Rect(x + 16, y +8, blocksacross*32-32, blocksdown*56 - 8)
             self.pos = (x, y + 8)
         
 class platformback(Entity):
@@ -654,6 +662,9 @@ class platformback(Entity):
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTop.bmp'), (255,0,255))
         elif index == 3:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTopFiller.bmp'), (255,0,255))    
+        elif index == 4:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','LonePlatTop.bmp'), (255,0,255))    
+
         
         self.pos = (x,y)
         
@@ -856,6 +867,20 @@ class hud(pygame.sprite.Sprite):
         self.image.blit(self.scoretext, (600, 38))
         
         self.rect.y = Globals.camera.y + 576 - 96
+
+class event_manager(Entity):
+    def __init__(self):
+        Entity.__init__(self)
+                
+    def trigger_event(self):
+        for item in Globals.group_EVENTS:
+            item.next_event()
+
+class event_trigger(Entity):
+    def __init__(self, (x,y), (width, height)):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.rect = pygame.Rect((x,y),(width,height))
+        
 
 #projectile classes        
 
@@ -1136,7 +1161,11 @@ class lazer(Entity):
         for item in collide:
             item.damage(10)
              
-                   
+class Narrator(Entity):
+    def __init__(self):
+        self.pos = (697,497) 
+        self.waiting_for_proceed = False
+        
 #Text classes
 class movingtext(Entity):
     def __init__(self, x, y, xvel, yvel, text):
@@ -1156,7 +1185,38 @@ class movingtext(Entity):
         if self.rect.x < 0 or self.rect.x > 1000 or self.rect.y < 0 or self.rect.y > 1000:
             self.kill()
 
-class narrator_bubble(Entity):
+class text_bubble(Entity):
+    def __init__(self):
+        pass
+
+class text_bubble_left(text_bubble):
+    def __init__(self, x, y, text):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.rendertext = []
+        self.images = [functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubblerightFlipped.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubble_centre.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleleftFlipped.bmp'), (255,0,255))
+                       ]
+        self.text = textwrap.dedent(text) 
+        self.bubblewidth = len(text)*3
+        if self.bubblewidth <70: self.bubblewidth = 70
+        self.maxwidth = self.bubblewidth         
+        self.image=pygame.Surface((self.bubblewidth+11+55, 84))
+        self.image.set_colorkey((0,0,0))
+        self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
+        for item in self.text:
+            self.rendertext.append(Constants.narratetext.render(item, 0, (10 ,0,0))) #load the text
+        self.image.blit(self.images[2], (0,0))
+        
+        for i in range(0,self.bubblewidth):
+            self.image.blit(self.images[1],(i + 55, 0))
+        self.image.blit(self.images[0],(self.image.get_width() - 11,0))
+        for index, item in enumerate(self.rendertext):
+            self.image.blit(item, (12, 11 + index * 14))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x , y - self.image.get_height() + 10)
+
+class text_bubble_right(text_bubble):
     def __init__(self, x, y, text):
         Entity.__init__(self, Globals.group_SPECIAL)
         self.rendertext = []
@@ -1169,9 +1229,10 @@ class narrator_bubble(Entity):
         if self.bubblewidth <70: self.bubblewidth = 70
         self.maxwidth = self.bubblewidth         
         self.image=pygame.Surface((self.bubblewidth+11+55, 84))
+        self.image.set_colorkey((0,0,0))
         self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
         for item in self.text:
-            self.rendertext.append(Constants.narratetext.render(item, 0, (0 ,0,0))) #load the text
+            self.rendertext.append(Constants.narratetext.render(item, 0, (10 ,0,0))) #load the text
         self.image.blit(self.images[0], (0,0))
         
         for i in range(0,self.bubblewidth):
@@ -1180,10 +1241,113 @@ class narrator_bubble(Entity):
         for index, item in enumerate(self.rendertext):
             self.image.blit(item, (12, 11 + index * 14))
         self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(x,y)
+        self.rect.move_ip(x - self.image.get_width() + 40,y - self.image.get_height() + 10)
 
+class text_bubble_left_narrator(text_bubble):
+    def __init__(self, x, y, text):
+        Entity.__init__(self, Globals.group_NARRATOR)
+        self.rendertext = []
+        self.images = [functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubblerightFlipped.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubble_centre.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleleftFlipped.bmp'), (255,0,255))
+                       ]
+        self.text = textwrap.dedent(text) 
+        self.bubblewidth = len(text)*3
+        if self.bubblewidth <70: self.bubblewidth = 70
+        self.maxwidth = self.bubblewidth         
+        self.image=pygame.Surface((self.bubblewidth+11+55, 84))
+        self.image.set_colorkey((0,0,0))
+        self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
+        for item in self.text:
+            self.rendertext.append(Constants.narratetext.render(item, 0, (10 ,0,0))) #load the text
+        self.image.blit(self.images[2], (0,0))
+        
+        for i in range(0,self.bubblewidth):
+            self.image.blit(self.images[1],(i + 55, 0))
+        self.image.blit(self.images[0],(self.image.get_width() - 11,0))
+        for index, item in enumerate(self.rendertext):
+            self.image.blit(item, (12, 11 + index * 14))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x , y - self.image.get_height() + 10)
+
+class text_bubble_right_narrator(text_bubble):
+    def __init__(self, x, y, text):
+        Entity.__init__(self, Globals.group_NARRATOR)
+        self.rendertext = []
+        self.images = [functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleleft.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubble_centre.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleright.bmp'), (255,0,255))
+                       ]
+        self.text = textwrap.dedent(text) 
+        self.bubblewidth = len(text)*3
+        if self.bubblewidth <70: self.bubblewidth = 70
+        self.maxwidth = self.bubblewidth         
+        self.image=pygame.Surface((self.bubblewidth+11+55, 84))
+        self.image.set_colorkey((0,0,0))
+        self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
+        for item in self.text:
+            self.rendertext.append(Constants.narratetext.render(item, 0, (10 ,0,0))) #load the text
+        self.image.blit(self.images[0], (0,0))
+        
+        for i in range(0,self.bubblewidth):
+            self.image.blit(self.images[1],(i + 11, 0))
+        self.image.blit(self.images[2],(self.image.get_width() - 55,0))
+        for index, item in enumerate(self.rendertext):
+            self.image.blit(item, (12, 11 + index * 14))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x - self.image.get_width() + 40,y - self.image.get_height() + 10)
 
 #stage 1
+class Level_1_Narrator (Narrator):
+    def __init__(self):
+        Entity.__init__(self, Globals.group_EVENTS, Globals.group_NARRATOR)
+        Narrator.__init__(self)
+        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources','1Narrator.png'), (255,0,255))
+        self.event = 0
+        
+    def next_event(self):
+        self.event += 1
+        print self.event
+        if self.event == 1:
+            Globals.player.arrowkey_enabled = False
+            Globals.player.xvel = 0
+            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "Hello Max, and welcome to the Internet. I am your narrator, [NAME HERE], and I am here to make sure you can make it through this foul place. Firstly, press enter to continue.")
+            self.waiting_for_proceed = True
+        elif self.event == 2:
+            self.tbubble.kill()
+            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the left and right arrow keys with space to jump to navigate to the platform on your right.")
+            self.waiting_for_proceed= True
+        elif self.event == 3:
+            self.waiting_for_proceed = False
+            self.tbubble.kill()
+            Globals.player.arrowkey_enabled = True
+        elif self.event == 4: 
+            Globals.player.arrowkey_enabled = False
+            Globals.player.xvel = 0
+            self.waiting_for_proceed = True
+            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "Nice meme. Now jump to the next platform and use your attack on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!")
+        elif self.event == 5: 
+            self.tbubble.kill()
+            Globals.player.arrowkey_enabled = True
+        elif self.event == 6:
+            Globals.player.arrowkey_enabled = False
+            Globals.player.xvel = 0
+            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "Not bad! Collect the coins up ahead to increase your score, then proceed. You will find coins scattered around - a by-product of 'bitcoin overmining'. Collect as many as you can to increase your score!")
+            self.waiting_for_proceed = True
+        elif self.event == 7:
+            self.tbubble.kill()
+            Globals.player.arrowkey_enabled = True
+        elif self.event == 8:
+            Globals.player.arrowkey_enabled = False
+            Globals.player.xvel = 0
+            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "That'll do donkey. Continue ahead and further your knowledge - it's time for you to explore the world on your own. Worry not, I'll still be here. Collect the brain to proceed to the next level.")
+            self.waiting_for_proceed = True
+        elif self.event == 9:
+            self.tbubble.kill()
+            Globals.player.arrowkey_enabled = True
+
+
+
 class Troll(Entity):
     def __init__(self, x, y, facingL, (leftpatrollimit, rightpatrollimit), (chasex, chasey, chasewidth, chaseheight)):
         Entity.__init__(self, Globals.group_AI)

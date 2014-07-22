@@ -9,10 +9,11 @@ pygame.init()
 
 #initial variables
 stage = 1
-level = 1
+level = 0
 player = None
 hud= None
 camera = None
+event_manager = None
 score = 0
 key_pause = False
 
@@ -27,6 +28,8 @@ group_BG = pygame.sprite.Group()
 group_BUTTON = pygame.sprite.Group()
 group_BACKTILES = pygame.sprite.Group()
 group_HUD = pygame.sprite.Group()
+group_EVENTS = pygame.sprite.Group()
+group_NARRATOR = pygame.sprite.Group()
 
 def reset_all(): #reset all variables back to starting values
     global group_SPECIAL 
@@ -41,6 +44,7 @@ def reset_all(): #reset all variables back to starting values
     group_PLAYER.empty()
     group_PROJECTILES.empty()
     group_AI.empty()
+
     stage = 1
     level = 1
 
