@@ -11,7 +11,7 @@ pygame.init()
 stage = 1
 level = 1
 player = None
-hud= None
+hud = None
 camera = None
 score = 0
 key_pause = False
