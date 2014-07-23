@@ -41,6 +41,8 @@ class Player(Entity):
         self.animatetimer = 6
         self.grav = True
         self.lock_midair = False
+        self.can_die = True
+        self.dying = False
         
         #load images
         '''
@@ -85,48 +87,50 @@ class Player(Entity):
         
     def update(self):
         
-        self.xvel = float(self.xvel)
-        self.touching_ground = False #assume not touching ground unless colliding later on
-        self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
-        self.rect.move_ip(self.x, self.y) #set the collision box location
-        
-        
-        #move x and check for collision
-        self.rect.x += self.xvel
-        self.check_x_coll()
-        #apply gravity
-        if self.yvel < 10 and self.grav:
-            self.yvel += abs(self.yvel) / 30 + 0.22
-        else: self.yvel = 10
-        
-        #move y and check for collisions
-        self.rect.y += self.yvel
-        self.check_y_coll()
-        self.collide_SPECIAL()
-                        
-        for item in Globals.group_PROJECTILES:
-            if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
-                self.health -= item.damage
-                item.kill()
-                
-                
-        self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1 or x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1) or x.rect.collidepoint(self.rect.right - 2, self.rect.bottom + 1))]
-        for x in Globals.group_COLLIDEBLOCKS:
-            if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1):
-                self.touching_ground = True
-            if x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1):
-                self.touching_ground = True
-            if x.rect.collidepoint(self.rect.right - 1, self.rect.bottom + 1):
-                self.touching_ground = True
-        if self.collidelist:
-            if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
-                self.xvel = 0  
-                self.lock_midair = False    
-            self.touching_ground = True   
+        if not self.dying:
+            self.xvel = float(self.xvel)
+            self.touching_ground = False #assume not touching ground unless colliding later on
+            self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
+            self.rect.move_ip(self.x, self.y) #set the collision box location
             
             
-        #determine sprite set
-        self.check_sprites()
+            #move x and check for collision
+            self.rect.x += self.xvel
+            self.check_x_coll()
+            #apply gravity
+            if self.yvel < 10 and self.grav:
+                self.yvel += abs(self.yvel) / 30 + 0.22
+            else: self.yvel = 10
+            
+            #move y and check for collisions
+            self.rect.y += self.yvel
+            self.check_y_coll()
+            self.collide_SPECIAL()
+                            
+            for item in Globals.group_PROJECTILES:
+                if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
+                    self.health -= item.damage
+                    item.kill()
+                    
+                    
+            self.collidelist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1 or x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1) or x.rect.collidepoint(self.rect.right - 2, self.rect.bottom + 1))]
+            for x in Globals.group_COLLIDEBLOCKS:
+                if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 1):
+                    self.touching_ground = True
+                if x.rect.collidepoint(self.rect.left + 2, self.rect.bottom + 1):
+                    self.touching_ground = True
+                if x.rect.collidepoint(self.rect.right - 1, self.rect.bottom + 1):
+                    self.touching_ground = True
+            if self.collidelist:
+                if self.xvel > -0.5 and self.xvel < 0.5 and not self.keys['left'] == True and not self.keys['right'] == True: 
+                    self.xvel = 0  
+                    self.lock_midair = False    
+                self.touching_ground = True   
+            self.check_sprites()
+
+                
+        self.check_health()
+            #determine sprite set
         #set position
         self.x = self.rect.x
         self.y = self.rect.y
@@ -193,13 +197,26 @@ class Player(Entity):
             self.reset()
             self.create_spleen()
         
+    def check_health(self):
+        if self.health == 0 and self.can_die: 
+            self.can_die = False
+            self.dying = True
+            if self.facing_right == True:
+                if not self.imagename == 'deathR':
+                    self.change_image('deathR')
+                    self.arrowkey_enabled = False
+                    print "1"
+            else:
+                if not self.imagename == 'deathL':
+                    self.change_image('deathL')
+        
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
             if isinstance(item, goal_piece) and self.rect.colliderect(item.rect):
                 self.next_level = True
                 item.kill()
             elif isinstance(item, damage_tile) and self.rect.colliderect(item.rect):
-                self.health -= 1 
+                self.health -= 10
                 item.kill()
                 self.create_spleen()
             elif isinstance(item, key) and self.rect.colliderect(item.rect):
@@ -296,9 +313,13 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = False
                 self.arrowkey_enabled = False
+            
+            elif self.imagename == 'deathL' or self.imagename == 'deathR':
+                self.reset()
     
             else:
                 self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
+                
         elif self.imagename == 'spinL' and self.imageindex == 15:
                 self.create_projectile()
                 self.imageindex += 1
@@ -479,6 +500,10 @@ class Player(Entity):
         self.y = self.rect.y
         self.xvel= 0 #stop velocities
         self.yvel = 0
+        if self.dying: self.health = 10
+        self.dying = False
+        self.can_die = True
+        self.arrowkey_enabled = True
         
     def change_image(self, image):
         self.imageindex = 0 #reset the image position
@@ -690,6 +715,14 @@ class goal_piece(Entity):
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
         self.rect.move_ip((x,y)) #move the collision box into position
         
+class Coin(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources', '1CoinTile.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.x = x
+        self.rect.y = y
+        
 class key(Entity):
     def __init__(self, x, y, index):
         Entity.__init__(self, Globals.group_SPECIAL)
@@ -829,11 +862,11 @@ class hud(pygame.sprite.Sprite):
         self.pos = (self.x,self.y) 
         if Globals.stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255)) #load the image
-        self.image = pygame.transform.scale(self.image, (800,96)) #scale the image to the window size
-        self.backimagestore = self.image #create a backup of the background image
         self.rect = pygame.Rect(self.image.get_rect()) #set the collision box to fit the image
         self.rect.move_ip(self.x, self.y) #move the collision box into position
-        self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255)) #load the text for the health        
+        self.healthtext = Constants.healthtext.render('Health: ', 0, (255,253,255)) #load the text for the health   
+        self.score = None
+        self.scoretext = None     
         
         #load relevant images
         self.imageloc = os.path.join('Resources','General Resources','HUD') #set the location for images
@@ -846,8 +879,7 @@ class hud(pygame.sprite.Sprite):
     
     def update(self, health): #redraw the HUD
         
-        self.image = self.backimagestore #reset the image
-        
+        self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','1HUDBar.png'), (255,255,255)) #load the image    
         self.image.blit(self.healthtext, (100,38)) #draw the health text onto the HUD
         for i in range(0, health):
             pygame.draw.rect(self.image, (0,255,0), pygame.Rect(180 + i*21, 37, 14,22)) #draw the green health blocks
@@ -864,9 +896,8 @@ class hud(pygame.sprite.Sprite):
         self.scoretext = None
         self.score = 'Score: ' + str(Globals.score)
         self.scoretext = Constants.healthtext.render(self.score, 0, (255,253,255)) #load the text for the score
-        self.image.blit(self.scoretext, (600, 38))
-        
-        self.rect.y = Globals.camera.y + 576 - 96
+        self.image.blit(self.scoretext, (550, 38))
+        self.rect.y = Globals.camera.y + 480
 
 class event_manager(Entity):
     def __init__(self):
@@ -1105,13 +1136,7 @@ class Fireball(EnemyProj):
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
 
-class Coin(Entity):
-    def __init__(self, x, y):
-        Entity.__init__(self, Globals.group_SPECIAL)
-        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources', '1CoinTile.png'), (255,0,255))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.x = x
-        self.rect.y = y
+
 
 class lazer(Entity):
     def __init__(self, x, y, left):

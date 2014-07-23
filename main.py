@@ -12,10 +12,13 @@ from Entities import Camera
 
 #definitions
 def next_level():
+    Globals.level += 1
     if Globals.stage == 1:
         if Globals.level == 1:
             Globals.clear_groups()
+            Globals.reset_variables()
             stage_1.level_1()
+            
 
 #Variable init
 pygame.init() #initialise pygame modules
@@ -194,7 +197,7 @@ while not done:
         screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
         
     for item in Globals.group_NARRATOR:
-        if isinstance(item, Entities.Narrator): screen.blit(item.image, (697,497))
+        if isinstance(item, Entities.Narrator): screen.blit(item.image, (687,497))
         if isinstance(item, Entities.text_bubble): screen.blit(item.image, (item.rect.x, item.rect.y))
     
     for item in Globals.group_BUTTON:

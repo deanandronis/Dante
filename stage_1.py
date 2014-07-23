@@ -20,7 +20,7 @@ def level_trial():
     plat_3 = Entities.Platform(60*32,18*32, 1, 1)
     plat_5 = Entities.Platform(66*32,15*32, 1, 1)
 
-        
+  
     
     #render thingses
     troll = Entities.Troll(29*32,20*32, True, (24*32, 34*32), (24*32, 13*32, 10*32, 7*32))
@@ -29,6 +29,8 @@ def level_trial():
     trigger2 = Entities.event_trigger((40*32,0*32), (32, 22*32))
     trigger2 = Entities.event_trigger((56*32,0*32), (32, 22*32))
 
+    for i in range(18,21):
+        coin= Entities.Coin(42*32, i*32)
     
     #other stuff
     Globals.player = Entities.Player(6*32,20*32)
@@ -56,6 +58,7 @@ def level_1():
     troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
     wiki = Entities.Wikipedia(55*32 + 16, 17*32, 3*32)
     goalpiece = Entities.goal_piece(61*32 + 16, 21*32)
+        
     
     #other stuff
     Globals.player = Entities.Player(6*32,20*32)
@@ -63,11 +66,7 @@ def level_1():
     Globals.camera.xbounds = (0, 70*32)
     Globals.camera.ybounds = (0, 960)
     Globals.camera.y = 420
-    killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))
-    narrator = Entities.Level_1_Narrator()
-    Globals.event_manager = Entities.event_manager()
-    Globals.event_manager.trigger_event()
-    
+    killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 2240, 960)
     

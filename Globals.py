@@ -54,8 +54,33 @@ def clear_groups():
     global group_PLAYER
     global group_PROJECTILES
     global group_AI
+    global group_DRAWONLY
+    global group_BG
+    global group_BUTTON
+    global group_BACKTILES
+    global group_EVENTS
+    global group_NARRATOR
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
     group_SPECIAL.empty()
     group_PROJECTILES.empty()
     group_AI.empty()
+    group_DRAWONLY.empty()
+    group_BG.empty()
+    group_BUTTON.empty()
+    group_BACKTILES.empty()
+    group_EVENTS.empty()
+    group_NARRATOR.empty()
+    
+def reset_variables():
+    global player
+    global hud
+    global event_manager 
+    global key_pause 
+    player = None
+    hud = None
+    event_manager = None
+    key_pause = False
+    
+    
+    
