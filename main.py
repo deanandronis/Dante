@@ -34,7 +34,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_trial() #load level 1
+stage_1.level_1() #load level 1
 
 
 
@@ -166,7 +166,7 @@ while not done:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
-        screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+        screen.blit(item.image, (item.x - Globals.camera.x, item.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
         if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:

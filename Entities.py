@@ -90,9 +90,9 @@ class Player(Entity):
         if not self.dying:
             self.xvel = float(self.xvel)
             self.touching_ground = False #assume not touching ground unless colliding later on
-            self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
-            self.rect.move_ip(self.x, self.y) #set the collision box location
-            
+            #self.rect = pygame.Rect(self.image.get_rect()) #set the collision box bounds to player's image
+            #self.rect.move_ip(self.x, self.y) #set the collision box location
+            self.rect = pygame.Rect((self.x + 8, self.y + 12), (17, 52))
             
             #move x and check for collision
             self.rect.x += self.xvel
@@ -132,8 +132,8 @@ class Player(Entity):
         self.check_health()
             #determine sprite set
         #set position
-        self.x = self.rect.x
-        self.y = self.rect.y
+        self.x = self.rect.x - 8
+        self.y = self.rect.y - 12
         if self.health < 0:
             self.health = 0
         
@@ -676,7 +676,7 @@ class Platform(Entity):
             self.image.set_colorkey((0,0,0))
             self.co_friction = 1
             if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 48,64)
-            else: self.rect = pygame.Rect(x + 16, y +8, blocksacross*32-32, blocksdown*56 - 8)
+            else: self.rect = pygame.Rect(x, y +8, blocksacross*32 - 16, blocksdown*56 - 8)
             self.pos = (x, y + 8)
         
 class platformback(Entity):
@@ -1326,7 +1326,7 @@ class text_bubble_right_narrator(text_bubble):
         self.rect.move_ip(x - self.image.get_width() + 40,y - self.image.get_height() + 10)
 
 #stage 1
-class Level_1_Narrator (Narrator):
+class Stage_1_Narrator (Narrator):
     def __init__(self):
         Entity.__init__(self, Globals.group_EVENTS, Globals.group_NARRATOR)
         Narrator.__init__(self)
@@ -1335,44 +1335,46 @@ class Level_1_Narrator (Narrator):
         
     def next_event(self):
         self.event += 1
-        if self.event == 1:
-            Globals.player.arrowkey_enabled = False
-            Globals.player.xvel = 0
-            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hello Max, and welcome to the Internet. I am your narrator, [NAME HERE], and I am here to make sure you can make it through this foul place. Firstly, press enter to continue.")
-            self.waiting_for_proceed = True
-        elif self.event == 2:
-            self.tbubble.kill()
-            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the left and right arrow keys with space to jump to navigate to the platform on your right.")
-            self.waiting_for_proceed= True
-        elif self.event == 3:
-            self.waiting_for_proceed = False
-            self.tbubble.kill()
-            Globals.player.arrowkey_enabled = True
-        elif self.event == 4: 
-            Globals.player.arrowkey_enabled = False
-            Globals.player.xvel = 0
-            self.waiting_for_proceed = True
-            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your attack on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!")
-        elif self.event == 5: 
-            self.tbubble.kill()
-            Globals.player.arrowkey_enabled = True
-        elif self.event == 6:
-            Globals.player.arrowkey_enabled = False
-            Globals.player.xvel = 0
-            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Not bad! Collect the coins up ahead to increase your score, then proceed. You will find coins scattered around - a by-product of 'bitcoin overmining'. Collect as many as you can to increase your score!")
-            self.waiting_for_proceed = True
-        elif self.event == 7:
-            self.tbubble.kill()
-            Globals.player.arrowkey_enabled = True
-        elif self.event == 8:
-            Globals.player.arrowkey_enabled = False
-            Globals.player.xvel = 0
-            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "That'll do donkey. Continue ahead and further your knowledge - it's time for you to explore the world on your own. Worry not, I'll still be here. Collect the brain to proceed to the next level.")
-            self.waiting_for_proceed = True
-        elif self.event == 9:
-            self.tbubble.kill()
-            Globals.player.arrowkey_enabled = True
-
+        if Globals.level == 0:
+            if self.event == 1:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hello Max, and welcome to the Internet. I am your narrator, [NAME HERE], and I am here to make sure you can make it through this foul place. Firstly, press enter to continue.")
+                self.waiting_for_proceed = True
+            elif self.event == 2:
+                self.tbubble.kill()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the left and right arrow keys with space to jump to navigate to the platform on your right.")
+                self.waiting_for_proceed= True
+            elif self.event == 3:
+                self.waiting_for_proceed = False
+                self.tbubble.kill()
+                Globals.player.arrowkey_enabled = True
+            elif self.event == 4: 
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.waiting_for_proceed = True
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your attack on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!")
+            elif self.event == 5: 
+                self.tbubble.kill()
+                Globals.player.arrowkey_enabled = True
+            elif self.event == 6:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Not bad! Collect the coins up ahead to increase your score, then proceed. You will find coins scattered around - a by-product of 'bitcoin overmining'. Collect as many as you can to increase your score!")
+                self.waiting_for_proceed = True
+            elif self.event == 7:
+                self.tbubble.kill()
+                Globals.player.arrowkey_enabled = True
+            elif self.event == 8:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "That'll do donkey. Continue ahead and further your knowledge - it's time for you to explore the world on your own. Worry not, I'll still be here. Collect the brain to proceed to the next level.")
+                self.waiting_for_proceed = True
+            elif self.event == 9:
+                self.tbubble.kill()
+                Globals.player.arrowkey_enabled = True
+        elif Gloabls.level == 1:
+            pass
 
 
 class Troll(Entity):

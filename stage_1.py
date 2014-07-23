@@ -39,7 +39,7 @@ def level_trial():
     Globals.camera.ybounds = (0, 960)
     Globals.camera.y = 420
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))
-    narrator = Entities.Level_1_Narrator()
+    narrator = Entities.Stage_1_Narrator()
     Globals.event_manager = Entities.event_manager()
     Globals.event_manager.trigger_event()
     
@@ -49,10 +49,10 @@ def level_trial():
 
 def level_1():
     #render floors
-    floor_1 = Entities.Platform(4*32, 22*32, 29, 4)
-    floor_2 = Entities.Platform(37*32, 22*32, 11, 4)
-    floor_3 = Entities.Platform(53*32, 22*32, 5, 4)
-    floor_4 = Entities.Platform(61*32,22*32, 2, 4)
+    floor_1 = Entities.Platform(3*32, 7*32, 3, 4)
+    floor_2 = Entities.Platform(5*32, 8*32, 4, 4)
+    floor_3 = Entities.Platform(8*32, 3*32, 3, 4)
+    #floor_4 = Entities.Platform(9*32,7*32, 2, 1)
     
     #render thingses
     troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
@@ -61,7 +61,7 @@ def level_1():
         
     
     #other stuff
-    Globals.player = Entities.Player(6*32,20*32)
+    Globals.player = Entities.Player(3*32,5*32)
     Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 70*32)
     Globals.camera.ybounds = (0, 960)
