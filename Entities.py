@@ -1327,20 +1327,19 @@ class Level_1_Narrator (Narrator):
     def __init__(self):
         Entity.__init__(self, Globals.group_EVENTS, Globals.group_NARRATOR)
         Narrator.__init__(self)
-        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources','1Narrator.png'), (0,0,0))
+        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources','Clippy.bmp'), (255,0,255))
         self.event = 0
         
     def next_event(self):
         self.event += 1
-        print self.event
         if self.event == 1:
             Globals.player.arrowkey_enabled = False
             Globals.player.xvel = 0
-            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "Hello Max, and welcome to the Internet. I am your narrator, [NAME HERE], and I am here to make sure you can make it through this foul place. Firstly, press enter to continue.")
+            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hello Max, and welcome to the Internet. I am your narrator, [NAME HERE], and I am here to make sure you can make it through this foul place. Firstly, press enter to continue.")
             self.waiting_for_proceed = True
         elif self.event == 2:
             self.tbubble.kill()
-            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the left and right arrow keys with space to jump to navigate to the platform on your right.")
+            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the left and right arrow keys with space to jump to navigate to the platform on your right.")
             self.waiting_for_proceed= True
         elif self.event == 3:
             self.waiting_for_proceed = False
@@ -1350,14 +1349,14 @@ class Level_1_Narrator (Narrator):
             Globals.player.arrowkey_enabled = False
             Globals.player.xvel = 0
             self.waiting_for_proceed = True
-            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "Nice meme. Now jump to the next platform and use your attack on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!")
+            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your attack on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!")
         elif self.event == 5: 
             self.tbubble.kill()
             Globals.player.arrowkey_enabled = True
         elif self.event == 6:
             Globals.player.arrowkey_enabled = False
             Globals.player.xvel = 0
-            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "Not bad! Collect the coins up ahead to increase your score, then proceed. You will find coins scattered around - a by-product of 'bitcoin overmining'. Collect as many as you can to increase your score!")
+            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Not bad! Collect the coins up ahead to increase your score, then proceed. You will find coins scattered around - a by-product of 'bitcoin overmining'. Collect as many as you can to increase your score!")
             self.waiting_for_proceed = True
         elif self.event == 7:
             self.tbubble.kill()
@@ -1365,7 +1364,7 @@ class Level_1_Narrator (Narrator):
         elif self.event == 8:
             Globals.player.arrowkey_enabled = False
             Globals.player.xvel = 0
-            self.tbubble = text_bubble_right_narrator(self.pos[0] , self.pos[1] - 13, "That'll do donkey. Continue ahead and further your knowledge - it's time for you to explore the world on your own. Worry not, I'll still be here. Collect the brain to proceed to the next level.")
+            self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "That'll do donkey. Continue ahead and further your knowledge - it's time for you to explore the world on your own. Worry not, I'll still be here. Collect the brain to proceed to the next level.")
             self.waiting_for_proceed = True
         elif self.event == 9:
             self.tbubble.kill()
@@ -1461,6 +1460,9 @@ class Troll(Entity):
         if self.rect.y + self.rect.height <= Globals.camera.ybounds[0] or self.rect.y >= Globals.camera.ybounds[1] or self.rect.x + self.rect.width <= Globals.camera.xbounds[0] or self.rect.x >= Globals.camera.xbounds[1]:
             self.kill()
         
+        if self.rect.colliderect(Globals.player.rect): self.collide_player(0)
+
+        
         if not self.status == 'runl' and not self.status == 'runr' and not self.status == 'explode' and self.chaserect.collidepoint((Globals.player.x, Globals.player.y)):
             if self.facingL and Globals.player.rect.x < self.rect.x: self.status = 'detected'
             elif not self.facingL and Globals.player.rect.x > self.rect.x: self.status = 'detected'
@@ -1517,21 +1519,12 @@ class Troll(Entity):
                 self.status = 'runl'
                 self.rect.x -= 5
         elif self.status == 'runr':
-            if self.rect.colliderect(Globals.player.rect): 
-                self.collide_player(0)
-            elif self.rect.right < self.patrollimits[1]: self.xvel = 4       
-            else: 
-                self.damage(100)
-                self.xvel = 0
-                self.rect.right = self.patrollimits[1]
+            self.xvel = 4
+            if self.rect.colliderect(Globals.player.rect): self.collide_player(0)
         elif self.status == 'runl':
-            if self.rect.colliderect(Globals.player.rect): 
-                self.collide_player(0)
-            elif self.rect.x > self.patrollimits[0]: self.xvel = -4
-            else: 
-                self.rect.left = self.patrollimits[0]
-                self.xvel = 0
-                self.damage(100)
+            self.xvel = -4
+            if self.rect.colliderect(Globals.player.rect): self.collide_player(0)
+
           
     def damage(self, damage):
         self.health -= damage

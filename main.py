@@ -197,7 +197,7 @@ while not done:
         screen.blit(item.image, (0, 576-96)) #draw the HUD to the screen
         
     for item in Globals.group_NARRATOR:
-        if isinstance(item, Entities.Narrator): screen.blit(item.image, (687,497))
+        if isinstance(item, Entities.Narrator): screen.blit(item.image, (630,447))
         if isinstance(item, Entities.text_bubble): screen.blit(item.image, (item.rect.x, item.rect.y))
     
     for item in Globals.group_BUTTON:
