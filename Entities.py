@@ -629,6 +629,7 @@ class Platform(Entity):
                            functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller2.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformCentreBotFiller3.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformR_EdgeBotFiller.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformL_EdgeBotFiller.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'LonePlatBot.bmp'), (255,0,255)),
                            ]
             if not blocksacross == 1:    
@@ -654,6 +655,8 @@ class Platform(Entity):
                             if columns == blocksacross - 1:
                                 self.image.blit(self.images[8], (columns*32, rows*55))
                                 top = platformback(columns*32 + x + 16, rows*55 + y, 3)
+                            elif columns == 0: 
+                                self.image.blit(self.images[9], (columns*32, rows*55))
                             elif columns % 3 == 0:
                                 self.image.blit(self.images[5], (columns*32,rows*56))
                             elif columns % 3 == 1:
@@ -663,7 +666,7 @@ class Platform(Entity):
             else:
                 if blocksdown == 1:
                     self.image = pygame.Surface((128,64))
-                    self.image.blit(self.images[9], (0,0))
+                    self.image.blit(self.images[10], (0,0))
                     top = platformback(x + 16,y,4)
                 else:
                     self.image = pygame.Surface((64,blocksdown*56))
