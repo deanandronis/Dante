@@ -870,8 +870,7 @@ class hud(pygame.sprite.Sprite):
         
         #load relevant images
         self.imageloc = os.path.join('Resources','General Resources','HUD') #set the location for images
-        self.imagepaths = {   'maxPortrait':(self.imageloc, 'Bo', 3), 
-                              
+        self.imagepaths = {   'maxPortrait':(self.imageloc, 'Bo', 3),    
                           }
         self.images = {}
         self.images = functions.load_imageset(self.imagepaths) #load the images from the dictionary
@@ -1156,6 +1155,7 @@ class lazer(Entity):
                 break
             
         self.image = pygame.Surface((abs(self.range), 11))
+        self.image.set_colorkey((0,0,0))
         if left:
             for i in range(0, self.range, self.interval):
                 if i == self.range + 1: self.image.blit(self.lazerimage[0], (abs(i), 0))
@@ -1327,7 +1327,7 @@ class Level_1_Narrator (Narrator):
     def __init__(self):
         Entity.__init__(self, Globals.group_EVENTS, Globals.group_NARRATOR)
         Narrator.__init__(self)
-        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources','1Narrator.png'), (255,0,255))
+        self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources','1Narrator.png'), (0,0,0))
         self.event = 0
         
     def next_event(self):
