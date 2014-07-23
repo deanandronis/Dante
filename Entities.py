@@ -653,8 +653,8 @@ class Platform(Entity):
                             top = platformback(columns*32 + x, rows*56 + y, 1)
                         else:
                             if columns == blocksacross - 1:
-                                self.image.blit(self.images[8], (columns*32, rows*55))
-                                top = platformback(columns*32 + x + 16, rows*55 + y, 3)
+                                self.image.blit(self.images[8], (columns*32, rows*55 - 3))
+                                top = platformback(columns*32 + x + 16, rows*55 + y - 5, 3)
                             elif columns == 0: 
                                 self.image.blit(self.images[9], (columns*32, rows*55))
                             elif columns % 3 == 0:
@@ -676,7 +676,7 @@ class Platform(Entity):
             self.image.set_colorkey((0,0,0))
             self.co_friction = 1
             if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 48,64)
-            else: self.rect = pygame.Rect(x, y +8, blocksacross*32 - 16, blocksdown*56 - 8)
+            else: self.rect = pygame.Rect(x, y +8, blocksacross*32 - 20, blocksdown*56 - 8)
             self.pos = (x, y + 8)
         
 class platformback(Entity):
