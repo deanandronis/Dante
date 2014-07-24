@@ -53,7 +53,7 @@ def level_1():
 
     #render floors
     floor_2 = Entities.Platform(5*32 + 2, 8*32, 4, 4)
-    floor_3 = Entities.Platform(8*32 + 4, 3*32, 3, 2)
+    floor_3 = Entities.Platform(8*32 + 4, 3*32, 3, 10)
     floor_1 = Entities.Platform(3*32, 7*32, 3, 6)
 
     
