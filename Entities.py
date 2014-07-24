@@ -689,8 +689,10 @@ class Platform(Entity):
                         else:
                             filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56, 0)
                     elif item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + i*56):
+                        print self.pos
                         if i == 0:
                             filltile = platformfront(self.pos[0] + self.image.get_width() - 32, self.pos[1], 1)
+                            filltile2 = platformfront(self.pos[0] + 16 + self.image.get_width(), self.pos[1] + 11, 0)
                         else:
                             filltile = platformfront(self.pos[0] + self.image.get_width() + 16, self.pos[1] + i*56, 0)
             
