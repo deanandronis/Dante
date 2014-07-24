@@ -27,6 +27,9 @@ group_DRAWONLY = pygame.sprite.Group()
 group_BG = pygame.sprite.Group()
 group_BUTTON = pygame.sprite.Group()
 group_BACKTILES = pygame.sprite.Group()
+group_FILLBACKTILES = pygame.sprite.Group()
+group_FRONTTILES = pygame.sprite.Group()
+
 group_HUD = pygame.sprite.Group()
 group_EVENTS = pygame.sprite.Group()
 group_NARRATOR = pygame.sprite.Group()
@@ -60,6 +63,7 @@ def clear_groups():
     global group_BACKTILES
     global group_EVENTS
     global group_NARRATOR
+    global group_FRONTTILES
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
     group_SPECIAL.empty()
@@ -71,6 +75,7 @@ def clear_groups():
     group_BACKTILES.empty()
     group_EVENTS.empty()
     group_NARRATOR.empty()
+    group_FRONTTILES.empty()
     
 def reset_variables():
     global player

@@ -614,7 +614,7 @@ class Player(Entity):
 
 #root classes
 class Platform(Entity):
-    def __init__(self, x, y, blocksacross, blocksdown): 
+    def __init__(self, x, y, blocksacross, blocksdown, fixblocks = None, fixedplat = False): 
             #get image
             Entity.__init__(self, Globals.group_COLLIDEBLOCKS) 
             if Globals.stage == 1:
@@ -675,27 +675,66 @@ class Platform(Entity):
                         self.image.blit(self.images[6], (0,rows*56))
             self.image.set_colorkey((0,0,0))
             self.co_friction = 1
+            self.pos = (x, y + 8)
+
             if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 48,64)
             else: self.rect = pygame.Rect(x, y +8, blocksacross*32 - 20, blocksdown*56 - 8)
-            self.pos = (x, y + 8)
+            for i in range(0, blocksdown):
+                for item in Globals.group_COLLIDEBLOCKS:
+                    if item.rect.collidepoint(self.pos[0] - 6, self.pos[1] + i*56):
+                        if i == 0:
+                            filltile = platformfront(self.pos[0] - 8, self.pos[1] + i*56, 1)
+                            filltile1 = platformbackfill(self.pos[0], self.pos[1] + i*56 - 8, 0)
+                        else:
+                            filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56, 0)
+                    elif item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + i*56):
+                        if i == 0:
+                            filltile = platformfront(self.pos[0] + self.image.get_width() - 32, self.pos[1], 1)
+                        else:
+                            filltile = platformfront(self.pos[0] + self.image.get_width() + 16, self.pos[1] + i*56, 0)
+            
         
 class platformback(Entity):
     def __init__(self, x, y, index):
-        Entity.__init__(self, Globals.group_BACKTILES)     
-        if index == 0:   
-            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformL_EdgeTop.bmp'), (255,0,255))
-        elif index == 1:
-            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreTop.bmp'), (255,0,255))
-        elif index == 2:
-            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTop.bmp'), (255,0,255))
-        elif index == 3:
-            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTopFiller.bmp'), (255,0,255))    
-        elif index == 4:
-            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','LonePlatTop.bmp'), (255,0,255))    
+        Entity.__init__(self, Globals.group_BACKTILES)   
+        if Globals.stage == 1:
+            if index == 0:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformL_EdgeTop.bmp'), (255,0,255))
+            elif index == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreTop.bmp'), (255,0,255))
+            elif index == 2:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTop.bmp'), (255,0,255))
+            elif index == 3:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTopFiller.bmp'), (255,0,255))    
+            elif index == 4:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','LonePlatTop.bmp'), (255,0,255))    
 
         
         self.pos = (x,y)
         
+class platformbackfill(Entity):
+    def __init__(self, x, y, index):
+        Entity.__init__(self, Globals.group_FILLBACKTILES)
+        if Globals.stage == 1:
+            if index == 0:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreTop.bmp'), (255,0,255))
+            if index == 1:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformL_EdgeTop.bmp'), (255,0,255))
+
+        self.pos = (x,y)
+
+        
+class platformfront(Entity):
+    def __init__(self, x, y, index):
+        Entity.__init__(self, Globals.group_FRONTTILES)
+        if Globals.stage == 1:
+            if index == 0:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreBotFiller1.bmp'), (255,0,255))
+            if index == 1:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreBot1.bmp'), (255,0,255))
+
+        self.pos = (x,y)
+
 class kill_border(Entity):
     def __init__(self, (x,y), (length, height)):
         self.rect = pygame.Rect((x,y),(length,height))

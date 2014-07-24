@@ -47,14 +47,11 @@ def level_trial():
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 2240, 960)
 
 
-def level_1():
-    floor_4 = Entities.Platform(14*32,7*32, 2, 1)
-    
-
+def level_1():  
     #render floors
-    floor_2 = Entities.Platform(5*32 + 2, 8*32, 4, 4)
-    floor_3 = Entities.Platform(8*32 + 4, 3*32, 3, 10)
     floor_1 = Entities.Platform(3*32, 7*32, 3, 6)
+    floor_2 = Entities.Platform(5*32, 8*32, 4, 4)
+    floor_3 = Entities.Platform(8*32, 3*32, 4, 7)
 
     
     #render thingses
