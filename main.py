@@ -8,6 +8,7 @@ from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
 from random import randrange
 from Entities import Camera
+from pip._vendor.html5lib.constants import entities
 
 
 #definitions
@@ -53,7 +54,7 @@ while not done:
             if event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
                     if Globals.player.touching_ground: #check to see if player is touching ground
-                        Globals.player.yvel = -12 #accelerate the player upwards
+                        Globals.player.yvel = -10 #accelerate the player upwards
             elif event.key == pygame.K_DOWN:
                 Globals.player.health -= 1
             elif event.key == pygame.K_z:
@@ -196,6 +197,7 @@ while not done:
         if isinstance(item, Entities.event_trigger): pass
         elif item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             if isinstance(item, Entities.kill_border): pass
+            elif isinstance(item, Entities.spike_box): screen.blit(item.image, (item.pos[0]- Globals.camera.x, item.pos[1] - Globals.camera.y))
             else: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #draw whatever else is in the group
     
     for item in Globals.group_PROJECTILES: #draw the projectiles to screen
@@ -217,7 +219,6 @@ while not done:
             item.clicked()
 
     for item in Globals.group_DRAWONLY: screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y))
-
     ticktimer += 1 #add one to the number of cycles
     pygame.display.flip() #refresh the screen
     clock.tick(MAX_FPS) #limit number of game cycles to 60

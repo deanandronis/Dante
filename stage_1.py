@@ -49,29 +49,60 @@ def level_trial():
 
 def level_1():  
     #render floors
-    floor_1 = Entities.Platform(2*32, 7*32, 4, 4)
-    floor_2 = Entities.Platform(5*32, 8*32, 5, 3)
-    floor_3 = Entities.Platform(9*32, 7*32, 4, 4)
+    floor_1 = Entities.Platform(2*32, 7*56, 4, 5)
+    floor_2 = Entities.Platform(9*32, 7*56, 4, 5)
+    floor_3 = Entities.Platform(5*32, 8*56, 5, 4)
+    
+    floor_4 = Entities.Platform(16*32 + 0, 9*56, 6, 3)
+    floor_5 = Entities.Platform(25*32, 8*56, 6, 4)
+    floor_6 = Entities.Platform(12*32, 10*56, 5, 2)
+    floor_7 = Entities.Platform(21*32, 10*56, 5, 2)
 
-    spikebox_1 = Entities.spike_box(15*32, 7*32, 0)
-    spikebox_2 = Entities.spike_box(496, 221, 1)
+    floor_8 = Entities.Platform(31*32, 15*56, 6, 11)
+    
+    floor_9 = Entities.Platform(23*32, 17*56, 2, 11)
+    floor_10 = Entities.Platform(27*32, 17*56, 2, 11)
+    floor_11 = Entities.Platform(24*32, 18*56, 4, 9)
+
+    floor_12 = Entities.Platform(16*32, 20*56, 3, 8)
+    floor_13 = Entities.Platform(14*32, 21*56, 3, 7)
+
+    floor_14 = Entities.Platform(5*32, 22*56, 2, 5)
+    floor_15 = Entities.Platform(9*32, 22*56, 2, 5)
+    floor_16 = Entities.Platform(6*32, 23*56, 4, 4)
+
+    spikebox_0 = Entities.spike_box(0*32, 10*56 - 24)
+
+
+    spikebox_1 = Entities.spike_box(5*32 + 8, 7*56 - 24)
+    spikebox_1 = Entities.spike_box(7*32, 7*56 - 24)
+    
+    spikebox_2 = Entities.spike_box(12*32 + 8, 9*56 - 24)
+    spikebox_2 = Entities.spike_box(14*32, 9*56 - 24)
+    
+    spikebox_3 = Entities.spike_box(21*32 + 8, 9*56 - 24)
+    spikebox_3 = Entities.spike_box(23*32, 9*56 - 24)
+
+    spikebox_4 = Entities.spike_box(25*32 - 8, 17*56 - 24)
+    spikebox_5 = Entities.spike_box(14*32 + 2, 20*56 - 24)
+    spikebox_6 = Entities.spike_box(7*32 - 8, 22*56 - 24)
 
     
     #render thingses
-    troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
-    wiki = Entities.Wikipedia(55*32 + 16, 17*32, 3*32)
-    goalpiece = Entities.goal_piece(61*32 + 16, 21*32)
+    #troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
+    #wiki = Entities.Wikipedia(55*32 + 16, 17*32, 3*32)
+    goalpiece = Entities.goal_piece(1*32 + 16, 21*56)
         
     
     #other stuff
-    Globals.player = Entities.Player(3*32,5*32)
+    Globals.player = Entities.Player(3*32,5*56)
     Globals.hud = Entities.hud()
-    Globals.camera.xbounds = (0, 70*32)
-    Globals.camera.ybounds = (0, 960)
-    Globals.camera.y = 420
+    Globals.camera.xbounds = (0, 41*32)
+    Globals.camera.ybounds = (0, 30*56)
+    Globals.camera.y = 0
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     
-    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 2240, 960)
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 42*32, 30*56)
     
 def level_2():
     

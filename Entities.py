@@ -43,6 +43,7 @@ class Player(Entity):
         self.lock_midair = False
         self.can_die = True
         self.dying = False
+        self.gravity = True
         
         #load images
         '''
@@ -103,7 +104,7 @@ class Player(Entity):
             else: self.yvel = 10
             
             #move y and check for collisions
-            self.rect.y += self.yvel
+            if self.gravity == True: self.rect.y += self.yvel
             self.check_y_coll()
             self.collide_SPECIAL()
                             
@@ -128,7 +129,6 @@ class Player(Entity):
                 self.touching_ground = True   
             self.check_sprites()
 
-                
         self.check_health()
             #determine sprite set
         #set position
@@ -198,7 +198,7 @@ class Player(Entity):
             self.create_spleen()
         
     def check_health(self):
-        if self.health == 0 and self.can_die: 
+        if self.health <= 0 and self.can_die: 
             self.can_die = False
             self.dying = True
             if self.facing_right == True:
@@ -220,8 +220,14 @@ class Player(Entity):
                 item.kill()
                 self.create_spleen()
             elif isinstance(item, spike_box) and self.rect.colliderect(item.rect):
-                self.health -= 10
-                self.create_spleen()
+                if not self.dying: 
+                    self.health -= 10
+                    self.create_spleen()
+                    self.arrowkey_enabled = False
+                    self.gravity = False
+                    self.xvel = 0
+                    self.yvel = 0
+                
             elif isinstance(item, key) and self.rect.colliderect(item.rect):
                 item.destroy = True
                 item.image = functions.get_image(os.path.join('Resources','General Resources','InvisibleTile.png'),(255,0,255))
@@ -507,6 +513,7 @@ class Player(Entity):
         self.dying = False
         self.can_die = True
         self.arrowkey_enabled = True
+        self.gravity = True
         
     def change_image(self, image):
         self.imageindex = 0 #reset the image position
@@ -597,11 +604,11 @@ class Player(Entity):
 
     def right_pressed(self):
         if self.arrowkey_enabled and not self.lock_midair:
-                self.xvel = 3.5
+                self.xvel = 3.8
                 
     def left_pressed(self):
         if self.arrowkey_enabled and not self.lock_midair: 
-                    self.xvel = -3.5
+                    self.xvel = -3.8
                     
     def left_released(self):
         if not self.xvel > 0 and self.arrowkey_enabled and not self.lock_midair: #set the player's horizontal velocity to 0 if player isn't moving right
@@ -692,12 +699,12 @@ class Platform(Entity):
                         else:
                             filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56, 0)
                     elif item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + i*56):
-                        print self.pos
                         if i == 0:
-                            filltile = platformfront(self.pos[0] + self.image.get_width() - 32, self.pos[1], 1)
-                            filltile2 = platformfront(self.pos[0] + 16 + self.image.get_width(), self.pos[1] + 11, 0)
+                            filltile = platformfront(self.pos[0] + self.image.get_width()-16, self.pos[1] - 16, 3)
                         else:
-                            filltile = platformfront(self.pos[0] + self.image.get_width() + 16, self.pos[1] + i*56, 0)
+                            filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 45, 0)
+                            filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 45 + 42, 0)
+
             
         
 class platformback(Entity):
@@ -742,6 +749,8 @@ class platformfront(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreBot1.bmp'), (255,0,255))
             if index == 2:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','CornerJoinerBot.png'), (255,0,255))
+            if index == 3:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformEdgeFillerL.bmp'), (255,0,255))
                 
 
         self.pos = (x,y)
@@ -760,15 +769,23 @@ class damage_tile(Entity):
         self.rect.move_ip((x,y))
         
 class spike_box(Entity):
-    def __init__(self, x, y, index):
+    def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
         if Globals.stage == 1:
-            if index == 0:
-                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','SpikeBoxBot.bmp'), (255,0,255))
-            if index == 1:
-                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','SpikeBoxTop.bmp'), (255,0,255))
-        self.rect = pygame.Rect(self.image.get_rect())
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','SpikeBoxBot.bmp'), (255,0,255))
+        self.rect = pygame.Rect((0,0), (48,83))
+        self.rect.move_ip((x + 7,y + 10))
+        self.pos = (x,y)
+        back = spike_box_back(self.pos[0] + 8, self.pos[1] + 1)
+
+class spike_box_back(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_FILLBACKTILES)
+        self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','SpikeBoxTop.bmp'), (255,0,255))
+        self.rect = self.image.get_rect()
         self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        
         
 class goal_piece(Entity):
     def __init__(self, x, y):
@@ -903,8 +920,8 @@ class Camera():
         elif player.rect.x + player.xvel < self.x + self.width*2/5: #if the player is in the left 2/5 of the window, move the camera
             self.x = player.rect.x - self.width*2/5
         
-        if player.rect.y + player.yvel + player.rect.height> self.y + self.height*3/5:
-            self.y = player.rect.y - self.height*3/5 + player.rect.height
+        if player.rect.y + player.yvel + player.rect.height> self.y + self.height*2/5:
+            self.y = player.rect.y - self.height*2/5 
             
         elif player.rect.y < self.y + self.height*2/5:
             self.y = player.rect.y - self.height*2/5
