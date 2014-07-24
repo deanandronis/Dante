@@ -8,7 +8,6 @@ from pygame.locals import *
 import Entities, functions, stage_1, Constants, Globals
 from random import randrange
 from Entities import Camera
-from pip._vendor.html5lib.constants import entities
 
 
 #definitions
