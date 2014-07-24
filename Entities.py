@@ -683,8 +683,9 @@ class Platform(Entity):
                 for item in Globals.group_COLLIDEBLOCKS:
                     if item.rect.collidepoint(self.pos[0] - 6, self.pos[1] + i*56):
                         if i == 0:
-                            filltile = platformfront(self.pos[0] - 8, self.pos[1] + i*56, 1)
-                            filltile1 = platformbackfill(self.pos[0], self.pos[1] + i*56 - 8, 0)
+                            filltile = platformfront(self.pos[0], self.pos[1] + i*56 - 1, 2)
+                            filltile1 = platformbackfill(self.pos[0] + 19, self.pos[1] - 8, 2)
+                            filltile2 = platformfront(self.pos[0] - 16, self.pos[1] + 11, 0)
                         else:
                             filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56, 0)
                     elif item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + i*56):
@@ -720,6 +721,8 @@ class platformbackfill(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreTop.bmp'), (255,0,255))
             if index == 1:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformL_EdgeTop.bmp'), (255,0,255))
+            if index == 2:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','CornerJoinerTop.png'), (255,0,255))
 
         self.pos = (x,y)
 
@@ -732,6 +735,9 @@ class platformfront(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreBotFiller1.bmp'), (255,0,255))
             if index == 1:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreBot1.bmp'), (255,0,255))
+            if index == 2:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','CornerJoinerBot.png'), (255,0,255))
+                
 
         self.pos = (x,y)
 
@@ -1412,7 +1418,7 @@ class Stage_1_Narrator (Narrator):
             elif self.event == 9:
                 self.tbubble.kill()
                 Globals.player.arrowkey_enabled = True
-        elif Gloabls.level == 1:
+        elif Globals.level == 1:
             pass
 
 
