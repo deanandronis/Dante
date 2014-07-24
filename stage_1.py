@@ -53,6 +53,9 @@ def level_1():
     floor_2 = Entities.Platform(5*32, 8*32, 5, 3)
     floor_3 = Entities.Platform(9*32, 7*32, 4, 4)
 
+    spikebox_1 = Entities.spike_box(15*32, 7*32, 0)
+    spikebox_2 = Entities.spike_box(496, 221, 1)
+
     
     #render thingses
     troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
@@ -71,8 +74,6 @@ def level_1():
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 2240, 960)
     
 def level_2():
-    
-    
     
     Globals.player = Entities.Player(32,32*14)
     Globals.hud = Entities.hud()

@@ -219,6 +219,9 @@ class Player(Entity):
                 self.health -= 10
                 item.kill()
                 self.create_spleen()
+            elif isinstance(item, spike_box) and self.rect.colliderect(item.rect):
+                self.health -= 10
+                self.create_spleen()
             elif isinstance(item, key) and self.rect.colliderect(item.rect):
                 item.destroy = True
                 item.image = functions.get_image(os.path.join('Resources','General Resources','InvisibleTile.png'),(255,0,255))
@@ -753,6 +756,17 @@ class damage_tile(Entity):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
         if Globals.stage == 1:
             self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','1DeathTile.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        
+class spike_box(Entity):
+    def __init__(self, x, y, index):
+        Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group
+        if Globals.stage == 1:
+            if index == 0:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','SpikeBoxBot.bmp'), (255,0,255))
+            if index == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','SpikeBoxTop.bmp'), (255,0,255))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         
