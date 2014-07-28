@@ -19,7 +19,7 @@ key_pause = False
 
 #create sprite groups
 group_PLAYER = pygame.sprite.GroupSingle()
-group_COLLIDEBLOCKS = pygame.sprite.Group()
+group_COLLIDEBLOCKS = pygame.sprite.LayeredUpdates()
 group_SPECIAL = pygame.sprite.LayeredUpdates()
 group_PROJECTILES = pygame.sprite.Group()
 group_AI = pygame.sprite.Group()

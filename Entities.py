@@ -644,6 +644,8 @@ class Platform(Entity):
                            functions.get_image(os.path.join(self.imageloc,'PlatformR_EdgeBotFiller.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'PlatformL_EdgeBotFiller.bmp'), (255,0,255)),
                            functions.get_image(os.path.join(self.imageloc,'LonePlatBot.bmp'), (255,0,255)),
+                           functions.get_image(os.path.join(self.imageloc,'PlatformBottom.bmp'), (255,0,255)),
+
                            ]
             if not blocksacross == 1:    
                 self.image = pygame.Surface((blocksacross*32-16,blocksdown*56))
@@ -655,6 +657,7 @@ class Platform(Entity):
                         elif rows == 0 and columns == blocksacross - 1:
                             self.image.blit(self.images[4], (columns*32,rows*56))
                             top = platformback(columns*32 + x, rows * 32 + y, 2)
+                            self.image.blit(self.images[8], (columns*32, rows*56 + 16))
                         elif rows == 0 and columns%3 == 0:
                             self.image.blit(self.images[1], (columns*32,rows*56))
                             top = platformback(columns*32 + x, rows * 32 + y, 1)
@@ -666,10 +669,10 @@ class Platform(Entity):
                             top = platformback(columns*32 + x, rows*56 + y, 1)
                         else:
                             if columns == blocksacross - 1:
-                                self.image.blit(self.images[8], (columns*32, rows*55 - 3))
+                                self.image.blit(self.images[8], (columns*32, rows*56))
                                 top = platformback(columns*32 + x + 16, rows*55 + y - 5, 3)
                             elif columns == 0: 
-                                self.image.blit(self.images[9], (columns*32, rows*55))
+                                self.image.blit(self.images[9], (columns*32, rows*56))
                             elif columns % 3 == 0:
                                 self.image.blit(self.images[5], (columns*32,rows*56))
                             elif columns % 3 == 1:
@@ -691,23 +694,37 @@ class Platform(Entity):
             self.pos = (x, y + 8)
 
             if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 48,64)
-            else: self.rect = pygame.Rect(x, y +8, blocksacross*32 - 20, blocksdown*56 - 8)
+            else: 
+                self.rect = pygame.Rect(x, y +8, blocksacross*32 - 20, blocksdown*56 - 8)
+                for i in range(0, blocksacross - 1):
+                    if i == 0: self.image.blit(self.images[11], (i*32 + 1, self.image.get_height()- 3))
+                    else: self.image.blit(self.images[11], (i*32, self.image.get_height()- 3))
+                                    
             for i in range(0, blocksdown):
                 for item in Globals.group_COLLIDEBLOCKS:
                     if item.rect.collidepoint(self.pos[0] - 6, self.pos[1] + i*56):
+                        if item.rect.bottom == self.rect.bottom: filltile = platformfront(self.pos[0] - 16, self.pos[1] + self.image.get_height() - 3, 5)
                         if i == 0:
                             filltile = platformfront(self.pos[0], self.pos[1] + i*56 - 1, 2)
                             filltile1 = platformbackfill(self.pos[0] + 19, self.pos[1] - 8, 2)
                             filltile2 = platformfront(self.pos[0] - 16, self.pos[1] + 11, 0)
-                        else:
-                            filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56, 0)
+
+                        else: 
+                            if item.rect.collidepoint(self.pos[0] - 6, self.pos[1] + (i+1)*56): filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56 - 3, 0)
+                            else: filltile = platformfront(self.pos[0] - 16, self.pos[1] + self.image.get_height() - 56, 0)
                     elif item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + i*56):
                         if i == 0:
-                            filltile = platformfront(self.pos[0] + self.image.get_width()-16, self.pos[1] - 16, 3)
+                            if item.pos[1] == self.pos[1]: 
+                                filltile = platformfront(self.pos[0] + self.image.get_width()-16, self.pos[1], 1)
+                                filltile1 = platformbackfill(self.pos[0] + self.image.get_width() - 16, self.pos[1] - 8, 0)
+
+                            else: 
+                                if item.rect.bottom == self.rect.bottom: filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + self.image.get_height() - 3, 5)
+                                filltile = platformfront(self.pos[0] + self.image.get_width()-16, self.pos[1] - 16, 3)
                         else:
                             filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 45, 0)
-                            filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 45 + 42, 0)
-
+                            if item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + (i+1)*56): filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 3, 0)
+                            else: filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + self.image.get_height() - 56, 0)
             
         
 class platformback(Entity):
@@ -754,7 +771,11 @@ class platformfront(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','CornerJoinerBot.png'), (255,0,255))
             if index == 3:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformEdgeFillerL.bmp'), (255,0,255))
-                
+            if index == 4:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeBotFiller.bmp'), (255,0,255))
+            if index == 5:   
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformBottom.bmp'), (255,0,255))
+
 
         self.pos = (x,y)
 
