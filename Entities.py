@@ -796,11 +796,11 @@ class vault_door(Entity):
         self.rect = self.image.get_rect()
         self.rect.move_ip((x,y))
         self.pos = (x,y)
-        back = vault_door_back(self.pos[0] + 8, self.pos[1] + 1)
+        back = vault_door_back(self.pos[0] + 16, self.pos[1] - 6)
         
 class vault_door_back(Entity):
     def __init__(self, x, y):
-        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        Entity.__init__(self, Globals.group_FILLBACKTILES)
         self.image = functions.get_image(os.path.join('Resources','General Resources','VaultDoorTop.png'), (255,0,255))
         self.rect = self.image.get_rect()
         self.rect.move_ip((x,y))
