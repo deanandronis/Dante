@@ -219,7 +219,6 @@ class Player(Entity):
                 self.health -= 10
                 item.kill()
                 self.create_spleen()
-            elif isinstance(item, spike_box) and self.rect.colliderect(item.rect):
                 if not self.dying: 
                     self.health -= 10
                     self.create_spleen()
@@ -238,6 +237,10 @@ class Player(Entity):
                 self.reset()
                 self.health -= 3
                 self.create_spleen()   
+            elif isinstance(item, spike_box) and self.rect.colliderect(item.rect):
+                if not self.dying: 
+                    self.health -= 10
+                    self.create_spleen()
             elif isinstance(item, event_trigger) and self.rect.colliderect(item.rect):
                 Globals.event_manager.trigger_event()
                 item.kill()
@@ -785,7 +788,23 @@ class spike_box_back(Entity):
         self.rect = self.image.get_rect()
         self.rect.move_ip((x,y))
         self.pos = (x,y)
+    
+class vault_door(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        self.image = functions.get_image(os.path.join('Resources','General Resources','VaultDoorBot.png'), (255,0,255))
+        self.rect = self.image.get_rect()
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        back = vault_door_back(self.pos[0] + 8, self.pos[1] + 1)
         
+class vault_door_back(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        self.image = functions.get_image(os.path.join('Resources','General Resources','VaultDoorTop.png'), (255,0,255))
+        self.rect = self.image.get_rect()
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
         
 class goal_piece(Entity):
     def __init__(self, x, y):

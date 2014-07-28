@@ -9,6 +9,7 @@ def main_menu():
     pass
 
 def level_trial():
+        
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)
     floor_2 = Entities.Platform(15*32, 22*32,6, 4)
@@ -48,6 +49,10 @@ def level_trial():
 
 
 def level_1():  
+    
+    #test
+    door_1 = Entities.vault_door(5*32, 9*32)
+    
     #render floors
     floor_1 = Entities.Platform(2*32, 7*56, 4, 5)
     floor_2 = Entities.Platform(9*32, 7*56, 4, 5)
