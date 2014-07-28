@@ -669,8 +669,13 @@ class Platform(Entity):
                             top = platformback(columns*32 + x, rows*56 + y, 1)
                         else:
                             if columns == blocksacross - 1:
-                                self.image.blit(self.images[8], (columns*32, rows*56))
-                                top = platformback(columns*32 + x + 16, rows*55 + y - 5, 3)
+                                if rows == blocksdown - 1:
+                                    self.image.blit(self.images[8], (columns*32, rows*56 - 10))
+                                    top = platformback(columns*32 + x + 16, rows*55 + y - 5, 3)
+                                    top = platformback(columns*32 + x + 16, rows*55 + y - 2, 3)
+                                else:
+                                    self.image.blit(self.images[8], (columns*32, rows*56))
+                                    top = platformback(columns*32 + x + 16, rows*55 + y - 5, 3)
                             elif columns == 0: 
                                 self.image.blit(self.images[9], (columns*32, rows*56))
                             elif columns % 3 == 0:
