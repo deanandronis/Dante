@@ -708,15 +708,17 @@ class Platform(Entity):
             for i in range(0, blocksdown):
                 for item in Globals.group_COLLIDEBLOCKS:
                     if item.rect.collidepoint(self.pos[0] - 6, self.pos[1] + i*56):
-                        if item.rect.bottom == self.rect.bottom: filltile = platformfront(self.pos[0] - 16, self.pos[1] + self.image.get_height() - 3, 5)
+                        if item.rect.bottom == self.rect.bottom:
+                                filltile = platformfront(self.pos[0] - 16, self.rect.bottom + 5, 5)
+                                print (self.pos[0] - 16, self.rect.bottom + 5)
                         if i == 0:
                             filltile = platformfront(self.pos[0], self.pos[1] + i*56 - 1, 2)
                             filltile1 = platformbackfill(self.pos[0] + 19, self.pos[1] - 8, 2)
                             filltile2 = platformfront(self.pos[0] - 16, self.pos[1] + 11, 0)
 
-                        else: 
+                        else:
                             if item.rect.collidepoint(self.pos[0] - 6, self.pos[1] + (i+1)*56): filltile = platformfront(self.pos[0] - 16, self.pos[1] + i*56 - 3, 0)
-                            else: filltile = platformfront(self.pos[0] - 16, self.pos[1] + self.image.get_height() - 56, 0)
+                            else: filltile = platformfront(self.pos[0] - 16, self.pos[1] + self.image.get_height() - 59, 0)
                     elif item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + i*56):
                         if i == 0:
                             if item.pos[1] == self.pos[1]: 
@@ -724,12 +726,16 @@ class Platform(Entity):
                                 filltile1 = platformbackfill(self.pos[0] + self.image.get_width() - 16, self.pos[1] - 8, 0)
 
                             else: 
-                                if item.rect.bottom == self.rect.bottom: filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + self.image.get_height() - 3, 5)
+                                if item.rect.bottom == self.rect.bottom: 
+                                    print (self.rect.right - 15, self.rect.bottom + 5)
+                                    filltile = platformfront(self.rect.right - 12, self.rect.bottom + 5, 5)
+                                                
+                                    
                                 filltile = platformfront(self.pos[0] + self.image.get_width()-16, self.pos[1] - 16, 3)
                         else:
                             filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 45, 0)
                             if item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + (i+1)*56): filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 3, 0)
-                            else: filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + self.image.get_height() - 56, 0)
+                            else: filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + self.image.get_height() - 59, 0)
             
         
 class platformback(Entity):
@@ -767,6 +773,7 @@ class platformbackfill(Entity):
 class platformfront(Entity):
     def __init__(self, x, y, index):
         Entity.__init__(self, Globals.group_FRONTTILES)
+        self.index = index
         if Globals.stage == 1:
             if index == 0:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformCentreBotFiller1.bmp'), (255,0,255))
@@ -815,15 +822,67 @@ class spike_box_back(Entity):
         self.rect.move_ip((x,y))
         self.pos = (x,y)
     
-class vault_door(Entity):
-    def __init__(self, x, y):
+class Door(Entity):
+    def __init__(self, x, y, blocksacross, blocksdown, index):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
-        self.image = functions.get_image(os.path.join('Resources','General Resources','VaultDoorBot.png'), (255,0,255))
-        self.rect = self.image.get_rect()
-        self.rect.move_ip((x,y))
-        self.pos = (x,y)
+        self.blockimage = functions.get_image(os.path.join('Resources','General Resources','VaultDoorBot.png'), (255,0,255))
+        self.image = pygame.Surface((blocksacross*64,blocksdown*56))
+        for rows in range(0,blocksdown):
+            for columns in range(0,blocksacross):
+                self.image.blit(self.blockimage, (columns*64, rows*56))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x,y)
+        self.pos = (self.rect.x, self.rect.y)
+        self.width = blocksacross*64
+        self.height = blocksdown*56
+        self.index = index
         back = vault_door_back(self.pos[0] + 16, self.pos[1] - 6)
+
+    
+    def remove_one_horiz(self):
+        if self.width == 64: 
+            self.kill()
+        else:
+            self.rect.x += 64
+            self.width -= 64
+            self.image = pygame.Surface((self.width, self.height))
+            for rows in range(0,self.height/56):
+                for columns in range(0,self.width/64):
+                    self.image.blit(self.blockimage, (columns*64, rows*56))
+       
+    def remove_one_vert(self):
+        if self.height == 56: 
+            self.kill()
+
+        else:
+            self.rect.y += 56
+            self.height -= 56
+            self.image = pygame.Surface((self.width, self.height))
+            for rows in range(0,self.height/56):
+                for columns in range(0,self.width/64):
+                    self.image.blit(self.blockimage, (columns*64, rows*56))
+    
+    def add_one_vert_bottom(self):
+        self.height += 56
+        self.image = pygame.Surface((self.width, self.height))
+        for rows in range(0,self.height/56):
+            for columns in range(0,self.width/64):
+                self.image.blit(self.blockimage, (columns*64, rows*56))
+
+    
+    def add_one_vert_top(self):
+        self.height += 56
+        self.image = pygame.Surface((self.width, self.height))
+        for rows in range(0,self.height/56):
+            for columns in range(0,self.width/64):
+                self.image.blit(self.blockimage, (columns*64, rows*56))
         
+        self.rect.y -= 56
+        self.pos = (self.rect.x, self.rect.y)
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(self.pos)
+        
+
 class vault_door_back(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_FILLBACKTILES)
@@ -880,66 +939,7 @@ class key(Entity):
           
         if self.timer >= self.destroytimer: self.timer = 0
               
-class Door(Entity):
-    def __init__(self, x, y, blocksacross, blocksdown, index):
-        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
-        self.blockimage = functions.get_image(os.path.join('Resources','General Resources','Doortile.png'), (255,0,255))
-        self.image = pygame.Surface((blocksacross*32,blocksdown*32))
-        for rows in range(0,blocksdown):
-            for columns in range(0,blocksacross):
-                self.image.blit(self.blockimage, (columns*32, rows*32))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(x,y)
-        self.pos = (self.rect.x, self.rect.y)
-        self.width = blocksacross*32
-        self.height = blocksdown*32
-        self.index = index
-        self.co_friction = 1
-    
-    def remove_one_horiz(self):
-        if self.width == 32: 
-            self.kill()
-        else:
-            self.rect.x += 32
-            self.width -= 32
-            self.image = pygame.Surface((self.width, self.height))
-            for rows in range(0,self.height/32):
-                for columns in range(0,self.width/32):
-                    self.image.blit(self.blockimage, (columns*32, rows*32))
-       
-    def remove_one_vert(self):
-        if self.height == 32: 
-            self.kill()
 
-        else:
-            self.rect.y += 32
-            self.height -= 32
-            self.image = pygame.Surface((self.width, self.height))
-            for rows in range(0,self.height/32):
-                for columns in range(0,self.width/32):
-                    self.image.blit(self.blockimage, (columns*32, rows*32))
-    
-    def add_one_vert_bottom(self):
-        self.height += 32
-        self.image = pygame.Surface((self.width, self.height))
-        for rows in range(0,self.height/32):
-            for columns in range(0,self.width/32):
-                self.image.blit(self.blockimage, (columns*32, rows*32))
-
-    
-    def add_one_vert_top(self):
-        
-        self.height += 32
-        self.image = pygame.Surface((self.width, self.height))
-        for rows in range(0,self.height/32):
-            for columns in range(0,self.width/32):
-                self.image.blit(self.blockimage, (columns*32, rows*32))
-        
-        self.rect.y -= 32
-        self.pos = (self.rect.x, self.rect.y)
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(self.pos)
-        
 #game essentials
 
 class Camera():

@@ -108,10 +108,11 @@ while not done:
             elif event.key == pygame.K_F12: coin = Entities.Coin(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             elif event.key == pygame.K_F11: 
                 Globals.player.yvel = 0
-                if Globals.player.grav: Globals.player.grav = False
-                else: Globals.player.grav = True
+                if Globals.player.gravity: Globals.player.gravity = False
+                else: Globals.player.gravity = True
         elif event.type == MOUSEBUTTONDOWN: 
             mousex, mousey = event.pos
+            print "Mouse: " + str((mousex + Globals.camera.x, mousey + Globals.camera.y))
            
     #movement
     if keypressed[K_LEFT] and not Globals.player.keys['right'] == True:

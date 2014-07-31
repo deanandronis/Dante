@@ -28,7 +28,7 @@ group_BG = pygame.sprite.Group()
 group_BUTTON = pygame.sprite.Group()
 group_BACKTILES = pygame.sprite.Group()
 group_FILLBACKTILES = pygame.sprite.Group()
-group_FRONTTILES = pygame.sprite.Group()
+group_FRONTTILES = pygame.sprite.LayeredUpdates()
 
 group_HUD = pygame.sprite.Group()
 group_EVENTS = pygame.sprite.Group()

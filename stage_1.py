@@ -51,7 +51,7 @@ def level_trial():
 def level_1():  
     
     #test
-    door_1 = Entities.vault_door(5*32, 9*32)
+    door_1 = Entities.Door(5*32, 9*32, 1, 1, 1)
     
     #render floors
     floor_1 = Entities.Platform(2*32, 7*56, 4, 5)
