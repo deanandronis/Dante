@@ -825,7 +825,7 @@ class spike_box_back(Entity):
 class Door(Entity):
     def __init__(self, x, y, blocksacross, blocksdown, index):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
-        self.blockimage = functions.get_image(os.path.join('Resources','General Resources','VaultDoorBot.png'), (255,0,255))
+        self.blockimage = functions.get_image(os.path.join('Resources','General Resources','VaultDoorBotResized.png'), (255,0,255))
         self.image = pygame.Surface((blocksacross*64,blocksdown*56))
         for rows in range(0,blocksdown):
             for columns in range(0,blocksacross):
