@@ -804,6 +804,12 @@ class damage_tile(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         
+class ramp(Entity):
+    def __init__(self, x, y, height):
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        if Globals.stage == 1:
+            self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','RampBot.bmp'), (255,0,255))
+        
 class spike_box(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL) #add the block to its group

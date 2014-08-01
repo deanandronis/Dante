@@ -12,7 +12,7 @@ def level_trial():
         
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)
-    floor_2 = Entities.Platform(15*32, 22*32,6, 4)
+    floor_2 = Entities.Platform(14*32, 22*32,6, 4)
     floor_3 = Entities.Platform(24*32, 22*32, 10, 4)
     floor_4 = Entities.Platform(38*32,22*32, 8, 4)
     floor_5 = Entities.Platform(54*32,22*32, 4, 4)
