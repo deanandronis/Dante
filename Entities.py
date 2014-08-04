@@ -140,58 +140,64 @@ class Player(Entity):
     def check_x_coll(self):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
         for block in block_hit_list: #iterate through the list
+            if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
+                block.teleport()
             #Collision moving right means that player collided with left side of block
-            if not self.attacking:
-                if self.xvel > 0:
-                    self.rect.right = block.rect.left #set right side of player to left side of block
-                    self.xvel = 0
-                    self.keys['left'] = False
-                    self.keys['right'] = False
-                    
-                elif self.xvel < 0:
-                    #Collision moving left means player collided with right side of block
-                    self.rect.left = block.rect.right #set left side of player to right side of block
-                    self.xvel = 0
-                    self.keys['left'] = False
-                    self.keys['right'] = False
-                    
-            elif self.imagename == 'spinL' or self.imagename == 'slashL' or self.imagename == 'shoutL':
-                if self.rect.x > block.rect.x:
-                    self.rect.left = block.rect.right 
-                    self.xvel = 0
-                    self.keys['left'] = False
-                    self.keys['right'] = False
-                    
-                else:
-                    self.rect.right = block.rect.left 
-                    self.xvel = 0
-                    self.keys['left'] = False
-                    self.keys['right'] = False
-                    
-            elif self.imagename == 'spinR' or self.imagename == 'slashR' or self.imagename == 'shoutR':
-                if self.rect.x < block.rect.x:
-                    self.rect.right = block.rect.left
-                    self.xvel = 0
-                    self.keys['left'] = False
-                    self.keys['right'] = False
-                    
-                else:
-                    self.rect.left = block.rect.right
-                    self.xvel = 0
-                    self.keys['left'] = False
-                    self.keys['right'] = False
+            else:
+                if not self.attacking:
+                    if self.xvel > 0:
+                        self.rect.right = block.rect.left #set right side of player to left side of block
+                        self.xvel = 0
+                        self.keys['left'] = False
+                        self.keys['right'] = False
+                        
+                    elif self.xvel < 0:
+                        #Collision moving left means player collided with right side of block
+                        self.rect.left = block.rect.right #set left side of player to right side of block
+                        self.xvel = 0
+                        self.keys['left'] = False
+                        self.keys['right'] = False
+                        
+                elif self.imagename == 'spinL' or self.imagename == 'slashL' or self.imagename == 'shoutL':
+                    if self.rect.x > block.rect.x:
+                        self.rect.left = block.rect.right 
+                        self.xvel = 0
+                        self.keys['left'] = False
+                        self.keys['right'] = False
+                        
+                    else:
+                        self.rect.right = block.rect.left 
+                        self.xvel = 0
+                        self.keys['left'] = False
+                        self.keys['right'] = False
+                        
+                elif self.imagename == 'spinR' or self.imagename == 'slashR' or self.imagename == 'shoutR':
+                    if self.rect.x < block.rect.x:
+                        self.rect.right = block.rect.left
+                        self.xvel = 0
+                        self.keys['left'] = False
+                        self.keys['right'] = False
+                        
+                    else:
+                        self.rect.left = block.rect.right
+                        self.xvel = 0
+                        self.keys['left'] = False
+                        self.keys['right'] = False
     
     def check_y_coll(self):
         block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
         for block in block_hit_list: #iterate over list
-            # check collision
-            #self.touching_ground = True
-            if self.yvel > 0: #top collision
-                self.rect.bottom = block.rect.top #set bottom of player to top of block
-                self.yvel = 0 #stop vertical movement
-            elif self.yvel < 0: #bottom collision
-                self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
-                self.yvel = 0 #stop vertical movement  
+            if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
+                block.teleport()
+            else:
+                # check collision
+                #self.touching_ground = True
+                if self.yvel > 0: #top collision
+                    self.rect.bottom = block.rect.top #set bottom of player to top of block
+                    self.yvel = 0 #stop vertical movement
+                elif self.yvel < 0: #bottom collision
+                    self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
+                    self.yvel = 0 #stop vertical movement  
         if self.rect.y + self.rect.height > Globals.camera.y + Globals.camera.height - 96:
             self.health -= 3
             self.reset()
@@ -244,7 +250,7 @@ class Player(Entity):
             elif isinstance(item, event_trigger) and self.rect.colliderect(item.rect):
                 Globals.event_manager.trigger_event()
                 item.kill()
-                
+
                 
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
@@ -804,6 +810,49 @@ class damage_tile(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         
+class portal(Entity):
+    def __init__(self, x, y, z, (a,b)):
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        if Globals.stage == 1:
+            if z == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','BPortalBot.png'), (255,0,255))
+                self.exit = portal(a,b,2, (0, 0))
+            else:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','OPortalBot.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        self.z = z
+        top = portal_top(self.pos[0] + 16, self.pos[1] - 8)
+        center = portal_center(self.pos[0] + 16, self.pos[1] + 22, z)
+        
+    def teleport(self):
+        Globals.player.rect.x = self.exit.pos[0] + 27
+        Globals.player.rect.y = self.exit.pos[1] - 64
+        Globals.player.xvel = 0
+        Globals.player.yvel = 0
+        
+class portal_top(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_BACKTILES)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PortalTop.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        
+        
+class portal_center(Entity):
+    def __init__(self, x, y, z):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        if Globals.stage == 1:
+            if z == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','BPortalCenter.png'), (255,0,255))
+            else:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','OPortalCenter.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+
 class ramp(Entity):
     def __init__(self, x, y, height):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)

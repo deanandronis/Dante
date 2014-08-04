@@ -10,6 +10,9 @@ def main_menu():
 
 def level_trial():
         
+        
+    portal_1 = Entities.portal(4*32, 17*32, 1, (6*32, 15*32))
+    
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)
     floor_2 = Entities.Platform(14*32, 22*32,6, 4)
