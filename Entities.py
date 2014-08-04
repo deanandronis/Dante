@@ -850,7 +850,7 @@ class passable(Entity):
         self.rect.move_ip((x,y))
         self.hit = False
         self.pos = (x,y)
-        top = passable_top(self.pos[0] + 16, self.pos[1] - 8)
+        top = passable_top(self.pos[0], self.pos[1] - 8)
             
 class passable_top(Entity):
     def __init__(self, x, y):
@@ -868,7 +868,7 @@ class passable_top(Entity):
                 self.hit = True
         if self.hit is True and not self.rect.colliderect(Globals.player.rect):
             self.kill()
-            respawn = passable_s(self.pos[0] - 16, self.pos[1] + 8)
+            respawn = passable_s(self.pos[0], self.pos[1] + 8)
 
 class passable_s(Entity):
     def __init__(self, x, y):
@@ -878,7 +878,7 @@ class passable_s(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.pos = (x,y)
-        top = passable_top_s(self.pos[0] + 16, self.pos[1] - 8)
+        top = passable_top_s(self.pos[0], self.pos[1] - 8)
 
 class passable_top_s(Entity):
     def __init__(self, x, y):
