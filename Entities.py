@@ -824,7 +824,6 @@ class portal(Entity):
         self.pos = (x,y)
         self.z = z
         top = portal_top(self.pos[0] + 16, self.pos[1] - 8)
-        center = portal_center(self.pos[0] + 16, self.pos[1] + 22, z)
         
     def teleport(self):
         Globals.player.rect.x = self.exit.pos[0] + 27
@@ -841,18 +840,6 @@ class portal_top(Entity):
         self.rect.move_ip((x,y))
         self.pos = (x,y)
         
-        
-class portal_center(Entity):
-    def __init__(self, x, y, z):
-        Entity.__init__(self, Globals.group_SPECIAL)
-        if Globals.stage == 1:
-            if z == 1:
-                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','BPortalCenter.png'), (255,0,255))
-            else:
-                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','OPortalCenter.png'), (255,0,255))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip((x,y))
-
 class ramp(Entity):
     def __init__(self, x, y, height):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
