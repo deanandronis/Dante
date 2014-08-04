@@ -833,9 +833,58 @@ class portal(Entity):
         
 class portal_top(Entity):
     def __init__(self, x, y):
-        Entity.__init__(self, Globals.group_BACKTILES)
+        Entity.__init__(self, Globals.group_SPECIAL)
         if Globals.stage == 1:
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PortalTop.png'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        
+class passable(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','TestPlatBot.bmp'), (255,0,255))
+                self.image.set_alpha(175)
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.hit = False
+        self.pos = (x,y)
+        top = passable_top(self.pos[0] + 16, self.pos[1] - 8)
+            
+class passable_top(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_SPECIAL)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','TestPlatTop.bmp'), (255,0,255))
+                self.image.set_alpha(175)
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.hit = False
+        self.pos = (x,y)
+        
+    def collide(self):
+        if self.rect.colliderect(Globals.player.rect):
+                self.hit = True
+        if self.hit is True and not self.rect.colliderect(Globals.player.rect):
+            self.kill()
+            respawn = passable_s(self.pos[0] - 16, self.pos[1] + 8)
+
+class passable_s(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','TestPlatBot.bmp'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        top = passable_top_s(self.pos[0] + 16, self.pos[1] - 8)
+
+class passable_top_s(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, Globals.group_BACKTILES)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','TestPlatTop.bmp'), (255,0,255))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.pos = (x,y)

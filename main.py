@@ -152,7 +152,6 @@ while not done:
     Globals.hud.update(Globals.player.health) #redraw the hud elements
     
     
-    
     #Draw elements to screen       
     screen.fill((0,0,0)) #wipe the screen
     
@@ -194,6 +193,7 @@ while not done:
         if not Globals.key_pause:
             if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.key): item.update()
+        if isinstance(item, Entities.passable_top): item.collide()
         if isinstance(item, Entities.event_trigger): pass
         elif item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             if isinstance(item, Entities.kill_border): pass
