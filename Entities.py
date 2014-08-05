@@ -873,27 +873,27 @@ class moving(Entity):
                 self.hcount += 1
                 self.rect.x += self.hspeed
             elif self.hcount == self.horizontal and self.hdir == True:
-                self.hdir = False
                 self.hspeed *= -1
+                self.hdir = False
             elif self.hcount > 0 and self.hdir == False:
                 self.hcount -= 1
                 self.rect.x += self.hspeed
             elif self.hcount == 0 and self.hdir == False:
-                self.hdir = True
                 self.hspeed *= -1
+                self.hdir = True
         if self.vertical > 0:
             if self.vcount < self.vertical and self.vdir == True:
                 self.vcount += 1
                 self.rect.y += self.vspeed
             elif self.vcount == self.vertical and self.vdir == True:
-                self.vdir = False
                 self.vspeed *= -1
+                self.vdir = False
             elif self.vcount > 0 and self.vdir == False:
                 self.vcount -= 1
                 self.rect.y += self.vspeed
             elif self.vcount == 0 and self.vdir == False:
-                self.vdir = True
                 self.vspeed *= -1
+                self.vdir = True
         self.pos = (self.rect.x, self.rect.y)
         
         
