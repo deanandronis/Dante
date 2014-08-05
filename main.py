@@ -9,7 +9,6 @@ import Entities, functions, stage_1, Constants, Globals
 from random import randrange
 from Entities import Camera
 
-
 #definitions
 def next_level():
     Globals.level += 1
@@ -18,7 +17,6 @@ def next_level():
             Globals.clear_groups()
             Globals.reset_variables()
             stage_1.level_1()
-            
 
 #Variable init
 pygame.init() #initialise pygame modules
@@ -36,15 +34,12 @@ mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
 stage_1.level_trial() #load level 1
 
-
-
 while not done:
     keypressed = pygame.key.get_pressed()
     #test next level
     if Globals.player.next_level == True:
         Globals.player.next_level = False
         next_level()
-        
 
     #Get and check events:
     for event in pygame.event.get():
@@ -174,6 +169,7 @@ while not done:
         screen.blit(item.image, (item.x - Globals.camera.x, item.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
+        if isinstance(item, Entities.moving): item.move()
         if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
 

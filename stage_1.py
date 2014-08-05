@@ -9,9 +9,8 @@ def main_menu():
     pass
 
 def level_trial():
-        
-        
-    portal_1 = Entities.passable(5*32, 18*32)
+            
+    move = Entities.moving(4*32, 16*32, 3*32*0, 3*32, 0, 1)        
     
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)

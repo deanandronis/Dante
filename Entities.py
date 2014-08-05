@@ -32,6 +32,8 @@ class Player(Entity):
         self.attacking = False
         self.arrowkey_enabled = True
         self.can_attack = True
+        self.vblockspeed = 0
+        self.hblockspeed = 0
         self.slash_damage = True
         self.leftdown = False
         self.rightdown = False
@@ -96,11 +98,11 @@ class Player(Entity):
             self.rect = pygame.Rect((self.x + 8, self.y + 12), (17, 52))
             
             #move x and check for collision
-            self.rect.x += self.xvel
+            self.rect.x += self.xvel + self.hblockspeed
             self.check_x_coll()
             #apply gravity
-            if self.yvel < 10 and self.grav:
-                self.yvel += abs(self.yvel) / 30 + 0.22
+            if self.yvel < 10:
+                self.yvel += abs(self.yvel) / 30 + 0.22 + self.vblockspeed
             else: self.yvel = 10
             
             #move y and check for collisions
@@ -185,7 +187,14 @@ class Player(Entity):
                         self.keys['right'] = False
     
     def check_y_coll(self):
-        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with  
+        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with 
+        movinglist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 3) and isinstance(x, moving)]
+        if not movinglist: self.hblockspeed = 0
+        if not movinglist: self.vblockspeed = 0
+        for block in movinglist:
+            if isinstance(block, moving) and self.rect.colliderect(block.rect):
+                self.hblockspeed = block.hspeed
+         
         for block in block_hit_list: #iterate over list
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
                 block.teleport()
@@ -425,29 +434,11 @@ class Player(Entity):
                                 self.change_image('idleL')
                                 self.facing_right = False
             else: #set of mid-air sprites
-                if self.xvel == 0:
-                    if self.xvel > 0: #sprite should be jumping right
-                        if not self.imagename == "jumpR":
-                                self.change_image('jumpR')
-                                self.facing_right = True
-                    elif self.xvel < 0: #sprite should be jumping left
-                        if not self.imagename == 'jumpL':
-                                self.change_image('jumpL')
-                                self.facing_right = False
-                    else: #check direction player is facing
-                        if self.facing_right == True: #sprite should be jumping right
+                    if self.xvel == 0:
+                        if self.xvel > 0: #sprite should be jumping right
                             if not self.imagename == "jumpR":
-                                self.change_image('jumpR')
-                                self.facing_right = True
-                        else: #sprite should be jumping left
-                            if not self.imagename == 'jumpL':
-                                self.change_image('jumpL')
-                                self.facing_right = False
-                else:
-                    if self.xvel > 0: #sprite should be jumping right
-                        if not self.imagename == "jumpR":
-                                self.change_image('jumpR')
-                                self.facing_right = True
+                                    self.change_image('jumpR')
+                                    self.facing_right = True
                         elif self.xvel < 0: #sprite should be jumping left
                             if not self.imagename == 'jumpL':
                                     self.change_image('jumpL')
@@ -461,6 +452,24 @@ class Player(Entity):
                                 if not self.imagename == 'jumpL':
                                     self.change_image('jumpL')
                                     self.facing_right = False
+                    else:
+                        if self.xvel > 0: #sprite should be jumping right
+                            if not self.imagename == "jumpR":
+                                    self.change_image('jumpR')
+                                    self.facing_right = True
+                            elif self.xvel < 0: #sprite should be jumping left
+                                if not self.imagename == 'jumpL':
+                                        self.change_image('jumpL')
+                                        self.facing_right = False
+                            else: #check direction player is facing
+                                if self.facing_right == True: #sprite should be jumping right
+                                    if not self.imagename == "jumpR":
+                                        self.change_image('jumpR')
+                                        self.facing_right = True
+                                else: #sprite should be jumping left
+                                    if not self.imagename == 'jumpL':
+                                        self.change_image('jumpL')
+                                        self.facing_right = False
         else:
             if self.attack == 'spin':
                 if self.facing_right:
@@ -839,6 +848,54 @@ class portal_top(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.pos = (x,y)
+        
+class moving(Entity):
+    def __init__(self, x, y, h, v, hspeed, vspeed): #vertical distance, horizontal distance, speed
+        Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','FloatingPlatBot.bmp'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        self.vspeed = vspeed
+        self.hspeed = hspeed
+        self.vertical = v
+        self.horizontal = h
+        self.hcount = 0
+        self.playertouch = False
+        self.vcount = 0
+        self.vdir = True
+        self.hdir = True
+        
+    def move(self):
+        if self.horizontal > 0:
+            if self.hcount < self.horizontal and self.hdir == True:
+                self.hcount += 1
+                self.rect.x += self.hspeed
+            elif self.hcount == self.horizontal and self.hdir == True:
+                self.hdir = False
+                self.hspeed *= -1
+            elif self.hcount > 0 and self.hdir == False:
+                self.hcount -= 1
+                self.rect.x += self.hspeed
+            elif self.hcount == 0 and self.hdir == False:
+                self.hdir = True
+                self.hspeed *= -1
+        if self.vertical > 0:
+            if self.vcount < self.vertical and self.vdir == True:
+                self.vcount += 1
+                self.rect.y += self.vspeed
+            elif self.vcount == self.vertical and self.vdir == True:
+                self.vdir = False
+                self.vspeed *= -1
+            elif self.vcount > 0 and self.vdir == False:
+                self.vcount -= 1
+                self.rect.y += self.vspeed
+            elif self.vcount == 0 and self.vdir == False:
+                self.vdir = True
+                self.vspeed *= -1
+        self.pos = (self.rect.x, self.rect.y)
+        
         
 class passable(Entity):
     def __init__(self, x, y):
