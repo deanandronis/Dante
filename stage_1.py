@@ -10,7 +10,7 @@ def main_menu():
 
 def level_trial():
             
-    move = Entities.moving(4*32, 16*32, 3*32, 3*32, 1, 0)        
+    move = Entities.moving(4*32, 16*32, 3*32, 5*32, 0, 1)        
     
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)

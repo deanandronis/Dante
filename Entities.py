@@ -101,12 +101,16 @@ class Player(Entity):
             self.rect.x += self.xvel + self.hblockspeed
             self.check_x_coll()
             #apply gravity
+            print self.vblockspeed
             if self.yvel < 10:
-                self.yvel += abs(self.yvel) / 30 + 0.22 + self.vblockspeed
+                self.yvel += abs(self.yvel) / 30 + 0.22
             else: self.yvel = 10
             
             #move y and check for collisions
-            if self.gravity == True: self.rect.y += self.yvel
+            if self.vblockspeed > 0:
+                if self.gravity == True: self.rect.y += self.vblockspeed
+            else:
+                if self.gravity == True: self.rect.y += self.yvel
             self.check_y_coll()
             self.collide_SPECIAL()
                             
@@ -194,7 +198,7 @@ class Player(Entity):
         for block in movinglist:
             if isinstance(block, moving) and self.rect.colliderect(block.rect):
                 self.hblockspeed = block.hspeed
-         
+                self.vblockspeed = block.vspeed
         for block in block_hit_list: #iterate over list
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
                 block.teleport()
@@ -867,36 +871,51 @@ class moving(Entity):
         self.vdir = True
         self.hdir = True
         
+        self.top = moving_top(self.pos[0] + 16, self.pos[1] - 7)
+        
     def move(self):
-        if self.horizontal > 0:
-            if self.hcount < self.horizontal and self.hdir == True:
+        if not self.hspeed == 0:
+            if self.hcount < self.horizontal and self.hdir == True: #going right
                 self.hcount += 1
                 self.rect.x += self.hspeed
+                self.top.pos = (self.pos[0] + 18, self.pos[1] - 8)
             elif self.hcount == self.horizontal and self.hdir == True:
                 self.hspeed *= -1
                 self.hdir = False
-            elif self.hcount > 0 and self.hdir == False:
+            elif self.hcount > 0 and self.hdir == False: #going left
                 self.hcount -= 1
                 self.rect.x += self.hspeed
+                self.top.pos = (self.pos[0] + 14, self.pos[1] - 8)
             elif self.hcount == 0 and self.hdir == False:
                 self.hspeed *= -1
                 self.hdir = True
-        if self.vertical > 0:
+                
+        if not self.vspeed == 0:
             if self.vcount < self.vertical and self.vdir == True:
                 self.vcount += 1
-                self.rect.y += self.vspeed
+                self.rect.y += self.vspeed  
+                self.top.pos = (self.pos[0] + 16, self.pos[1] - 6)
             elif self.vcount == self.vertical and self.vdir == True:
                 self.vspeed *= -1
                 self.vdir = False
             elif self.vcount > 0 and self.vdir == False:
                 self.vcount -= 1
-                self.rect.y += self.vspeed
+                self.rect.y += self.vspeed           
+                self.top.pos = (self.pos[0] + 16, self.pos[1] - 10)
             elif self.vcount == 0 and self.vdir == False:
                 self.vspeed *= -1
                 self.vdir = True
         self.pos = (self.rect.x, self.rect.y)
         
-        
+class moving_top(Entity):
+        def __init__(self, x, y):
+            Entity.__init__(self, Globals.group_BACKTILES)
+            if Globals.stage == 1:
+                    self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','FloatingPlatTop.bmp'), (255,0,255))
+            self.rect = pygame.Rect(self.image.get_rect())
+            self.rect.move_ip((x,y))
+            self.hit = False
+            self.pos = (x,y)
 class passable(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL)
