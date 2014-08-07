@@ -881,8 +881,6 @@ class moving(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','FloatingPlatBot.bmp'), (255,0,255))
         self.rect = pygame.Rect((x + 3,y), (58,21))
         self.pos = (x,y)
-        self.vspeed = vspeed
-        self.hspeed = hspeed
         self.vertical = v
         self.horizontal = h
         self.hcount = 0
@@ -890,8 +888,19 @@ class moving(Entity):
         self.vcount = 0
         self.vdir = True
         self.hdir = True
-        if index == 0: self.moving = True
-        else: self.moving = False
+        if index == 0: 
+            self.moving = True
+            self.vspeed = vspeed
+            self.hspeed = hspeed
+
+        else: 
+            self.moving = False
+            self.vspeed = 0
+            self.hspeed = 0
+            self.vstorespeed = vspeed
+            self.hstorespeed = hspeed
+
+            
         self.index = index
         
         self.top = moving_top(self.pos[0] + 16, self.pos[1] - 7)
@@ -968,6 +977,8 @@ class moving_switch(Entity):
             for item in Globals.group_COLLIDEBLOCKS:
                 if isinstance(item, moving) and item.index == self.index: 
                     item.moving = True
+                    item.vspeed = item.vstorespeed
+                    item.hspeed = item.hstorespeed
                     if Globals.stage == 1:
                         self.image = functions.get_image(os.path.join('Resources','General Resources','Buttonon.bmp'), (255,0,255))
 

@@ -145,6 +145,7 @@ def level_2():
     Globals.camera.y = 0
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     Globals.event_manager = Entities.event_manager()
+    narrator = Entities.Stage_1_Narrator()
 
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 71*32, 30*56)
     
@@ -190,6 +191,7 @@ def level_3():
     Globals.camera.y = 15*56
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     Globals.event_manager = Entities.event_manager()
+    narrator = Entities.Stage_1_Narrator()
 
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 23*56)
 
@@ -220,8 +222,11 @@ def level_4():
     
     floor_1 = Entities.Platform(5*32, 17*56, 4, 2)
     
-    moving = Entities.moving(11*32, 24*56, 0, 2*56, 0, -1, 2)
-    switch = Entities.moving_switch(8*32, 23*56, 2)
+    moving = Entities.moving(11*32, 24*56, 0, 7*56, 0, -1, 2)
+    switch = Entities.moving_switch(63*32, 17*56, 2)
+    
+    moving = Entities.moving(31*32, 23*56, 0, 11*56, 0, -1, 1)
+    switch = Entities.moving_switch(64*32, 24*56, 1)
 
     
     '''
@@ -244,6 +249,7 @@ def level_4():
     Globals.camera.y = 15*56
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     Globals.event_manager = Entities.event_manager()
+    narrator = Entities.Stage_1_Narrator()
 
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 30*56)
 
@@ -254,3 +260,4 @@ def boss_1():
     Globals.camera.xbounds = (0, 800)
     Globals.camera.ybounds = (0, 640)
     boss= Entities.InternetBoss(16*32, 6*32)
+    narrator = Entities.Stage_1_Narrator()
