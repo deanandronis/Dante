@@ -90,7 +90,6 @@ class Player(Entity):
         self.y = self.rect.y
         
     def update(self):
-        
         if not self.dying:
             self.xvel = float(self.xvel)
             self.touching_ground = False #assume not touching ground unless colliding later on
@@ -195,16 +194,12 @@ class Player(Entity):
                         self.keys['right'] = False
     
     def check_y_coll(self):
-        #block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create list of blocks that player is colliding with 
         block_hit_list = [x for x in Globals.group_COLLIDEBLOCKS if self.rect.colliderect(x.rect)]
-        movinglist = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 3) and isinstance(x, moving)]
-        movingabove = [x for x in Globals.group_COLLIDEBLOCKS if x.rect.collidepoint(self.rect.centerx, self.rect.top - 3) and isinstance(x, moving)]
-        if not movinglist: self.hblockspeed = 0
-        if not movinglist: self.vblockspeed = 0
-        for item in movingabove:
-            item.vspeed *= -1
-            item.vdir = False
-            
+        movinglist = [x for x in Globals.movinglist if x.rect.collidepoint(self.rect.centerx, self.rect.bottom + 3)]
+        if not movinglist:
+            self.hblockspeed = 0
+            self.vblockspeed = 0
+
         for block in movinglist:
             block.playertouch = True
             self.touching_ground = True
@@ -216,15 +211,26 @@ class Player(Entity):
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
                 block.teleport()
             else:
-                # check collision
-                #self.touching_ground = True
-                if self.yvel > 0: #top collision
-                    self.rect.bottom = block.rect.top #set bottom of player to top of block
-                    self.yvel = 0 #stop vertical movement
-                    self.currentplatform = block
-                elif self.yvel < 0: #bottom collision
-                    self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
-                    self.yvel = 0 #stop vertical movement  
+                if isinstance(block, moving):
+                    # check collision
+                    #self.touching_ground = True
+                    if self.yvel > 0 and self.rect.y < block.rect.y: #top collision
+                        self.rect.bottom = block.rect.top #set bottom of player to top of block
+                        self.yvel = 0 #stop vertical movement
+                        self.currentplatform = block
+                    elif self.yvel < 0 and self.rect.y > block.rect.y: #bottom collision
+                        self.rect.top = block.rect.bottom + 13  #set the top of the player to the bottom of block
+                        self.yvel = 0 #stop vertical movement  
+                else:
+                    # check collision
+                    #self.touching_ground = True
+                    if self.yvel > 0: #top collision
+                        self.rect.bottom = block.rect.top #set bottom of player to top of block
+                        self.yvel = 0 #stop vertical movement
+                        self.currentplatform = block
+                    elif self.yvel < 0: #bottom collision
+                        self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
+                        self.yvel = 0 #stop vertical movement
         if self.rect.y + self.rect.height > Globals.camera.y + Globals.camera.height - 96:
             self.health -= 3
             self.reset()
@@ -868,8 +874,7 @@ class moving(Entity):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
         if Globals.stage == 1:
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','FloatingPlatBot.bmp'), (255,0,255))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip((x,y))
+        self.rect = pygame.Rect((x + 3,y), (58,21))
         self.pos = (x,y)
         self.vspeed = vspeed
         self.hspeed = hspeed
@@ -882,6 +887,7 @@ class moving(Entity):
         self.hdir = True
         
         self.top = moving_top(self.pos[0] + 16, self.pos[1] - 7)
+        Globals.movinglist.append(self)
         
     def move(self):
         if not self.hspeed == 0:
@@ -918,7 +924,13 @@ class moving(Entity):
             elif self.vcount == 0 and self.vdir == False:
                 self.vspeed *= -1
                 self.vdir = True
-        self.pos = (self.rect.x, self.rect.y)
+                
+        if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
+            if Globals.player.touching_ground:
+                self.vspeed *= -1
+                self.vdir = False
+  
+        self.pos = (self.rect.x - 3, self.rect.y)
         
 class moving_top(Entity):
         def __init__(self, x, y):

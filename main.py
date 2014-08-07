@@ -53,6 +53,7 @@ while not done:
                 if Globals.player.arrowkey_enabled:
                     if Globals.player.touching_ground: #check to see if player is touching ground
                         Globals.player.yvel = -10 #accelerate the player upwards
+                        Globals.player.y -= 4
             elif event.key == pygame.K_DOWN:
                 Globals.player.health -= 1
             elif event.key == pygame.K_z:

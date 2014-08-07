@@ -17,6 +17,8 @@ event_manager = None
 score = 0
 key_pause = False
 
+movinglist = []
+
 #create sprite groups
 group_PLAYER = pygame.sprite.GroupSingle()
 group_COLLIDEBLOCKS = pygame.sprite.LayeredUpdates()
@@ -64,6 +66,7 @@ def clear_groups():
     global group_EVENTS
     global group_NARRATOR
     global group_FRONTTILES
+    global movinglist
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
     group_SPECIAL.empty()
@@ -76,6 +79,7 @@ def clear_groups():
     group_EVENTS.empty()
     group_NARRATOR.empty()
     group_FRONTTILES.empty()
+    movinglist = []
     
 def reset_variables():
     global player
