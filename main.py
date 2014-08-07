@@ -36,7 +36,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_trial() #load level 1
+stage_1.level_3() #load level 1
 
 while not done:
     keypressed = pygame.key.get_pressed()
@@ -56,6 +56,8 @@ while not done:
                         Globals.player.y -= 4
             elif event.key == pygame.K_DOWN:
                 Globals.player.health -= 1
+                Globals.event_manager.throw_chat()
+
             elif event.key == pygame.K_z:
                 if Globals.player.can_attack:
                     Globals.player.attack = 'slash'
@@ -161,6 +163,12 @@ while not done:
         else: 
             screen.blit(item.image, (item.pos)) #account for Globals.camera location
             
+    for item in Globals.group_BACKSPECIAL: #draw the projectiles to screen
+        item.update()
+        if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
+            screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
+
+            
     for item in Globals.group_BACKTILES: #draw the wall and floor objects to screen
         if item.pos[0] < Globals.camera.x + Globals.camera.width or item.pos[0] + item.image.get_width() > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
@@ -168,6 +176,7 @@ while not done:
     for item in Globals.group_FILLBACKTILES: #draw the wall and floor objects to screen
         if item.pos[0] < Globals.camera.x + Globals.camera.width or item.pos[0] + item.image.get_width() > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
+
 
 
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
@@ -211,7 +220,10 @@ while not done:
         
     for item in Globals.group_NARRATOR:
         if isinstance(item, Entities.Narrator): screen.blit(item.image, (630,447))
-        if isinstance(item, Entities.text_bubble): screen.blit(item.image, (item.rect.x, item.rect.y))
+        elif isinstance(item, Entities.text_bubble): 
+            screen.blit(item.image, (item.rect.x, item.rect.y))
+            if isinstance(item, Entities.text_bubble_right_narrator_timed): 
+                item.update()
     
     for item in Globals.group_BUTTON:
         screen.blit(item.image, item.pos)

@@ -37,8 +37,6 @@ class Player(Entity):
         self.slash_damage = True
         self.leftdown = False
         self.rightdown = False
-        self.slideduration = 0
-        self.slidetimer = 0
         self.can_damage = True
         self.animatetimer = 6
         self.grav = True
@@ -46,7 +44,6 @@ class Player(Entity):
         self.can_die = True
         self.dying = False
         self.gravity = True
-        self.currentplatform = None
         
         #load images
         '''
@@ -120,6 +117,7 @@ class Player(Entity):
             for item in Globals.group_PROJECTILES:
                 if self.rect.colliderect(item.rect) and isinstance(item, EnemyProj):
                     self.health -= item.damage
+                    Globals.event_manager.throw_chat()
                     item.kill()
                     
                     
@@ -234,9 +232,11 @@ class Player(Entity):
             self.health -= 3
             self.reset()
             self.create_spleen()
+            Globals.event_manager.throw_chat()
         
     def check_health(self):
         if self.health <= 0 and self.can_die: 
+            Globals.event_manager.throw_chat(True)
             self.can_die = False
             self.dying = True
             if self.facing_right == True:
@@ -263,6 +263,8 @@ class Player(Entity):
                     self.gravity = False
                     self.xvel = 0
                     self.yvel = 0
+                    Globals.event_manager.throw_chat(True)
+
                 
             elif isinstance(item, key) and self.rect.colliderect(item.rect):
                 item.destroy = True
@@ -274,6 +276,7 @@ class Player(Entity):
                 self.reset()
                 self.health -= 3
                 self.create_spleen()   
+                Globals.event_manager.throw_chat()
             elif isinstance(item, spike_box) and self.rect.colliderect(item.rect):
                 if not self.dying: 
                     self.health -= 10
@@ -661,7 +664,6 @@ class Player(Entity):
         spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
 
 
-#root classes
 class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown, fixblocks = None, fixedplat = False): 
             #get image
@@ -869,7 +871,7 @@ class portal_top(Entity):
         self.pos = (x,y)
         
 class moving(Entity):
-    def __init__(self, x, y, h, v, hspeed, vspeed): #vertical distance, horizontal distance, speed
+    def __init__(self, x, y, h, v, hspeed, vspeed, index = 0): #vertical distance, horizontal distance, speed
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
         if Globals.stage == 1:
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','FloatingPlatBot.bmp'), (255,0,255))
@@ -884,52 +886,56 @@ class moving(Entity):
         self.vcount = 0
         self.vdir = True
         self.hdir = True
+        if index == 0: self.moving = True
+        else: self.moving = False
+        self.index = index
         
         self.top = moving_top(self.pos[0] + 16, self.pos[1] - 7)
         Globals.movinglist.append(self)
         
     def move(self):
-        if not self.hspeed == 0:
-            if self.hcount < self.horizontal and self.hdir == True: #going right
-                self.hcount += 1
-                self.rect.x += self.hspeed
-                self.top.pos = (self.pos[0] + 18, self.pos[1] - 8)
-            elif self.hcount == self.horizontal and self.hdir == True:
-                self.hspeed *= -1
-                self.hdir = False
-            elif self.hcount > 0 and self.hdir == False: #going left
-                self.hcount -= 1
-                self.rect.x += self.hspeed
-                self.top.pos = (self.pos[0] + 14, self.pos[1] - 8)
-            elif self.hcount == 0 and self.hdir == False:
-                self.hspeed *= -1
-                self.hdir = True
-                
-        if not self.vspeed == 0:
-            if self.vcount < self.vertical and self.vdir == True:
-                self.vcount += 1
-                self.rect.y += self.vspeed  
-                self.top.pos = (self.pos[0] + 16, self.pos[1] - 6)
-            elif self.vcount == self.vertical and self.vdir == True:
-                self.vspeed *= -1
-                self.vdir = False
-                if self.playertouch: 
-                    Globals.player.vblockspeed = -1
-                    print True
-            elif self.vcount > 0 and self.vdir == False:
-                self.vcount -= 1
-                self.rect.y += self.vspeed           
-                self.top.pos = (self.pos[0] + 16, self.pos[1] - 10)
-            elif self.vcount == 0 and self.vdir == False:
-                self.vspeed *= -1
-                self.vdir = True
-                
-        if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
-            if Globals.player.touching_ground:
-                self.vspeed = -1
-                self.vdir = False
-  
-        self.pos = (self.rect.x - 3, self.rect.y)
+        if self.moving:
+            if not self.hspeed == 0:
+                if self.hcount < self.horizontal and self.hdir == True: #going right
+                    self.hcount += 1
+                    self.rect.x += self.hspeed
+                    self.top.pos = (self.pos[0] + 18, self.pos[1] - 8)
+                elif self.hcount == self.horizontal and self.hdir == True:
+                    self.hspeed *= -1
+                    self.hdir = False
+                elif self.hcount > 0 and self.hdir == False: #going left
+                    self.hcount -= 1
+                    self.rect.x += self.hspeed
+                    self.top.pos = (self.pos[0] + 14, self.pos[1] - 8)
+                elif self.hcount == 0 and self.hdir == False:
+                    self.hspeed *= -1
+                    self.hdir = True
+                    
+            if not self.vspeed == 0:
+                if self.vcount < self.vertical and self.vdir == True:
+                    self.vcount += 1
+                    self.rect.y += self.vspeed  
+                    self.top.pos = (self.pos[0] + 16, self.pos[1] - 6)
+                elif self.vcount == self.vertical and self.vdir == True:
+                    self.vspeed *= -1
+                    self.vdir = False
+                    if self.playertouch: 
+                        Globals.player.vblockspeed = -1
+                        print True
+                elif self.vcount > 0 and self.vdir == False:
+                    self.vcount -= 1
+                    self.rect.y += self.vspeed           
+                    self.top.pos = (self.pos[0] + 16, self.pos[1] - 10)
+                elif self.vcount == 0 and self.vdir == False:
+                    self.vspeed *= -1
+                    self.vdir = True
+                    
+            if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
+                if Globals.player.touching_ground:
+                    self.vspeed = -1
+                    self.vdir = False
+      
+            self.pos = (self.rect.x - 3, self.rect.y)
         
 class moving_top(Entity):
         def __init__(self, x, y):
@@ -940,6 +946,25 @@ class moving_top(Entity):
             self.rect.move_ip((x,y))
             self.hit = False
             self.pos = (x,y)
+            
+class moving_switch(Entity):
+    def __init__(self, x, y, index):
+        Entity.__init__(self, Globals.group_BACKSPECIAL)
+        if Globals.stage == 1:
+                self.image = functions.get_image(os.path.join('Resources','General Resources','Buttonoff.bmp'), (255,0,255))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip((x,y))
+        self.pos = (x,y)
+        self.on = False
+        self.index = index
+        
+    def flip(self):
+        if not self.on:
+            self.on = True
+            for item in Globals.group_COLLIDEBLOCKS:
+                if isinstance(item, moving) and item.index == self.index: pass
+        
+        
 class passable(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, Globals.group_SPECIAL)
@@ -1212,7 +1237,7 @@ class hud(pygame.sprite.Sprite):
         self.scoretext = None
         self.score = 'Score: ' + str(Globals.score)
         self.scoretext = Constants.healthtext.render(self.score, 0, (255,253,255)) #load the text for the score
-        self.image.blit(self.scoretext, (550, 38))
+        self.image.blit(self.scoretext, (535, 38))
         self.rect.y = Globals.camera.y + 480
 
 class event_manager(Entity):
@@ -1222,6 +1247,11 @@ class event_manager(Entity):
     def trigger_event(self):
         for item in Globals.group_EVENTS:
             item.next_event()
+ 
+    def throw_chat(self, death = False):
+        for item in Globals.group_NARRATOR:
+            if isinstance(item, Stage_1_Narrator):
+                item.throw_chat(death)
 
 class event_trigger(Entity):
     def __init__(self, (x,y), (width, height)):
@@ -1621,23 +1651,59 @@ class text_bubble_right_narrator(text_bubble):
                        functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleright.bmp'), (255,0,255))
                        ]
         self.text = textwrap.dedent(text) 
-        self.bubblewidth = len(text)*3
-        if self.bubblewidth <70: self.bubblewidth = 70
+        self.bubblewidth = len(text)*3 + 55
+        if self.bubblewidth < 70: self.bubblewidth = 70
         self.maxwidth = self.bubblewidth         
-        self.image=pygame.Surface((self.bubblewidth+11+55, 84))
+        self.image=pygame.Surface((self.bubblewidth, 84))
         self.image.set_colorkey((0,0,0))
-        self.text = textwrap.wrap(self.text, self.image.get_width()/8 - 1)
+        self.text = textwrap.wrap(self.text, self.bubblewidth/10 + 9)
         for item in self.text:
             self.rendertext.append(Constants.narratetext.render(item, 0, (10 ,0,0))) #load the text
         self.image.blit(self.images[0], (0,0))
         
         for i in range(0,self.bubblewidth):
             self.image.blit(self.images[1],(i + 11, 0))
-        self.image.blit(self.images[2],(self.image.get_width() - 55,0))
+        self.image.blit(self.images[2],(self.bubblewidth - 55,0))
         for index, item in enumerate(self.rendertext):
             self.image.blit(item, (12, 11 + index * 14))
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(x - self.image.get_width() + 40,y - self.image.get_height() + 10)
+
+class text_bubble_right_narrator_timed(text_bubble):
+    def __init__(self, x, y, text, duration):
+        Entity.__init__(self, Globals.group_NARRATOR)
+        self.rendertext = []
+        self.images = [functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleleft.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubble_centre.bmp'), (255,0,255)),
+                       functions.get_image(os.path.join('Resources','General Resources','HUD','messagebubbleright.bmp'), (255,0,255))
+                       ]
+        self.text = textwrap.dedent(text) 
+        self.bubblewidth = len(text)*3 + 55
+        if self.bubblewidth < 190: self.bubblewidth = 190
+        self.maxwidth = self.bubblewidth         
+        self.image=pygame.Surface((self.bubblewidth, 84))
+        self.image.set_colorkey((0,0,0))
+        if self.bubblewidth > 400: self.text = textwrap.wrap(self.text, self.bubblewidth/10 + 9)
+        else: self.text = textwrap.wrap(self.text, self.bubblewidth/10)
+        for item in self.text:
+            self.rendertext.append(Constants.narratetext.render(item, 0, (10 ,0,0))) #load the text
+        self.image.blit(self.images[0], (0,0))
+        
+        for i in range(0,self.bubblewidth):
+            self.image.blit(self.images[1],(i + 11, 0))
+        self.image.blit(self.images[2],(self.bubblewidth - 55,0))
+        for index, item in enumerate(self.rendertext):
+            self.image.blit(item, (12, 11 + index * 14))
+        self.rect = pygame.Rect(self.image.get_rect())
+        self.rect.move_ip(x - self.image.get_width() + 40,y - self.image.get_height() + 10)
+        self.duration = duration
+        self.counter = 0
+        
+    def update(self):
+        self.counter += 1
+        if self.counter == self.duration: self.kill()
+
+
 
 #stage 1
 class Stage_1_Narrator (Narrator):
@@ -1646,6 +1712,23 @@ class Stage_1_Narrator (Narrator):
         Narrator.__init__(self)
         self.image = functions.get_image(os.path.join('Resources', 'Stage 1 Resources','Clippy.bmp'), (255,0,255))
         self.event = 0
+        self.bubbletimer = 180
+        self.damage_pool = [
+                          "Wow...",
+                          "You should probably avoid that.",
+                          "Keep this up and this will be over in no time!",
+                          "You should really press F1 for some help",
+                          ]
+        
+        self.death_pool = [
+                           "How impressive...",
+                           "Pretty sure that's not how it's done",
+                           "Just no.",
+                           "I feel like you should probably die less...",
+                           "You died THERE?"
+                           ]
+        
+        
         
     def next_event(self):
         self.event += 1
@@ -1653,43 +1736,67 @@ class Stage_1_Narrator (Narrator):
             if self.event == 1:
                 Globals.player.arrowkey_enabled = False
                 Globals.player.xvel = 0
-                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hello Max, and welcome to the Internet. I am your narrator, [NAME HERE], and I am here to make sure you can make it through this foul place. Firstly, press enter to continue.")
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hello Max, and welcome to the Internet. I am your narrator, Clippy, and I am here to make sure you can make it through this foul place. Firstly, press ENTER to continue.")
                 self.waiting_for_proceed = True
             elif self.event == 2:
                 self.tbubble.kill()
-                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the left and right arrow keys with space to jump to navigate to the platform on your right.")
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "But enough chatter, let's get right into the action. After you press ENTER to proceed, use the LEFT and RIGHT arrow keys with SPACE to jump to navigate to the platform on your right.")
                 self.waiting_for_proceed= True
             elif self.event == 3:
                 self.waiting_for_proceed = False
                 self.tbubble.kill()
+                self.destroy_bubbles()
                 Globals.player.arrowkey_enabled = True
             elif self.event == 4: 
                 Globals.player.arrowkey_enabled = False
                 Globals.player.xvel = 0
+                self.destroy_bubbles()
                 self.waiting_for_proceed = True
-                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your attack on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!")
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your ATTACK on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!                  ")
             elif self.event == 5: 
                 self.tbubble.kill()
+                self.destroy_bubbles()
                 Globals.player.arrowkey_enabled = True
             elif self.event == 6:
                 Globals.player.arrowkey_enabled = False
                 Globals.player.xvel = 0
+                self.destroy_bubbles()
                 self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Not bad! Collect the coins up ahead to increase your score, then proceed. You will find coins scattered around - a by-product of 'bitcoin overmining'. Collect as many as you can to increase your score!")
                 self.waiting_for_proceed = True
             elif self.event == 7:
                 self.tbubble.kill()
+                self.destroy_bubbles()
                 Globals.player.arrowkey_enabled = True
             elif self.event == 8:
                 Globals.player.arrowkey_enabled = False
                 Globals.player.xvel = 0
+                self.destroy_bubbles()
                 self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "That'll do donkey. Continue ahead and further your knowledge - it's time for you to explore the world on your own. Worry not, I'll still be here. Collect the brain to proceed to the next level.")
                 self.waiting_for_proceed = True
             elif self.event == 9:
                 self.tbubble.kill()
+                self.destroy_bubbles()
                 Globals.player.arrowkey_enabled = True
         elif Globals.level == 1:
             pass
 
+    def throw_chat(self, death = False, boss = False):
+        if death:
+            rand = randrange(0,math.floor(len(self.death_pool)*1.3),1)
+            if rand < len(self.death_pool): 
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator_timed(self.pos[0] - 50 , self.pos[1] - 30, self.death_pool[rand], 180)
+        else:
+            rand = randrange(0,len(self.damage_pool)*2,1)
+            if rand < len(self.damage_pool): 
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator_timed(self.pos[0] - 50 , self.pos[1] - 30, self.damage_pool[rand],180)
+
+    def destroy_bubbles(self):
+        for bubble in Globals.group_NARRATOR:
+            if not isinstance(bubble, Narrator): bubble.kill()
 
 class Troll(Entity):
     def __init__(self, x, y, facingL, (leftpatrollimit, rightpatrollimit), (chasex, chasey, chasewidth, chaseheight)):
