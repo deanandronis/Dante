@@ -18,10 +18,6 @@ def next_level():
             Globals.reset_variables()
             stage_1.level_1()
 
-
-
-
-
 #Variable init
 pygame.init() #initialise pygame modules
 WINDOW_WIDTH = 768 #variable to store the width of the window
@@ -171,7 +167,6 @@ while not done:
         if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             screen.blit(item.image, (item.rect.x - Globals.camera.x, item.rect.y - Globals.camera.y)) #account for Globals.camera location
 
-            
     for item in Globals.group_BACKTILES: #draw the wall and floor objects to screen
         if item.pos[0] < Globals.camera.x + Globals.camera.width or item.pos[0] + item.image.get_width() > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
@@ -179,8 +174,6 @@ while not done:
     for item in Globals.group_FILLBACKTILES: #draw the wall and floor objects to screen
         if item.pos[0] < Globals.camera.x + Globals.camera.width or item.pos[0] + item.image.get_width() > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
-
-
 
     for item in Globals.group_PLAYER: #draw the wall and floor objects to screen
         screen.blit(item.image, (item.x - Globals.camera.x, item.y - Globals.camera.y)) #account for Globals.camera location
@@ -192,7 +185,6 @@ while not done:
     for item in Globals.group_FRONTTILES: #draw the wall and floor objects to screen
         if item.pos[0] < Globals.camera.x + Globals.camera.width or item.pos[0] + item.image.get_width() > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
-
 
     for item in Globals.group_AI:
         if not Globals.key_pause:

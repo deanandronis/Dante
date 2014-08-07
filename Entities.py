@@ -666,8 +666,7 @@ class Player(Entity):
     
     def create_spleen(self):
         spleen = movingtext(self.rect.x - 8, self.rect.y - 20, 0, -4,"MY SPLEEN!")
-
-
+        
 class Platform(Entity):
     def __init__(self, x, y, blocksacross, blocksdown, fixblocks = None, fixedplat = False): 
             #get image
@@ -777,7 +776,6 @@ class Platform(Entity):
                             if item.rect.collidepoint(self.pos[0] + self.image.get_width() + 6, self.pos[1] + (i+1)*56): filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + i*56 - 3, 0)
                             else: filltile = platformfront(self.pos[0] + self.image.get_width() - 16, self.pos[1] + self.image.get_height() - 59, 0)
             
-        
 class platformback(Entity):
     def __init__(self, x, y, index):
         Entity.__init__(self, Globals.group_BACKTILES)   
@@ -791,9 +789,7 @@ class platformback(Entity):
             elif index == 3:
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeTopFiller.bmp'), (255,0,255))    
             elif index == 4:
-                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','LonePlatTop.bmp'), (255,0,255))    
-
-        
+                self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','LonePlatTop.bmp'), (255,0,255))
         self.pos = (x,y)
         
 class platformbackfill(Entity):
@@ -806,10 +802,8 @@ class platformbackfill(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformL_EdgeTop.bmp'), (255,0,255))
             if index == 2:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','CornerJoinerTop.png'), (255,0,255))
+        self.pos = (x, y)
 
-        self.pos = (x,y)
-
-        
 class platformfront(Entity):
     def __init__(self, x, y, index):
         Entity.__init__(self, Globals.group_FRONTTILES)
@@ -827,8 +821,6 @@ class platformfront(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformR_EdgeBotFiller.bmp'), (255,0,255))
             if index == 5:   
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PlatformBottom.bmp'), (255,0,255))
-
-
         self.pos = (x,y)
 
 class kill_border(Entity):
@@ -899,7 +891,6 @@ class moving(Entity):
             self.hspeed = 0
             self.vstorespeed = vspeed
             self.hstorespeed = hspeed
-
             
         self.index = index
         
@@ -939,16 +930,14 @@ class moving(Entity):
                 elif self.vcount == 0 and self.vdir == False:
                     self.vspeed *= -1
                     self.vdir = True
-
                     
             if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
-                if Globals.player.touching_ground:
-                    self.vspeed = -1
-                    self.vdir = False
-      
+                if Globals.player.touching_ground and self.vspeed > 0:
+                    self.vdir = True
+                    self.vspeed *= -1
+
             self.pos = (self.rect.x - 3, self.rect.y)
         self.top.pos = (self.pos[0] + 16, self.pos[1] - 8)
-
         
 class moving_top(Entity):
         def __init__(self, x, y):
@@ -981,8 +970,6 @@ class moving_switch(Entity):
                     item.hspeed = item.hstorespeed
                     if Globals.stage == 1:
                         self.image = functions.get_image(os.path.join('Resources','General Resources','Buttonon.bmp'), (255,0,255))
-
-        
         
 class passable(Entity):
     def __init__(self, x, y):
@@ -1073,7 +1060,6 @@ class Door(Entity):
         self.index = index
         back = vault_door_back(self.pos[0] + 16, self.pos[1] - 6)
 
-    
     def remove_one_horiz(self):
         if self.width == 64: 
             self.kill()
@@ -1104,7 +1090,6 @@ class Door(Entity):
             for columns in range(0,self.width/64):
                 self.image.blit(self.blockimage, (columns*64, rows*56))
 
-    
     def add_one_vert_top(self):
         self.height += 56
         self.image = pygame.Surface((self.width, self.height))
@@ -1116,7 +1101,6 @@ class Door(Entity):
         self.pos = (self.rect.x, self.rect.y)
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
-        
 
 class vault_door_back(Entity):
     def __init__(self, x, y):
@@ -1174,7 +1158,6 @@ class key(Entity):
           
         if self.timer >= self.destroytimer: self.timer = 0
               
-
 #game essentials
 
 class Camera():
@@ -1276,7 +1259,6 @@ class event_trigger(Entity):
     def __init__(self, (x,y), (width, height)):
         Entity.__init__(self, Globals.group_SPECIAL)
         self.rect = pygame.Rect((x,y),(width,height))
-        
 
 #projectile classes        
 
@@ -1304,8 +1286,7 @@ class Projectile(Entity):
                     self.rect.y -= 15
                     self.numbounce += 1
                 else:
-                    self.kill()
-                    
+                    self.kill()  
                 
         if pygame.sprite.spritecollide(self, Globals.group_SPECIAL, False):
             self.kill()
@@ -1366,12 +1347,6 @@ class Background(pygame.sprite.Sprite):
 
 class EnemyProj(Projectile):
     pass               
-
-
-
-
-
-
 
 #projectiles
 class Piano(Projectile):
@@ -1474,8 +1449,7 @@ class WikiProj(EnemyProj):
     def animate(self):
         self.image = self.imagelist[self.image_index]
         if self.image_index < self.numimages: self.image_index += 1
-        else: self.image_index = 0
-        
+        else: self.image_index = 0  
 
 #other stuff
 
@@ -1500,8 +1474,6 @@ class Fireball(EnemyProj):
         self.image = pygame.transform.rotate(self.image, self.angle)
         if self.image_index < self.numimages: self.image_index += 1
         else: self.image_index = 0
-
-
 
 class lazer(Entity):
     def __init__(self, x, y, left):
@@ -1537,7 +1509,6 @@ class lazer(Entity):
                 elif abs(i) == 3: self.image.blit(self.lazerimage[3], (abs(i), 0))
                 else: self.image.blit(self.lazerimage[5], (abs(i), 0))
             
-
         self.rect = self.image.get_rect()
         if left: self.rect.move_ip(x + self.range,y)
         else: self.rect.move_ip(x,y)
@@ -1722,8 +1693,6 @@ class text_bubble_right_narrator_timed(text_bubble):
         self.counter += 1
         if self.counter == self.duration: self.kill()
 
-
-
 #stage 1
 class Stage_1_Narrator (Narrator):
     def __init__(self):
@@ -1746,8 +1715,6 @@ class Stage_1_Narrator (Narrator):
                            "I feel like you should probably die less...",
                            "You died THERE?"
                            ]
-        
-        
         
     def next_event(self):
         self.event += 1
@@ -1927,7 +1894,6 @@ class Troll(Entity):
                 if not self.imagename == 'walkR':
                     self.change_image('walkR')
         
-                
         self.x = self.rect.x
         self.y = self.rect.y        
 
@@ -1970,7 +1936,6 @@ class Troll(Entity):
             self.xvel = -4
             if self.rect.colliderect(Globals.player.rect): self.collide_player(0)
 
-          
     def damage(self, damage):
         self.health -= damage
         if self.health <= 0 and self.can_die:
@@ -2185,7 +2150,6 @@ class InternetBoss(Boss):
                     if not self.imagename == 'dashR':
                         self.change_image('dashR')
         
-                
         self.x = self.rect.x
         self.y = self.rect.y        
     
