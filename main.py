@@ -18,6 +18,10 @@ def next_level():
             Globals.reset_variables()
             stage_1.level_1()
 
+
+
+
+
 #Variable init
 pygame.init() #initialise pygame modules
 WINDOW_WIDTH = 768 #variable to store the width of the window

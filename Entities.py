@@ -212,7 +212,6 @@ class Player(Entity):
                 self.hblockspeed = block.hspeed
                 self.vblockspeed = block.vspeed
 
-                
         for block in block_hit_list: #iterate over list
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
                 block.teleport()
@@ -277,7 +276,6 @@ class Player(Entity):
             elif isinstance(item, event_trigger) and self.rect.colliderect(item.rect):
                 Globals.event_manager.trigger_event()
                 item.kill()
-
                 
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
@@ -374,19 +372,19 @@ class Player(Entity):
                 self.imageindex += 1
         
         elif self.imagename == 'shoutL' and self.attack == 'lazer' and self.imageindex == 7:
-            laser = lazer(self.rect.x + 6, self.rect.y + 15, True)
+            laser = lazer(self.rect.x + 8, self.rect.y + 4, True)
             self.imageindex += 1
         
         elif self.imagename == 'shoutR' and self.attack == 'lazer' and self.imageindex == 7:
-            laser = lazer(self.rect.x + self.rect.width - 10, self.rect.y + 13, False)
+            laser = lazer(self.rect.x + self.rect.width + 5, self.rect.y + 4, False)
             self.imageindex += 1
         
         elif self.imagename == 'shoutL' and self.attack == 'shout' and self.imageindex == 7:
-            shoutproj = shoutProj(self.rect.x - 20, self.rect.y + 13, True)
+            shoutproj = shoutProj(self.rect.x - 15, self.rect.y + 4, True)
             self.imageindex += 1
         
         elif self.imagename == 'shoutR' and self.attack == 'shout' and self.imageindex == 7:
-            shoutproj = shoutProj(self.rect.x + self.rect.width - 1, self.rect.y + 13, False)
+            shoutproj = shoutProj(self.rect.x + self.rect.width - 1, self.rect.y + 4, False)
             self.imageindex += 1    
         
             
