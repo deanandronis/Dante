@@ -203,9 +203,8 @@ class Player(Entity):
         for block in movinglist:
             block.playertouch = True
             self.touching_ground = True
-            if self.rect.colliderect(block.rect):
-                self.hblockspeed = block.hspeed
-                self.vblockspeed = block.vspeed
+            self.hblockspeed = block.hspeed
+            self.vblockspeed = block.vspeed
 
         for block in block_hit_list: #iterate over list
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
@@ -219,7 +218,7 @@ class Player(Entity):
                         self.yvel = 0 #stop vertical movement
                         self.currentplatform = block
                     elif self.yvel < 0 and self.rect.y > block.rect.y: #bottom collision
-                        self.rect.top = block.rect.bottom + 13  #set the top of the player to the bottom of block
+                        self.rect.top = block.rect.bottom + 4  #set the top of the player to the bottom of block
                         self.yvel = 0 #stop vertical movement  
                 else:
                     # check collision
@@ -915,7 +914,7 @@ class moving(Entity):
                 self.vspeed *= -1
                 self.vdir = False
                 if self.playertouch: 
-                    Globals.player.y -= 1
+                    Globals.player.vblockspeed = -1
                     print True
             elif self.vcount > 0 and self.vdir == False:
                 self.vcount -= 1
@@ -927,7 +926,7 @@ class moving(Entity):
                 
         if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
             if Globals.player.touching_ground:
-                self.vspeed *= -1
+                self.vspeed = -1
                 self.vdir = False
   
         self.pos = (self.rect.x - 3, self.rect.y)
