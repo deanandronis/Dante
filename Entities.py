@@ -462,7 +462,7 @@ class Player(Entity):
                                 self.change_image('idleL')
                                 self.facing_right = False
             else: #set of mid-air sprites
-                    if self.xvel == 0:
+                    if not self.xvel == 0:
                         if self.xvel > 0: #sprite should be jumping right
                             if not self.imagename == "jumpR":
                                     self.change_image('jumpR')
