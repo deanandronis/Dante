@@ -284,6 +284,8 @@ class Player(Entity):
             elif isinstance(item, event_trigger) and self.rect.colliderect(item.rect):
                 Globals.event_manager.trigger_event()
                 item.kill()
+        for item in Globals.group_BACKSPECIAL:
+            if isinstance(item, moving_switch) and self.rect.colliderect(item.rect): item.flip()
                 
     def animate(self):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
@@ -962,7 +964,11 @@ class moving_switch(Entity):
         if not self.on:
             self.on = True
             for item in Globals.group_COLLIDEBLOCKS:
-                if isinstance(item, moving) and item.index == self.index: pass
+                if isinstance(item, moving) and item.index == self.index: 
+                    item.moving = True
+                    if Globals.stage == 1:
+                        self.image = functions.get_image(os.path.join('Resources','General Resources','Buttonon.bmp'), (255,0,255))
+
         
         
 class passable(Entity):
