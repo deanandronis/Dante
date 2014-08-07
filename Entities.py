@@ -740,7 +740,7 @@ class Platform(Entity):
             self.co_friction = 1
             self.pos = (x, y + 8)
 
-            if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 48,64)
+            if blocksacross == 1 and blocksdown == 1: self.rect = pygame.Rect(x + 8, y + 8, 56,64)
             else: 
                 self.rect = pygame.Rect(x, y +8, blocksacross*32 - 20, blocksdown*56 - 8)
                 for i in range(0, blocksacross - 1):
