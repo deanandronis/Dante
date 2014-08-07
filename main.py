@@ -36,7 +36,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_3() #load level 1
+stage_1.level_4() #load level 1
 
 while not done:
     keypressed = pygame.key.get_pressed()
@@ -142,13 +142,16 @@ while not done:
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps))) #set the window caption 
-    
+    for item in Globals.movinglist: item.move()
+
     if ticktimer%Globals.player.animatetimer == 0 and not Globals.key_pause: 
+
         for item in Globals.group_PLAYER: #animate the player every 6 cycles
             item.animate()
     if not Globals.key_pause:
         Globals.player.update() #update the player
         Globals.group_PROJECTILES.update()
+
     #Update the hud and Globals.camera
     Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
     Globals.hud.update(Globals.player.health) #redraw the hud elements
@@ -183,7 +186,6 @@ while not done:
         screen.blit(item.image, (item.x - Globals.camera.x, item.y - Globals.camera.y)) #account for Globals.camera location
     
     for item in Globals.group_COLLIDEBLOCKS: #draw the wall and floor objects to screen
-        if isinstance(item, Entities.moving): item.move()
         if item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
 

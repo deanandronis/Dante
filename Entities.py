@@ -101,7 +101,8 @@ class Player(Entity):
             if self.yvel < 10:
                 self.yvel += abs(self.yvel) / 30 + 0.22
             else: self.yvel = 10
-            
+            self.check_y_coll()
+
             #move y and check for collisions
             if self.vblockspeed > 0:
                 if self.gravity == True: self.rect.y += self.vblockspeed
@@ -197,7 +198,8 @@ class Player(Entity):
         if not movinglist:
             self.hblockspeed = 0
             self.vblockspeed = 0
-
+        for block in Globals.movinglist:
+            block.playertouch = False
         for block in movinglist:
             block.playertouch = True
             self.touching_ground = True
@@ -901,14 +903,12 @@ class moving(Entity):
                 if self.hcount < self.horizontal and self.hdir == True: #going right
                     self.hcount += 1
                     self.rect.x += self.hspeed
-                    self.top.pos = (self.pos[0] + 18, self.pos[1] - 8)
                 elif self.hcount == self.horizontal and self.hdir == True:
                     self.hspeed *= -1
                     self.hdir = False
                 elif self.hcount > 0 and self.hdir == False: #going left
                     self.hcount -= 1
                     self.rect.x += self.hspeed
-                    self.top.pos = (self.pos[0] + 14, self.pos[1] - 8)
                 elif self.hcount == 0 and self.hdir == False:
                     self.hspeed *= -1
                     self.hdir = True
@@ -917,20 +917,20 @@ class moving(Entity):
                 if self.vcount < self.vertical and self.vdir == True:
                     self.vcount += 1
                     self.rect.y += self.vspeed  
-                    self.top.pos = (self.pos[0] + 16, self.pos[1] - 6)
                 elif self.vcount == self.vertical and self.vdir == True:
                     self.vspeed *= -1
                     self.vdir = False
                     if self.playertouch: 
+                        Globals.player.xvel = 0
                         Globals.player.vblockspeed = -1
-                        print True
+                        Globals.player.y -= 10
                 elif self.vcount > 0 and self.vdir == False:
                     self.vcount -= 1
                     self.rect.y += self.vspeed           
-                    self.top.pos = (self.pos[0] + 16, self.pos[1] - 10)
                 elif self.vcount == 0 and self.vdir == False:
                     self.vspeed *= -1
                     self.vdir = True
+
                     
             if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
                 if Globals.player.touching_ground:
@@ -938,6 +938,8 @@ class moving(Entity):
                     self.vdir = False
       
             self.pos = (self.rect.x - 3, self.rect.y)
+        self.top.pos = (self.pos[0] + 16, self.pos[1] - 8)
+
         
 class moving_top(Entity):
         def __init__(self, x, y):

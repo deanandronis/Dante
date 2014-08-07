@@ -150,8 +150,6 @@ def level_2():
     
 def level_3():
     #render floors
-    moving = Entities.moving(4*32, 16*56, 0, 3*56 - 16, 0, 1, 1)
-    switch = Entities.moving_switch(4*32, 18*56, 1)
     
     floor_1 = Entities.Platform(0*32, 19*56, 8, 5)
     
@@ -196,32 +194,42 @@ def level_3():
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 23*56)
 
 def level_4():
+
     #render floors
-    floor_1 = Entities.Platform(0*32, 19*56, 8, 5)
-    
-    floor_1 = Entities.Platform(12*32, 19*56, 8, 5)
-    
-    floor_1 = Entities.Platform(23*32, 19*56, 7, 5)
+    floor_1 = Entities.Platform(0*32, 0*56, 3, 30)
+    floor_1 = Entities.Platform(66*32, 0*56, 4, 30)
 
-    floor_1 = Entities.Platform(34*32, 19*56, 8, 5)
+    floor_1 = Entities.Platform(0*32, 0*56, 6, 2)
+    floor_1 = Entities.Platform(2*32, 5*56, 4, 15)
+    floor_1 = Entities.Platform(2*32, 23*56, 4, 7)
     
-    floor_1 = Entities.Platform(44*32, 17*56, 2, 7)
-    floor_1 = Entities.Platform(48*32, 17*56, 2, 7)
-    floor_1 = Entities.Platform(45*32, 18*56, 4, 5)
-    spikebox_1 = Entities.spike_box(46*32 - 8, 17*56 - 24)
+    floor_1 = Entities.Platform(8*32, 25*56, 37, 5)
+    floor_1 = Entities.Platform(47*32, 25*56, 20, 5)
 
     
-    floor_1 = Entities.Platform(52*32, 15*56, 7, 9)
+    floor_1 = Entities.Platform(5*32, 26*56, 4, 4)
+    floor_1 = Entities.Platform(44*32, 26*56, 4, 4)
 
-    floor_1 = Entities.Platform(61*32, 13*56, 6, 11)
     
-    floor_1 = Entities.Platform(65*32, 11*56, 1, 1)
+    floor_1 = Entities.Platform(48*32, 23*56, 1, 1)
+    floor_1 = Entities.Platform(51*32, 22*56, 1, 1)
+    floor_1 = Entities.Platform(54*32, 21*56, 1, 1)
+    floor_1 = Entities.Platform(57*32, 20*56, 1, 1)
+
+    floor_1 = Entities.Platform(60*32, 19*56, 7, 2)
     
+    floor_1 = Entities.Platform(5*32, 17*56, 4, 2)
+    
+    moving = Entities.moving(11*32, 24*56, 0, 2*56, 0, -1, 2)
+    switch = Entities.moving_switch(8*32, 23*56, 2)
+
+    
+    '''
     floor_1 = Entities.Platform(61*32, 9*56, 1, 1)
     
     floor_1 = Entities.Platform(49*32, 7*56, 10, 2)
     floor_1 = Entities.Platform(37*32, 7*56, 8, 2)
-
+    '''
 
     
     #render thingses
@@ -229,15 +237,15 @@ def level_4():
         
     
     #other stuff
-    Globals.player = Entities.Player(2*32,18*56)
+    Globals.player = Entities.Player(4*32,22*56)
     Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 70*32)
-    Globals.camera.ybounds = (0, 24*56)
+    Globals.camera.ybounds = (0, 30*56)
     Globals.camera.y = 15*56
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     Globals.event_manager = Entities.event_manager()
 
-    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 23*56)
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 30*56)
 
 def boss_1():
     floor_platform = Entities.Platform(0*32, 12*32, 25, 5)
