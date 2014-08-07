@@ -867,7 +867,7 @@ class portal(Entity):
         
 class portal_top(Entity):
     def __init__(self, x, y):
-        Entity.__init__(self, Globals.group_SPECIAL)
+        Entity.__init__(self, Globals.group_BACKTILES)
         if Globals.stage == 1:
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','PortalTop.png'), (255,0,255))
         self.rect = pygame.Rect(self.image.get_rect())
