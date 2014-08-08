@@ -32,7 +32,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_4() #load level 1
+stage_1.level_2() #load level 1
 
 while not done:
     keypressed = pygame.key.get_pressed()
@@ -198,7 +198,6 @@ while not done:
             if isinstance(item, Entities.movingtext): item.update()
         if isinstance(item, Entities.key): item.update()
         if isinstance(item, Entities.passable_top): item.collide()
-        if isinstance(item, Entities.passable): item.check()
         if isinstance(item, Entities.event_trigger): pass
         elif item.rect.x < Globals.camera.x + Globals.camera.width or item.rect.x + item.rect.width > Globals.camera.x:
             if isinstance(item, Entities.kill_border): pass
