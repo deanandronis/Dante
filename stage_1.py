@@ -313,6 +313,40 @@ def level_5():
     
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 66*32, 24*56)
 
+def level_6():  
+    Globals.level = 6
+    #render floors
+    floor_1 = Entities.Platform(0*32, 0*56, 2, 25)
+    floor_4 = Entities.Platform(8*32, 19*56, 3, 6)
+    floor_3 = Entities.Platform(1*32, 20*56, 8, 5)
+    
+    floor_1 = Entities.Platform(16*32, 6*56, 3,19)
+    floor_1 = Entities.Platform(10*32, 20*56, 7, 5)
+
+ 
+    
+    floor_4 = Entities.Platform(12*32, 17*56, 1, 1)
+     
+
+    
+    #render thingses
+    #troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
+    #wiki = Entities.Wikipedia(55*32 + 16, 17*32, 3*32)
+    goalpiece = Entities.goal_piece(67*32, 17*56)
+        
+    
+    #other stuff
+    Globals.player = Entities.Player(3*32,19*56)
+    Globals.hud = Entities.hud()
+    Globals.camera.xbounds = (0, 71*32)
+    Globals.camera.ybounds = (0, 25*56)
+    Globals.camera.y = 0
+    killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (71*32,128))    
+    narrator = Entities.Stage_1_Narrator()
+    Globals.event_manager = Entities.event_manager()
+    
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 71*32, 25*56)
+
 
 def boss_1():
     Globals.level = 6

@@ -57,7 +57,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_4() #load level 1
+main_menu.load_title() #load level 1
 Globals.menu = False
 
 while not Globals.done:
