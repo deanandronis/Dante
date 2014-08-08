@@ -29,7 +29,7 @@ def level_trial():
     
     #render thingses
     troll = Entities.Troll(29*32,20*32, True, (24*32, 34*32), (24*32, 13*32, 10*32, 9*32))
-    goalpiece = Entities.goal_piece(67*32, 13*32)
+    goalpiece = Entities.goal_piece(66*32 + 15, 13*32 + 15)
     trigger1 = Entities.event_trigger((18*32,0*32), (32, 22*32))
     trigger2 = Entities.event_trigger((40*32,0*32), (32, 22*32))
     trigger2 = Entities.event_trigger((56*32,0*32), (32, 22*32))
