@@ -252,6 +252,8 @@ class Player(Entity):
             Globals.event_manager.throw_chat()
         
     def check_health(self):
+        block_list = [x for x in Globals.group_COLLIDEBLOCKS]
+        block_list2 = [x for x in Globals.group_BACKTILES]
         if self.health <= 0 and self.can_die: 
             Globals.event_manager.throw_chat(True)
             self.can_die = False
@@ -263,6 +265,14 @@ class Player(Entity):
             else:
                 if not self.imagename == 'deathL':
                     self.change_image('deathL')
+            
+        if self.dying:
+            for block in block_list:
+                if isinstance (block, passable_s):
+                    block.reset()
+            for block in block_list2:
+                if isinstance (block, passable_top_s):
+                    block.reset()
         
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
@@ -950,7 +960,11 @@ class passable(Entity):
         self.rect.move_ip((x,y))
         self.hit = False
         self.pos = (x,y)
-        top = passable_top(self.pos[0], self.pos[1] - 8)
+        self.top = passable_top(self.pos[0], self.pos[1] - 8)
+        
+    def check(self):
+            if self.top.dead:
+                self.kill()
             
 class passable_top(Entity):
     def __init__(self, x, y):
@@ -962,11 +976,13 @@ class passable_top(Entity):
         self.rect.move_ip((x,y))
         self.hit = False
         self.pos = (x,y)
+        self.dead = False
         
     def collide(self):
         if self.rect.colliderect(Globals.player.rect):
                 self.hit = True
         if self.hit is True and not self.rect.colliderect(Globals.player.rect):
+            self.dead = True
             self.kill()
             respawn = passable_s(self.pos[0], self.pos[1] + 8)
 
@@ -979,6 +995,10 @@ class passable_s(Entity):
         self.rect.move_ip((x,y))
         self.pos = (x,y)
         top = passable_top_s(self.pos[0], self.pos[1] - 8)
+        
+    def reset(self):
+        self.kill()
+        respawn = passable(self.pos[0], self.pos[1])
 
 class passable_top_s(Entity):
     def __init__(self, x, y):
@@ -988,6 +1008,9 @@ class passable_top_s(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.pos = (x,y)
+        
+    def reset(self):
+        self.kill()
         
 class ramp(Entity):
     def __init__(self, x, y, height):
