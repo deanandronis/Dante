@@ -146,7 +146,22 @@ class Player(Entity):
             self.health = 0
         
     def check_x_coll(self):
-        block_hit_list = pygame.sprite.spritecollide(self, Globals.group_COLLIDEBLOCKS, False) #create a list full of all blocks that player is colliding with
+        block_hit_list = [x for x in Globals.group_COLLIDEBLOCKS if self.rect.colliderect(x.rect) and not isinstance(x, moving)]
+        movinglist = [x for x in Globals.movinglist if x.rect.collidepoint(self.rect.left - 3, self.rect.top) or x.rect.collidepoint(self.rect.left - 3, self.rect.top + 19) or x.rect.collidepoint(self.rect.left - 3, self.rect.top + 38) or x.rect.collidepoint(self.rect.left - 3, self.rect.top + 47) or x.rect.collidepoint(self.rect.right + 3, self.rect.top) or x.rect.collidepoint(self.rect.right + 3, self.rect.top + 19) or x.rect.collidepoint(self.rect.right + 3, self.rect.top + 38) or x.rect.collidepoint(self.rect.right + 3, self.rect.top + 47)]
+        for block in movinglist:
+                if self.xvel > 0:
+                    self.rect.right = block.rect.left #set right side of player to left side of block
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+                        
+                elif self.xvel < 0:
+                    #Collision moving left means player collided with right side of block
+                    self.rect.left = block.rect.right #set left side of player to right side of block
+                    self.xvel = 0
+                    self.keys['left'] = False
+                    self.keys['right'] = False
+
         for block in block_hit_list: #iterate through the list
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
                 block.teleport()
@@ -1052,7 +1067,7 @@ class Door(Entity):
     def add_one_vert_top(self):
         self.height += 56
         self.image = pygame.Surface((self.width, self.height))
-        for rows in range(0,self.height/56):
+        for rows in range(self.height/56 - 1, -1, -1):
             for columns in range(0,self.width/64):
                 self.image.blit(self.blockimage, (columns*64, rows*56))
         
@@ -1060,6 +1075,7 @@ class Door(Entity):
         self.pos = (self.rect.x, self.rect.y)
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip(self.pos)
+        self.image.set_colorkey((0,0,0))
 
 class vault_door_back(Entity):
     def __init__(self, x, y, index):
@@ -1700,7 +1716,7 @@ class Stage_1_Narrator (Narrator):
                 Globals.player.xvel = 0
                 self.destroy_bubbles()
                 self.waiting_for_proceed = True
-                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your ATTACK on the Z key to destroy the troll. Be careful - trolls can be extremely dangerous!                  ")
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Nice meme. Now jump to the next platform and use your jump to avoid the troll. Be careful - trolls can be extremely dangerous!                  ")
             elif self.event == 5: 
                 self.tbubble.kill()
                 self.destroy_bubbles()
@@ -1725,8 +1741,17 @@ class Stage_1_Narrator (Narrator):
                 self.tbubble.kill()
                 self.destroy_bubbles()
                 Globals.player.arrowkey_enabled = True
-        elif Globals.level == 1:
-            pass
+        if Globals.level == 6:
+            if self.event == 1:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Look out Max! This is Globulon, the slimiest thing in the internet. Use your stun attack on C and your tornado attack on X to defeat him!")
+                self.waiting_for_proceed = True
+            elif self.event == 2:
+                self.tbubble.kill()
+                self.destroy_bubbles()
+
 
     def throw_chat(self, death = False, boss = False):
         if death:
@@ -2066,7 +2091,7 @@ class InternetBoss(Boss):
         self.y = y
         self.blockcounter = 20
         self.blocktimer = 0
-        self.healthbar = EnemyHealthBar(30,15, 680, self.health, 'BOSS HEALTH: ')
+        self.healthbar = EnemyHealthBar(30,15, 680, self.health, 'GLOBULON HEALTH: ')
         self.first_blocks = False
         self.numcycles = 0
         self.touchingwalls = False
@@ -2133,8 +2158,8 @@ class InternetBoss(Boss):
                         self.change_image('lift')
                 else: 
                     self.first_blocks = True
-                    self.door1 = Door(0*32, 11*32,1,1, 1)
-                    self.door2 = Door(24*32, 11*32,1,1, 1)
+                    self.door1 = Door(0*32, 5*56 + 16,1,1, 1)
+                    self.door2 = Door(23*32, 5*56 + 16,1,1, 1)
 
             else: self.blocktimer += 1
         

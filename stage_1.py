@@ -51,10 +51,7 @@ def level_trial():
 
 
 def level_1():  
-    
-    #test
-    door_1 = Entities.Door(5*32, 9*32, 1, 1, 1)
-    
+    Globals.level = 1    
     #render floors
     floor_1 = Entities.Platform(2*32, 7*56, 4, 5)
     floor_2 = Entities.Platform(9*32, 7*56, 4, 5)
@@ -115,7 +112,8 @@ def level_1():
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 42*32, 30*56)
  
 def level_2():  
-    
+    Globals.level = 2
+
     #render floors
     floor_1 = Entities.Platform(53*32, 17*56, 8, 10)
     floor_1 = Entities.Platform(40*32, 15*56, 11, 12)
@@ -154,7 +152,8 @@ def level_2():
     
 def level_3():
     #render floors
-    
+    Globals.level = 3
+
     floor_1 = Entities.Platform(0*32, 19*56, 8, 5)
     floor_1 = Entities.Platform(12*32, 19*56, 7, 5)
     floor_1 = Entities.Platform(23*32, 19*56, 7, 5)
@@ -199,7 +198,7 @@ def level_3():
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 23*56)
 
 def level_4():
-
+    Globals.level = 4
     #render floors
     floor_1 = Entities.Platform(0*32, 0*56, 3, 30)
     floor_1 = Entities.Platform(66*32, 0*56, 4, 30)
@@ -257,7 +256,7 @@ def level_4():
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 30*56)
 
 def level_5():  
-        
+    Globals.level = 5
     #render floors
     floor_1 = Entities.Platform(0*32, 5*56, 20, 3)
     floor_2 = Entities.Platform(57*32, 5*56, 8, 3)
@@ -266,7 +265,7 @@ def level_5():
     floor_4 = Entities.Platform(7*32, 12*56, 11, 2)
     floor_5 = Entities.Platform(0*32, 17*56, 10, 3)
     floor_6 = Entities.Platform(48*32, 17*56, 7, 3)
-    switch = Entities.moving_switch(63*32, 4*56, 1)
+    switch = Entities.moving_switch(15*32, 4*56, 1)
     
     for i in range(18,64,2):
         spike = Entities.spike_box(i*32, 12*56)
@@ -306,10 +305,14 @@ def level_5():
 
 
 def boss_1():
-    floor_platform = Entities.Platform(0*32, 12*32, 25, 5)
-    Globals.player = Entities.Player(32*4,32*10)
+    Globals.level = 6
+    floor_platform = Entities.Platform(0*32, 7*56, 25, 5)
+    Globals.player = Entities.Player(32*4,6*56)
     Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 800)
     Globals.camera.ybounds = (0, 640)
-    boss= Entities.InternetBoss(16*32, 6*32)
+    boss= Entities.InternetBoss(16*32, 7*56 - 192 + 8)
+    Globals.event_manager = Entities.event_manager()
     narrator = Entities.Stage_1_Narrator()
+    Globals.event_manager.trigger_event()
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 71*32, 30*56)
