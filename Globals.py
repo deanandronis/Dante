@@ -8,6 +8,7 @@ import pygame, sys, os, Entities
 pygame.init()
 
 #initial variables
+done = False
 stage = 1
 level = 0
 player = None

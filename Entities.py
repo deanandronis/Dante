@@ -6,7 +6,7 @@ Created on Oct 27, 2013
 
 import pygame, sys, os, math, textwrap
 from pygame.locals import *
-import functions, Constants, Globals
+import functions, Constants, Globals, stage_1
 from random import randrange, randint
 
 #base class for shit
@@ -1119,6 +1119,8 @@ class key(Entity):
         if self.destroy:
             self.image.set_alpha(0)
             Globals.player.arrowkey_enabled = False
+            Globals.player.xvel = 0
+            Globals.player.yvel = 0
             self.timer += 1
             self.destroylist = [x for x in Globals.group_COLLIDEBLOCKS if isinstance(x, Door) and x.index == self.index]
             if self.destroylist and self.timer == self.destroytimer:
@@ -1858,7 +1860,8 @@ class Troll(Entity):
             self.kill()
         
         if self.rect.colliderect(Globals.player.rect): self.collide_player(0)
-
+        collide = [x for x in Globals.group_SPECIAL if x.rect.colliderect(self.rect) and isinstance(x, spike_box)]
+        if collide: self.damage(100)
         
         if not self.status == 'runl' and not self.status == 'runr' and not self.status == 'explode' and self.chaserect.collidepoint((Globals.player.x, Globals.player.y)):
             if self.facingL and Globals.player.rect.x < self.rect.x: self.status = 'detected'
@@ -1943,8 +1946,8 @@ class Troll(Entity):
                     self.rect.y -= 16
               
     def collide_player(self, damage):
-        if self.rect.x < Globals.player.rect.x: Globals.player.x = self.rect.right
-        elif self.rect.x > Globals.player.rect.x: Globals.player.x = self.rect.left - Globals.player.rect.width
+        if self.rect.x < Globals.player.rect.x and not Globals.player.xvel > 0: Globals.player.x = self.rect.right
+        elif self.rect.x > Globals.player.rect.x and not Globals.player.xvel < 0: Globals.player.x = self.rect.left - Globals.player.rect.width
         Globals.player.health -= damage
     
     def change_image(self, image):
@@ -2312,7 +2315,11 @@ class Menu_PlayButt(Button):
         Button.__init__(self, x, y)
         
     def clicked(self):
-        print "Play button clicked"
+            Globals.clear_groups()
+            Globals.reset_variables()
+            stage_1.level_trial()
+            Globals.menu = False
+
         
 class Menu_InfoButt(Button):
     def __init__(self, x, y):
@@ -2336,4 +2343,11 @@ class Menu_QuitButt(Button):
         Button.__init__(self, x, y)
         
     def clicked(self):
-        print "Quit button clicked"
+        Globals.done = True
+
+class Menu_BG(Entity):
+    def __init__(self, image):
+        Entity.__init__(self, Globals.group_BG)
+        self.move_with_camera = False
+        self.image = image
+        self.pos = (0,0)
