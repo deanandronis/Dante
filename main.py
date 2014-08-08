@@ -1,7 +1,7 @@
 '''
 Created on Oct 27, 2013
 
-@author: Dean, God Almighty of Sex and Women
+@author: Dean
 '''
 import pygame, sys, os, math, datetime
 from pygame.locals import *
@@ -52,6 +52,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
+#stage_1.level_4()
 main_menu.load_title() #load level 1
 Globals.menu = True
 
@@ -73,7 +74,7 @@ while not done:
                         if Globals.player.touching_ground: #check to see if player is touching ground
                             Globals.player.yvel = -10 #accelerate the player upwards
                             Globals.player.y -= 4
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_k:
                     Globals.player.health -= 10
                     Globals.event_manager.throw_chat()
     
@@ -131,6 +132,8 @@ while not done:
                     Globals.player.yvel = 0
                     if Globals.player.gravity: Globals.player.gravity = False
                     else: Globals.player.gravity = True
+                elif event.key == pygame.K_n:
+                    next_level()
         elif event.type == MOUSEBUTTONDOWN: 
             mousex, mousey = event.pos
             print "Mouse: " + str((mousex + Globals.camera.x, mousey + Globals.camera.y))

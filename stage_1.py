@@ -1,7 +1,7 @@
 '''
 Created on 31/10/2013
 
-@author: Dean, God Almighty of Sex and Women
+@author: Dean
 '''
 import pygame, os, sys, Entities, functions, Constants, Globals, math, random
 from random import randrange, randint
@@ -137,7 +137,8 @@ def level_2():
     #render thingses
     goalpiece = Entities.goal_piece(15*32, 19*56)
         
-    
+    trigger1 = Entities.event_trigger((14*32,0*32), (32, 100*32))
+
     #other stuff
     Globals.player = Entities.Player(59*32,16*56)
     Globals.hud = Entities.hud()
@@ -168,6 +169,14 @@ def level_3():
     floor_1 = Entities.Platform(61*32, 9*56, 1, 1)
     floor_1 = Entities.Platform(49*32, 7*56, 10, 2)
     floor_1 = Entities.Platform(37*32, 7*56, 8, 2)
+    
+    floor_1 = Entities.Platform(31*32, 7*56, 4, 2)
+    floor_1 = Entities.Platform(14*32, 7*56, 8, 2)
+    floor_1 = Entities.Platform(0*32, 7*56, 4, 2)
+    trigger1 = Entities.event_trigger((38*32,0*32), (32, 7*56))
+
+    tele = Entities.portal(32*32, 5*56, 1, (17*32, 5*56))
+    passable = Entities.passable(8*32, 7*56)
 
     for i in range(0,3):
         coin = Entities.Coin((i+8)*32, 17*56)
@@ -179,7 +188,7 @@ def level_3():
         coin = Entities.Coin((i+46)*32, 5*56)
 
     #render thingses
-    goalpiece = Entities.goal_piece(32*32, 6*56)
+    goalpiece = Entities.goal_piece(1*32, 5*56)
 
     troll = Entities.Troll(15*32,18*56, True, (12*32, 19*32), (12*32, 17*56, 8*32, 9*56))
     troll = Entities.Troll(27*32,18*56, True, (23*32, 30*32), (23*32, 17*56, 8*32, 9*56))
@@ -234,6 +243,7 @@ def level_4():
 
     door = Entities.Door(60*32,20*56 + 8, 1,4, 1)
     key = Entities.key(7*32, 15*56, 1)
+    trigger1 = Entities.event_trigger((5*32 + 16,24*32), (32, 100*56))
 
     moving = Entities.moving(11*32, 17*56, 0, 7*56, 0, 2, 2)
     switch = Entities.moving_switch(63*32, 17*56, 2)

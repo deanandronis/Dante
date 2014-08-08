@@ -1,7 +1,7 @@
 '''
 Created on Oct 27, 2013
 
-@author: Dean, God Almighty of Sex and Women
+@author: Dean
 '''
 
 import pygame, sys, os, math, textwrap
@@ -383,6 +383,10 @@ class Player(Entity):
                 self.arrowkey_enabled = False
             
             elif self.imagename == 'deathL' or self.imagename == 'deathR':
+                if Globals.level == 0:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.level_trial()
                 if Globals.level == 1:
                     Globals.clear_groups()
                     Globals.reset_variables()
@@ -1787,6 +1791,51 @@ class Stage_1_Narrator (Narrator):
                 self.tbubble.kill()
                 self.destroy_bubbles()
                 Globals.player.arrowkey_enabled = True
+        if Globals.level == 2:
+            if self.event == 1:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hey! You look like you need some help there. Collect the keypad below to open the door!                   ")
+                self.waiting_for_proceed = True
+            elif self.event == 2:
+                Globals.player.arrowkey_enabled= True
+                self.tbubble.kill()
+                self.destroy_bubbles()
+        if Globals.level == 3:
+            if self.event == 1:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hey! You look like you need some help there!")
+                self.waiting_for_proceed = True
+            if self.event == 2:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hit the blue portal to travel to the orange one. The transparent blocks ahead become solid once you pass through them.")
+                self.waiting_for_proceed = True
+            elif self.event == 3:
+                Globals.player.arrowkey_enabled= True
+                self.tbubble.kill()
+                self.destroy_bubbles()
+        if Globals.level == 4:
+            if self.event == 1:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Hey! You look like you need some help there!                                                            ")
+                self.waiting_for_proceed = True
+            if self.event == 2:
+                Globals.player.arrowkey_enabled = False
+                Globals.player.xvel = 0
+                self.destroy_bubbles()
+                self.tbubble = text_bubble_right_narrator(self.pos[0] - 50 , self.pos[1] - 30, "Find the button to activate the moving tiles.                       ")
+                self.waiting_for_proceed = True
+            elif self.event == 4:
+                Globals.player.arrowkey_enabled= True
+                self.tbubble.kill()
+                self.destroy_bubbles()
         if Globals.level == 6:
             if self.event == 1:
                 Globals.player.arrowkey_enabled = False
