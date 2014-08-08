@@ -481,23 +481,14 @@ class Player(Entity):
                                     self.change_image('jumpL')
                                     self.facing_right = False
                     else:
-                        if self.xvel > 0: #sprite should be jumping right
+                        if self.facing_right: #sprite should be jumping right
                             if not self.imagename == "jumpR":
                                     self.change_image('jumpR')
                                     self.facing_right = True
-                            elif self.xvel < 0: #sprite should be jumping left
-                                if not self.imagename == 'jumpL':
-                                        self.change_image('jumpL')
-                                        self.facing_right = False
-                            else: #check direction player is facing
-                                if self.facing_right == True: #sprite should be jumping right
-                                    if not self.imagename == "jumpR":
-                                        self.change_image('jumpR')
-                                        self.facing_right = True
-                                else: #sprite should be jumping left
-                                    if not self.imagename == 'jumpL':
-                                        self.change_image('jumpL')
-                                        self.facing_right = False
+                        else: #check direction player is facing
+                            if not self.imagename == 'jumpL':
+                                self.change_image('jumpL')
+                                self.facing_right = False
         else:
             if self.attack == 'spin':
                 if self.facing_right:
@@ -933,7 +924,10 @@ class moving(Entity):
                     
             if Globals.player.rect.collidepoint(self.rect.x, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 17, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 34, self.rect.bottom + 3) or Globals.player.rect.collidepoint(self.rect.x + 51, self.rect.bottom + 3):
                 if Globals.player.touching_ground and self.vspeed > 0:
-                    self.vdir = True
+                    if self.vdir:
+                        self.vdir = False
+                    else:
+                        self.vdir = True
                     self.vspeed *= -1
 
             self.pos = (self.rect.x - 3, self.rect.y)

@@ -222,8 +222,8 @@ def level_4():
     
     floor_1 = Entities.Platform(5*32, 17*56, 4, 2)
     
-    moving = Entities.moving(11*32, 24*56, 0, 7*56, 0, -1, 2)
-    switch = Entities.moving_switch(63*32, 17*56, 2)
+    moving = Entities.moving(11*32, 24*56, 0, 2*56, 0, -1, 2)
+    switch = Entities.moving_switch(15*32, 24*56, 2)
     
     moving = Entities.moving(31*32, 23*56, 0, 11*56, 0, -1, 1)
     switch = Entities.moving_switch(64*32, 24*56, 1)
