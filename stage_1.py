@@ -6,7 +6,13 @@ Created on 31/10/2013
 import pygame, os, sys, Entities, functions, Constants, Globals, math, random
 from random import randrange, randint
 
+
+def main_menu():
+    pass
+
 def level_trial():
+    
+    test = Entities.passable(7*32, 20*32)
                 
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)
@@ -23,7 +29,7 @@ def level_trial():
     
     #render thingses
     troll = Entities.Troll(29*32,20*32, True, (24*32, 34*32), (24*32, 13*32, 10*32, 9*32))
-    goalpiece = Entities.goal_piece(67*32, 13*32)
+    goalpiece = Entities.goal_piece(66*32 + 15, 13*32 + 15)
     trigger1 = Entities.event_trigger((18*32,0*32), (32, 22*32))
     trigger2 = Entities.event_trigger((40*32,0*32), (32, 22*32))
     trigger2 = Entities.event_trigger((56*32,0*32), (32, 22*32))
@@ -135,11 +141,11 @@ def level_2():
         
     
     #other stuff
-    Globals.player = Entities.Player(59*32,16*56)
+    Globals.player = Entities.Player(8*32,17*56)
     Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 70*32)
     Globals.camera.ybounds = (0, 30*56)
-    Globals.camera.y = 15*56
+    Globals.camera.y = 0
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     Globals.event_manager = Entities.event_manager()
     narrator = Entities.Stage_1_Narrator()
@@ -220,23 +226,11 @@ def level_4():
     
     floor_1 = Entities.Platform(5*32, 17*56, 4, 2)
     
-    moving = Entities.moving(11*32, 17*56, 0, 7*56, 0, 2, 2)
-    switch = Entities.moving_switch(63*32, 17*56, 2)
+    moving = Entities.moving(11*32, 22*56, 0, 2*56, 0, 1, 2)
+    switch = Entities.moving_switch(15*32, 24*56, 2)
     
-    moving = Entities.moving(31*32, 12*56, 0, 11*56, 0, 2, 1)
+    moving = Entities.moving(31*32, 23*56, 0, 11*56, 0, -1, 1)
     switch = Entities.moving_switch(64*32, 24*56, 1)
-    
-    door = Entities.Door(60*32,20*56 + 8, 1,4, 1)
-    key = Entities.key(7*32, 15*56, 1)
-
-    spikebox_1 = Entities.spike_box(6*32 - 8, 25*56 - 24)
-    spikebox_1 = Entities.spike_box(45*32 - 8, 25*56 - 24)
-    
-    floor_1 = Entities.Platform(26*32, 10*56, 1, 1)
-    floor_1 = Entities.Platform(22*32, 8*56, 1, 1)
-    floor_1 = Entities.Platform(18*32, 6*56, 1, 1)
-    floor_1 = Entities.Platform(14*32, 4*56, 1, 1)
-    floor_1 = Entities.Platform(8*32, 4*56, 1, 1)
 
     
     '''
@@ -245,16 +239,10 @@ def level_4():
     floor_1 = Entities.Platform(49*32, 7*56, 10, 2)
     floor_1 = Entities.Platform(37*32, 7*56, 8, 2)
     '''
-    troll = Entities.Troll(21*32,24*56, True, (9*32, 25*32), (9*32, 24*56, 17*32, 2*32))
-    troll = Entities.Troll(32*32,24*56, False, (27*32, 44*32), (27*32, 24*56, 17*32, 2*32))
-    
-    wiki = Entities.Wikipedia(45*32, 21*56, 2*56)
-    wiki = Entities.Wikipedia(32*32, 2*56, 2*56)
-    wiki = Entities.Wikipedia(32*32, 4*56, 2*56)
 
     
     #render thingses
-    goalpiece = Entities.goal_piece(4*32, 3*56)
+    goalpiece = Entities.goal_piece(32*32, 6*56)
         
     
     #other stuff
@@ -279,7 +267,7 @@ def level_5():
     floor_4 = Entities.Platform(7*32, 12*56, 11, 2)
     floor_5 = Entities.Platform(0*32, 17*56, 10, 3)
     floor_6 = Entities.Platform(48*32, 17*56, 7, 3)
-    switch = Entities.moving_switch(63*32, 4*56, 1)
+    switch = Entities.moving_switch(15*32, 4*56, 1)
     
     for i in range(18,64,2):
         spike = Entities.spike_box(i*32, 12*56)
@@ -310,6 +298,10 @@ def level_5():
     killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
     narrator = Entities.Stage_1_Narrator()
     Globals.event_manager = Entities.event_manager()
+
+    
+    
+    
     
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 66*32, 24*56)
 

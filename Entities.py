@@ -6,7 +6,7 @@ Created on Oct 27, 2013
 
 import pygame, sys, os, math, textwrap
 from pygame.locals import *
-import functions, Constants, Globals, stage_1
+import functions, Constants, Globals
 from random import randrange, randint
 
 #base class for shit
@@ -252,6 +252,8 @@ class Player(Entity):
             Globals.event_manager.throw_chat()
         
     def check_health(self):
+        block_list = [x for x in Globals.group_COLLIDEBLOCKS]
+        block_list2 = [x for x in Globals.group_BACKTILES]
         if self.health <= 0 and self.can_die: 
             Globals.event_manager.throw_chat(True)
             self.can_die = False
@@ -263,6 +265,14 @@ class Player(Entity):
             else:
                 if not self.imagename == 'deathL':
                     self.change_image('deathL')
+            
+        if self.dying:
+            for block in block_list:
+                if isinstance (block, passable_s):
+                    block.reset()
+            for block in block_list2:
+                if isinstance (block, passable_top_s):
+                    block.reset()
         
     def collide_SPECIAL(self):
         for item in Globals.group_SPECIAL: #iterate through special items
@@ -950,7 +960,11 @@ class passable(Entity):
         self.rect.move_ip((x,y))
         self.hit = False
         self.pos = (x,y)
-        top = passable_top(self.pos[0], self.pos[1] - 8)
+        self.top = passable_top(self.pos[0], self.pos[1] - 8)
+        
+    def check(self):
+            if self.top.dead:
+                self.kill()
             
 class passable_top(Entity):
     def __init__(self, x, y):
@@ -962,11 +976,13 @@ class passable_top(Entity):
         self.rect.move_ip((x,y))
         self.hit = False
         self.pos = (x,y)
+        self.dead = False
         
     def collide(self):
         if self.rect.colliderect(Globals.player.rect):
                 self.hit = True
         if self.hit is True and not self.rect.colliderect(Globals.player.rect):
+            self.dead = True
             self.kill()
             respawn = passable_s(self.pos[0], self.pos[1] + 8)
 
@@ -979,6 +995,10 @@ class passable_s(Entity):
         self.rect.move_ip((x,y))
         self.pos = (x,y)
         top = passable_top_s(self.pos[0], self.pos[1] - 8)
+        
+    def reset(self):
+        self.kill()
+        respawn = passable(self.pos[0], self.pos[1])
 
 class passable_top_s(Entity):
     def __init__(self, x, y):
@@ -988,6 +1008,9 @@ class passable_top_s(Entity):
         self.rect = pygame.Rect(self.image.get_rect())
         self.rect.move_ip((x,y))
         self.pos = (x,y)
+        
+    def reset(self):
+        self.kill()
         
 class ramp(Entity):
     def __init__(self, x, y, height):
@@ -1119,8 +1142,6 @@ class key(Entity):
         if self.destroy:
             self.image.set_alpha(0)
             Globals.player.arrowkey_enabled = False
-            Globals.player.xvel = 0
-            Globals.player.yvel = 0
             self.timer += 1
             self.destroylist = [x for x in Globals.group_COLLIDEBLOCKS if isinstance(x, Door) and x.index == self.index]
             if self.destroylist and self.timer == self.destroytimer:
@@ -1860,8 +1881,7 @@ class Troll(Entity):
             self.kill()
         
         if self.rect.colliderect(Globals.player.rect): self.collide_player(0)
-        collide = [x for x in Globals.group_SPECIAL if x.rect.colliderect(self.rect) and isinstance(x, spike_box)]
-        if collide: self.damage(100)
+
         
         if not self.status == 'runl' and not self.status == 'runr' and not self.status == 'explode' and self.chaserect.collidepoint((Globals.player.x, Globals.player.y)):
             if self.facingL and Globals.player.rect.x < self.rect.x: self.status = 'detected'
@@ -1946,8 +1966,8 @@ class Troll(Entity):
                     self.rect.y -= 16
               
     def collide_player(self, damage):
-        if self.rect.x < Globals.player.rect.x and not Globals.player.xvel > 0: Globals.player.x = self.rect.right
-        elif self.rect.x > Globals.player.rect.x and not Globals.player.xvel < 0: Globals.player.x = self.rect.left - Globals.player.rect.width
+        if self.rect.x < Globals.player.rect.x: Globals.player.x = self.rect.right
+        elif self.rect.x > Globals.player.rect.x: Globals.player.x = self.rect.left - Globals.player.rect.width
         Globals.player.health -= damage
     
     def change_image(self, image):
@@ -2315,11 +2335,7 @@ class Menu_PlayButt(Button):
         Button.__init__(self, x, y)
         
     def clicked(self):
-            Globals.clear_groups()
-            Globals.reset_variables()
-            stage_1.level_trial()
-            Globals.menu = False
-
+        print "Play button clicked"
         
 class Menu_InfoButt(Button):
     def __init__(self, x, y):
@@ -2343,11 +2359,4 @@ class Menu_QuitButt(Button):
         Button.__init__(self, x, y)
         
     def clicked(self):
-        Globals.done = True
-
-class Menu_BG(Entity):
-    def __init__(self, image):
-        Entity.__init__(self, Globals.group_BG)
-        self.move_with_camera = False
-        self.image = image
-        self.pos = (0,0)
+        print "Quit button clicked"

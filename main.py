@@ -5,7 +5,7 @@ Created on Oct 27, 2013
 '''
 import pygame, sys, os, math, datetime
 from pygame.locals import *
-import Entities, functions, stage_1, main_menu, Constants, Globals
+import Entities, functions, stage_1, Constants, Globals
 from random import randrange
 from Entities import Camera
 
@@ -17,32 +17,6 @@ def next_level():
             Globals.clear_groups()
             Globals.reset_variables()
             stage_1.level_1()
-        if Globals.level == 2:
-            Globals.clear_groups()
-            Globals.reset_variables()
-            stage_1.level_2()
-        if Globals.level == 3:
-            Globals.clear_groups()
-            Globals.reset_variables()
-            stage_1.level_3()
-        if Globals.level == 4:
-            Globals.clear_groups()
-            Globals.reset_variables()
-            stage_1.level_4()
-        if Globals.level == 5:
-            Globals.clear_groups()
-            Globals.reset_variables()
-            stage_1.level_5()
-        if Globals.level == 6:
-            Globals.clear_groups()
-            Globals.reset_variables()
-            stage_1.boss_1()
-
-
-
-
-
-
 
 #Variable init
 pygame.init() #initialise pygame modules
@@ -51,6 +25,7 @@ WINDOW_HEIGHT = 576 #HUD takes up bottom 3 #variable to store the height of the 
 WINDOW_SIZE = (WINDOW_WIDTH,WINDOW_HEIGHT) #window size
 BLOCK_SIZE = (BLOCK_WIDTH,BLOCK_HEIGHT) = 32,32 #size of the tiles in the game
 MAX_FPS = 60 #the max FPS the game will run at
+done = False #necessary for while loop
 global screen, clock #variables for the screen and game timer
 screen = pygame.display.set_mode(WINDOW_SIZE) #creates the window
 clock = pygame.time.Clock() #creates a controller for the game cycles
@@ -60,52 +35,48 @@ Globals.camera = Entities.Camera() #create the camera
 main_menu.load_title() #load level 1
 Globals.menu = False
 
-while not Globals.done:
+while not done:
     keypressed = pygame.key.get_pressed()
     #test next level
-    if not Globals.menu:
-        if Globals.player.next_level == True:
-            Globals.player.next_level = False
-            next_level()
+    if Globals.player.next_level == True:
+        Globals.player.next_level = False
+        next_level()
 
     #Get and check events:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT: Globals.done = True #exit the game if player presses cross button
-        elif event.type == pygame.KEYDOWN and not Globals.key_pause and not Globals.menu:
+        if event.type == pygame.QUIT: done = True #exit the game if player presses cross button
+        elif event.type == pygame.KEYDOWN and not Globals.key_pause:
             if event.key == pygame.K_UP:#up arrow key pressed
                 if Globals.player.arrowkey_enabled:
                     if Globals.player.touching_ground: #check to see if player is touching ground
                         Globals.player.yvel = -10 #accelerate the player upwards
                         Globals.player.y -= 4
             elif event.key == pygame.K_DOWN:
-                Globals.player.health -= 1
+                Globals.player.health -= 10
                 Globals.event_manager.throw_chat()
 
             elif event.key == pygame.K_z:
-                pass
-                '''
-                if Globals.player.can_attack and Globals.player.arrowkey_enabled:
+                if Globals.player.can_attack:
                     Globals.player.attack = 'slash'
                     Globals.player.attacking = True
                     Globals.player.can_attack = False
                     Globals.player.sprinting = False
-                '''
             elif event.key == pygame.K_x: #x key pressed - spin
-                if Globals.player.can_attack and Globals.player.arrowkey_enabled:
+                if Globals.player.can_attack:
                     Globals.player.attack = 'spin'
                     Globals.player.attacking = True
                     Globals.player.arrowkey_enabled = False
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
             elif event.key == pygame.K_c:
-                if Globals.player.can_attack and Globals.player.arrowkey_enabled:
+                if Globals.player.can_attack:
                     Globals.player.attack = 'shout'
                     Globals.player.attacking = True
                     Globals.player.arrowkey_enabled = False
                     Globals.player.can_attack = False
                     Globals.player.xvel = 0
             elif event.key == pygame.K_v:
-                if Globals.player.can_attack and Globals.player.arrowkey_enabled:
+                if Globals.player.can_attack:
                     Globals.player.attack = 'lazer'
                     Globals.player.attacking = True
                     Globals.player.arrowkey_enabled = False
@@ -131,7 +102,7 @@ while not Globals.done:
                         
                         item.next_event()
             elif event.key == pygame.K_HOME: Globals.player.yvel = -12
-            elif event.key == pygame.K_ESCAPE: Globals.done = True #exit the game if player presses escape
+            elif event.key == pygame.K_ESCAPE: done = True #exit the game if player presses escape
             elif event.key == pygame.K_F1: block = Entities.damage_tile(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             elif event.key == pygame.K_F12: coin = Entities.Coin(pygame.mouse.get_pos()[0] + Globals.camera.x, pygame.mouse.get_pos()[1] + Globals.camera.y)
             elif event.key == pygame.K_F11: 
@@ -143,49 +114,49 @@ while not Globals.done:
             print "Mouse: " + str((mousex + Globals.camera.x, mousey + Globals.camera.y))
            
     #movement
-    if not Globals.menu:
-        if keypressed[K_LEFT] and not Globals.player.keys['right'] == True:
-                    Globals.player.left_pressed()     
-                    Globals.player.keys['left'] = True
-                    
-        elif not keypressed[K_LEFT] and Globals.player.keys['left'] == True:
-                Globals.player.left_released()                
-                Globals.player.keys['left'] = False
+    if keypressed[K_LEFT] and not Globals.player.keys['right'] == True:
+                Globals.player.left_pressed()     
+                Globals.player.keys['left'] = True
                 
-        if keypressed[K_RIGHT] and Globals.player.keys['left'] == False:
-                Globals.player.right_pressed()
-                Globals.player.keys['right'] = True
-                
-        elif not keypressed[K_RIGHT] and Globals.player.keys['right'] == True:     
-            Globals.player.right_released()
-            Globals.player.keys['right'] = False
-        
-        if not keypressed[K_RIGHT] and not keypressed[K_LEFT]:
-            if Globals.player.keys['left']: 
-                Globals.player.left_released()
-            if Globals.player.keys['right']: 
-                Globals.player.right_released()        
+    elif not keypressed[K_LEFT] and Globals.player.keys['left'] == True:
+            Globals.player.left_released()                
+            Globals.player.keys['left'] = False
+            
+    if keypressed[K_RIGHT] and Globals.player.keys['left'] == False:
+            Globals.player.right_pressed()
+            Globals.player.keys['right'] = True
+            
+    elif not keypressed[K_RIGHT] and Globals.player.keys['right'] == True:     
+        Globals.player.right_released()
+        Globals.player.keys['right'] = False
+    
+    if not keypressed[K_RIGHT] and not keypressed[K_LEFT]:
+        if Globals.player.keys['left']: 
+            Globals.player.left_released()
+        if Globals.player.keys['right']: 
+            Globals.player.right_released()        
     
     #Write FPS in caption
     current_fps = float(clock.get_fps()) #get the current FPS
     pygame.display.set_caption("Dante's Inferbo     FPS: %s" % (str(current_fps))) #set the window caption 
-    if not Globals.menu:
-        for item in Globals.movinglist: item.move()
-        if ticktimer%Globals.player.animatetimer == 0 and not Globals.key_pause: 
-    
-            for item in Globals.group_PLAYER: #animate the player every 6 cycles
-                item.animate()
-        if not Globals.key_pause:
-            Globals.player.update() #update the player
-            Globals.group_PROJECTILES.update()
-    
-        #Update the hud and Globals.camera
-        Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
-        Globals.hud.update(Globals.player.health) #redraw the hud elements
+    for item in Globals.movinglist: item.move()
+
+    if ticktimer%Globals.player.animatetimer == 0 and not Globals.key_pause: 
+
+        for item in Globals.group_PLAYER: #animate the player every 6 cycles
+            item.animate()
+    if not Globals.key_pause:
+        Globals.player.update() #update the player
+        Globals.group_PROJECTILES.update()
+
+    #Update the hud and Globals.camera
+    Globals.camera.updatecamera(Globals.player) #update the Globals.camera's position to centre window on player
+    Globals.hud.update(Globals.player.health) #redraw the hud elements
     
     
     #Draw elements to screen       
     screen.fill((0,0,0)) #wipe the screen
+    
     for item in Globals.group_BG:
         if item.move_with_camera:
             screen.blit(item.image, (item.pos[0] - Globals.camera.x, item.pos[1] - Globals.camera.y)) #account for Globals.camera location
