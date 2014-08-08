@@ -209,27 +209,25 @@ class Player(Entity):
         for block in block_hit_list: #iterate over list
             if isinstance(block, portal) and self.rect.colliderect(block.rect) and block.z == 1:
                 block.teleport()
+            elif isinstance(block, moving):
+                # check collision
+                    #self.touching_ground = True
+                if self.rect.y < block.rect.y: #top collision
+                    self.rect.bottom = block.rect.top #set bottom of player to top of block
+                    self.yvel = 0 #stop vertical movement
+                    self.currentplatform = block
+                    print "YOPO" + str(self.rect.y)
+                elif self.yvel < 0 and self.rect.y > block.rect.y: #bottom collision
+                    self.rect.top = block.rect.bottom + 4  #set the top of the player to the bottom of block                        self.yvel = 0 #stop vertical movement
             else:
-                if isinstance(block, moving):
-                    # check collision
+                # check collision
                     #self.touching_ground = True
-                    if self.yvel > 0 and self.rect.y < block.rect.y: #top collision
-                        self.rect.bottom = block.rect.top #set bottom of player to top of block
-                        self.yvel = 0 #stop vertical movement
-                        self.currentplatform = block
-                    elif self.yvel < 0 and self.rect.y > block.rect.y: #bottom collision
-                        self.rect.top = block.rect.bottom + 4  #set the top of the player to the bottom of block
-                        self.yvel = 0 #stop vertical movement  
-                else:
-                    # check collision
-                    #self.touching_ground = True
-                    if self.yvel > 0: #top collision
-                        self.rect.bottom = block.rect.top #set bottom of player to top of block
-                        self.yvel = 0 #stop vertical movement
-                        self.currentplatform = block
-                    elif self.yvel < 0: #bottom collision
-                        self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
-                        self.yvel = 0 #stop vertical movement
+                if self.yvel > 0: #top collision
+                    self.rect.bottom = block.rect.top #set bottom of player to top of block                        self.yvel = 0 #stop vertical movement
+                    self.currentplatform = block
+                elif self.yvel < 0: #bottom collision
+                    self.rect.top = block.rect.bottom  #set the top of the player to the bottom of block
+                    self.yvel = 0 #stop vertical movement
         if self.rect.y + self.rect.height > Globals.camera.y + Globals.camera.height - 96:
             self.health -= 3
             self.reset()
@@ -911,10 +909,6 @@ class moving(Entity):
                 elif self.vcount == self.vertical and self.vdir == True:
                     self.vspeed *= -1
                     self.vdir = False
-                    if self.playertouch: 
-                        Globals.player.xvel = 0
-                        Globals.player.vblockspeed = -1
-                        Globals.player.y -= 10
                 elif self.vcount > 0 and self.vdir == False:
                     self.vcount -= 1
                     self.rect.y += self.vspeed           
