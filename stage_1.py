@@ -3,7 +3,9 @@ Created on 31/10/2013
 
 @author: Dean, God Almighty of Sex and Women
 '''
-import pygame, os, sys, Entities, functions, Constants, Globals
+import pygame, os, sys, Entities, functions, Constants, Globals, math, random
+from random import randrange, randint
+
 
 def main_menu():
     pass
@@ -129,12 +131,13 @@ def level_2():
 
     floor_1 = Entities.Platform(3*32, 0*56, 4, 23)
     floor_1 = Entities.Platform(6*32, 21*56, 12, 2)
+    
 
-
-
+    door = Entities.Door(11*32,17*56 + 8, 1,3, 1)
+    key = Entities.key(9*32, 18*56, 1)
     
     #render thingses
-    goalpiece = Entities.goal_piece(14*32, 19*56)
+    goalpiece = Entities.goal_piece(15*32, 19*56)
         
     
     #other stuff
@@ -153,35 +156,35 @@ def level_3():
     #render floors
     
     floor_1 = Entities.Platform(0*32, 19*56, 8, 5)
-    
-    floor_1 = Entities.Platform(12*32, 19*56, 8, 5)
-    
+    floor_1 = Entities.Platform(12*32, 19*56, 7, 5)
     floor_1 = Entities.Platform(23*32, 19*56, 7, 5)
-
     floor_1 = Entities.Platform(34*32, 19*56, 8, 5)
-    
     floor_1 = Entities.Platform(44*32, 17*56, 2, 7)
     floor_1 = Entities.Platform(48*32, 17*56, 2, 7)
     floor_1 = Entities.Platform(45*32, 18*56, 4, 5)
     spikebox_1 = Entities.spike_box(46*32 - 8, 17*56 - 24)
-
-    
     floor_1 = Entities.Platform(52*32, 15*56, 7, 9)
-
     floor_1 = Entities.Platform(61*32, 13*56, 6, 11)
-    
     floor_1 = Entities.Platform(65*32, 11*56, 1, 1)
-    
     floor_1 = Entities.Platform(61*32, 9*56, 1, 1)
-    
     floor_1 = Entities.Platform(49*32, 7*56, 10, 2)
     floor_1 = Entities.Platform(37*32, 7*56, 8, 2)
 
+    for i in range(0,3):
+        coin = Entities.Coin((i+8)*32, 17*56)
+        coin = Entities.Coin((i+19)*32, 17*56)
+        coin = Entities.Coin((i+30)*32, 17*56)
+        coin = Entities.Coin((i+41)*32, (17-i)*56)
+        coin = Entities.Coin((i+49)*32, (15-i)*56)
+        coin = Entities.Coin((i+58)*32, (13-i)*56)
+        coin = Entities.Coin((i+46)*32, 5*56)
 
-    
     #render thingses
     goalpiece = Entities.goal_piece(32*32, 6*56)
-        
+
+    troll = Entities.Troll(15*32,18*56, True, (12*32, 19*32), (12*32, 17*56, 8*32, 9*56))
+    troll = Entities.Troll(27*32,18*56, True, (23*32, 30*32), (23*32, 17*56, 8*32, 9*56))
+    wiki = Entities.Wikipedia(37*32, 15*56, 3*56)
     
     #other stuff
     Globals.player = Entities.Player(2*32,18*56)
@@ -252,6 +255,55 @@ def level_4():
     narrator = Entities.Stage_1_Narrator()
 
     bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 70*32, 30*56)
+
+def level_5():  
+        
+    #render floors
+    floor_1 = Entities.Platform(0*32, 5*56, 20, 3)
+    floor_2 = Entities.Platform(57*32, 5*56, 8, 3)
+    floor_3 = Entities.Platform(0*32, 11*56, 3, 4)
+    floor_4 = Entities.Platform(7*32, 12*56, 3, 3)
+    floor_4 = Entities.Platform(7*32, 12*56, 11, 2)
+    floor_5 = Entities.Platform(0*32, 17*56, 10, 3)
+    floor_6 = Entities.Platform(48*32, 17*56, 7, 3)
+    switch = Entities.moving_switch(63*32, 4*56, 1)
+    
+    for i in range(18,64,2):
+        spike = Entities.spike_box(i*32, 12*56)
+    
+    
+    for i in range(23,63,10):
+        moving = Entities.moving(i*32, 5*56, 0, 6*56, 0, randrange(1,4), 1)
+    for i in range(28,58,10):
+        moving = Entities.moving(i*32, 6*56, 0, 6*56, 0, randrange(1,4), 1)
+
+    for i in range(12,42,7):
+        moving = Entities.moving(i*32, 17*56, 3*56, 0, randrange(1,3), 0, 1)
+ 
+
+    
+    #render thingses
+    #troll = Entities.Troll(38*32,20*32, True, (37*32, 48*32), (37*32, 22*32 - 64, 11*32, 2*32))
+    #wiki = Entities.Wikipedia(55*32 + 16, 17*32, 3*32)
+    goalpiece = Entities.goal_piece(51*32 + 16, 15*56)
+        
+    
+    #other stuff
+    Globals.player = Entities.Player(14*32,4*56)
+    Globals.hud = Entities.hud()
+    Globals.camera.xbounds = (0, 66*32)
+    Globals.camera.ybounds = (0, 24*56)
+    Globals.camera.y = 0
+    killborder = Entities.kill_border((0,Globals.camera.ybounds[1]), (70*32,128))    
+    narrator = Entities.Stage_1_Narrator()
+    Globals.event_manager = Entities.event_manager()
+
+    
+    
+    
+    
+    bg = Entities.Background(functions.get_image(os.path.join('Resources','Stage 1 Resources','BackgroundStage1.bmp'), (255,0,255)), 66*32, 24*56)
+
 
 def boss_1():
     floor_platform = Entities.Platform(0*32, 12*32, 25, 5)

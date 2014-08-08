@@ -293,8 +293,8 @@ class Player(Entity):
         self.image = self.images[self.imagename][self.imageindex] #rotate through list of animation sprites
         if self.imageindex == self.numimages: 
             if self.imagename == 'spinR':
-                self.rect.x += 8
-                self.x += 8
+                self.rect.x += 0
+                self.x += 0
                 self.change_image('idleR')
                 self.attack = None
                 self.attacking = False
@@ -302,8 +302,6 @@ class Player(Entity):
                 self.arrowkey_enabled = True
                 
             elif self.imagename == 'spinL':
-                self.rect.x += 8
-                self.x += 8
                 self.change_image('idleL')
                 self.attack = None
                 self.attacking = False
@@ -311,24 +309,20 @@ class Player(Entity):
                 self.arrowkey_enabled = True
                 
             elif self.imagename == 'slashR':
-                self.rect.x += 20
-                self.x += 20
+                self.rect.x +=0
+                self.x += 0
                 self.change_image('idleR')
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
             elif self.imagename == 'slashL':
-                self.rect.x -= 3
-                self.x -= 3
                 self.change_image('idleL')
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
             elif self.imagename == 'shoutL' and self.attack == 'shout':
-                self.rect.x += 3
-                self.x += 3
                 self.change_image('idleL')
                 self.attack = None
                 self.attacking = False
@@ -336,8 +330,6 @@ class Player(Entity):
                 self.arrowkey_enabled = True
                 
             elif self.imagename == 'shoutR' and self.attack == 'shout':
-                self.rect.x -= 3
-                self.x -= 3
                 self.change_image('idleR')
                 self.attack = None
                 self.attacking = False
@@ -350,13 +342,9 @@ class Player(Entity):
                 self.attacking = False
                 self.can_attack = True
                 self.arrowkey_enabled = True
-                self.rect.x -= 3
-                self.x -= 3
                 
             elif self.imagename == "shoutL" and self.attack == 'lazer':
                 self.change_image('idleL')
-                self.rect.x += 3
-                self.x += 3
                 self.attack = None
                 self.attacking = False
                 self.can_attack = True
@@ -494,40 +482,32 @@ class Player(Entity):
                 if self.facing_right:
                     if not self.imagename == 'spinR':
                         self.change_image('spinR')
-                        self.rect.x -= 8
                 else:
                     if not self.imagename == 'spinL':
                         self.change_image('spinL')
-                        self.rect.x -= 8
             elif self.attack == 'slash':
                 if self.facing_right:
                     if not self.imagename == 'slashR':
                         self.change_image('slashR')
-                        self.rect.x -= 3
                         self.slash_damage = True
                 else:
                     if not self.imagename == 'slashL':
                         self.change_image('slashL')
-                        self.rect.x -= 13
                         self.slash_damage = True
             elif self.attack == 'shout':
                 if self.facing_right:
                     if not self.imagename == 'shoutR':
                         self.change_image('shoutR')
-                        self.rect.x += 3
                 else:
                     if not self.imagename == 'shoutL':
                         self.change_image('shoutL')
-                        self.rect.x -= 4
             elif self.attack == 'lazer':
                 if self.facing_right:
                     if not self.imagename == 'shoutR':
                         self.change_image('shoutR')
-                        self.rect.x += 3
                 else:
                     if not self.imagename == 'shoutL':
                         self.change_image('shoutL')
-                        self.rect.x -= 4
                         
             elif self.attack == 'teabag':
                 if self.facing_right:
@@ -560,81 +540,59 @@ class Player(Entity):
     
     def create_projectile(self):
         self.projectiletype = randrange(1,7,1)
+        self.degrees = float(randrange(1,1000,1)) / 1000
+        self.magnitude = float(randrange(8,11))
         if self.projectiletype == 1:
             if self.facing_right:
-                self.degrees = float(randrange(1,1000,1)) / 1000
-                self.magnitude = float(randrange(10,13))
                 self.projxvel = math.cos(self.degrees) * self.magnitude 
                 self.projyvel = -math.cos(self.degrees) * self.magnitude 
                 piano = Piano(self.rect.x + self.rect.width, self.rect.y - 90, self.projxvel, self.projyvel)
             else:
-                self.degrees = float(randrange(1,1000,1)) / 1000
-                self.magnitude = float(randrange(10,13))
                 self.projxvel = -math.cos(self.degrees) * self.magnitude 
                 self.projyvel = -math.cos(self.degrees) * self.magnitude 
                 piano = Piano(self.rect.x - 75, self.rect.y - 50, self.projxvel, self.projyvel)
         elif self.projectiletype == 2:
                 if self.facing_right:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     watermelon = Watermelon(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
                 else:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     watermelon = Watermelon(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
         elif self.projectiletype == 3:
                 if self.facing_right:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     chair = Chair(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
                 else:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     chair = Chair(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
         elif self.projectiletype == 4:
                 if self.facing_right:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     hat = Hat(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
                 else:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     hat = Hat(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
         elif self.projectiletype == 5:
                 if self.facing_right:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     book = Book(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
                 else:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     book = Book(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
         elif self.projectiletype == 6:
                 if self.facing_right:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     tv = Television(self.rect.x + self.rect.width, self.rect.y - 20, self.projxvel, self.projyvel)
                 else:
-                    self.degrees = float(randrange(1,1000,1)) / 1000
-                    self.magnitude = float(randrange(10,13))
                     self.projxvel = -math.cos(self.degrees) * self.magnitude 
                     self.projyvel = -math.cos(self.degrees) * self.magnitude 
                     tv = Television(self.rect.x - 60, self.rect.y - 20, self.projxvel, self.projyvel)
@@ -864,8 +822,10 @@ class moving(Entity):
                 self.image = functions.get_image(os.path.join('Resources','Stage 1 Resources','LevelTiles','FloatingPlatBot.bmp'), (255,0,255))
         self.rect = pygame.Rect((x + 3,y), (58,21))
         self.pos = (x,y)
-        self.vertical = v
-        self.horizontal = h
+        if not vspeed == 0: self.vertical = v/vspeed
+        else: self.vertical = v
+        if not hspeed==0: self.horizontal = h/hspeed
+        else: self.horizontal = h
         self.hcount = 0
         self.playertouch = False
         self.vcount = 0
@@ -1042,17 +1002,17 @@ class Door(Entity):
     def __init__(self, x, y, blocksacross, blocksdown, index):
         Entity.__init__(self, Globals.group_COLLIDEBLOCKS)
         self.blockimage = functions.get_image(os.path.join('Resources','General Resources','VaultDoorBotResized.png'), (255,0,255))
-        self.image = pygame.Surface((blocksacross*64,blocksdown*56))
-        for rows in range(0,blocksdown):
+        self.image = pygame.Surface((blocksacross*64,(blocksdown + 4)*56))
+        self.image.set_colorkey((0,0,0))
+        for rows in range(blocksdown - 1, -1, -1):
             for columns in range(0,blocksacross):
                 self.image.blit(self.blockimage, (columns*64, rows*56))
-        self.rect = pygame.Rect(self.image.get_rect())
-        self.rect.move_ip(x,y)
+        self.rect = pygame.Rect((0,0), (blocksacross*64, blocksdown*56))
+        self.rect.move_ip(x,y + 56)
         self.pos = (self.rect.x, self.rect.y)
         self.width = blocksacross*64
         self.height = blocksdown*56
         self.index = index
-        back = vault_door_back(self.pos[0] + 16, self.pos[1] - 6)
 
     def remove_one_horiz(self):
         if self.width == 64: 
@@ -1060,6 +1020,10 @@ class Door(Entity):
         else:
             self.rect.x += 64
             self.width -= 64
+            for i in Globals.group_BACKTILES:
+                if isinstance(i, vault_door_back) and i.pos == (self.rect.x - 64 + 16, self.rect.y - 8 ):
+                    i.kill()
+                
             self.image = pygame.Surface((self.width, self.height))
             for rows in range(0,self.height/56):
                 for columns in range(0,self.width/64):
@@ -1073,9 +1037,10 @@ class Door(Entity):
             self.rect.y += 56
             self.height -= 56
             self.image = pygame.Surface((self.width, self.height))
-            for rows in range(0,self.height/56):
+            for rows in range(self.height/56 - 1, -1, -1):
                 for columns in range(0,self.width/64):
                     self.image.blit(self.blockimage, (columns*64, rows*56))
+        self.image.set_colorkey((0,0,0))
     
     def add_one_vert_bottom(self):
         self.height += 56
@@ -1097,12 +1062,13 @@ class Door(Entity):
         self.rect.move_ip(self.pos)
 
 class vault_door_back(Entity):
-    def __init__(self, x, y):
+    def __init__(self, x, y, index):
         Entity.__init__(self, Globals.group_FILLBACKTILES)
         self.image = functions.get_image(os.path.join('Resources','General Resources','VaultDoorTop.png'), (255,0,255))
         self.rect = self.image.get_rect()
         self.rect.move_ip((x,y))
         self.pos = (x,y)
+        self.index = index
         
 class goal_piece(Entity):
     def __init__(self, x, y):
@@ -1135,8 +1101,8 @@ class key(Entity):
     
     def update(self):
         if self.destroy:
-            Globals.key_pause = True
-            #self.rect.y = -1000
+            self.image.set_alpha(0)
+            Globals.player.arrowkey_enabled = False
             self.timer += 1
             self.destroylist = [x for x in Globals.group_COLLIDEBLOCKS if isinstance(x, Door) and x.index == self.index]
             if self.destroylist and self.timer == self.destroytimer:
@@ -1148,7 +1114,7 @@ class key(Entity):
                     self.destitem.remove_one_vert()
             elif not self.destroylist: 
                 self.kill()
-                Globals.key_pause = False
+                Globals.player.arrowkey_enabled= True
           
         if self.timer >= self.destroytimer: self.timer = 0
               
