@@ -11,9 +11,7 @@ def main_menu():
     pass
 
 def level_trial():
-    
-    test = Entities.passable(7*32, 20*32)
-                
+                    
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)
     floor_2 = Entities.Platform(14*32, 22*32,6, 4)

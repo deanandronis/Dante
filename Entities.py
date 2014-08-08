@@ -6,7 +6,7 @@ Created on Oct 27, 2013
 
 import pygame, sys, os, math, textwrap
 from pygame.locals import *
-import functions, Constants, Globals
+import functions, Constants, Globals, stage_1, main_menu
 from random import randrange, randint
 
 #base class for shit
@@ -383,7 +383,30 @@ class Player(Entity):
                 self.arrowkey_enabled = False
             
             elif self.imagename == 'deathL' or self.imagename == 'deathR':
-                self.reset()
+                if Globals.level == 1:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.level_1()
+                if Globals.level == 2:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.level_2()
+                if Globals.level == 3:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.level_3()
+                if Globals.level == 4:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.level_4()
+                if Globals.level == 5:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.level_5()
+                if Globals.level == 6:
+                    Globals.clear_groups()
+                    Globals.reset_variables()
+                    stage_1.boss_1()
     
             else:
                 self.imageindex = 0 #if the sprite is at the end of the list, go to the start of the list
@@ -2103,7 +2126,7 @@ class InternetBoss(Boss):
         self.can_stun = True
         self.currentevent = 'pause_intro'
         self.can_damage = True
-        self.health = 40
+        self.health = 1
         self.damage_on_contact = True
         self.xvel = 0.0
         self.yvel = 0.0
@@ -2291,6 +2314,12 @@ class InternetBoss(Boss):
                 Globals.player.can_attack = True
                 self.healthbar.kill()
                 self.kill()
+                Globals.clear_groups()
+                Globals.reset_variables()
+                main_menu.load_title()
+                Globals.menu = True
+                Globals.hud = None
+
             
             elif self.imagename == 'smash': 
                 self.currentevent = 'create_stage'
@@ -2335,7 +2364,10 @@ class Menu_PlayButt(Button):
         Button.__init__(self, x, y)
         
     def clicked(self):
-        print "Play button clicked"
+            Globals.clear_groups()
+            Globals.reset_variables()
+            stage_1.level_trial()
+            Globals.menu = False
         
 class Menu_InfoButt(Button):
     def __init__(self, x, y):
@@ -2359,4 +2391,11 @@ class Menu_QuitButt(Button):
         Button.__init__(self, x, y)
         
     def clicked(self):
-        print "Quit button clicked"
+        Globals.done = True
+        
+class Menu_BG(Entity):
+    def __init__(self, image):
+        Entity.__init__(self, Globals.group_BG)
+        self.move_with_camera = False
+        self.image = image
+        self.pos = (0,0)

@@ -16,6 +16,7 @@ camera = None
 event_manager = None
 score = 0
 key_pause = False
+done = False
 
 movinglist = []
 
@@ -69,6 +70,10 @@ def clear_groups():
     global group_FRONTTILES
     global movinglist
     global group_BACKSPECIAL
+    global group_FILLBACKTILES
+    global group_HUD
+    group_HUD.empty()
+    group_FILLBACKTILES.empty()
     group_COLLIDEBLOCKS.empty()
     group_PLAYER.empty()
     group_SPECIAL.empty()
