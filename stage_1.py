@@ -139,7 +139,7 @@ def level_2():
         
     
     #other stuff
-    Globals.player = Entities.Player(8*32,17*56)
+    Globals.player = Entities.Player(59*32,16*56)
     Globals.hud = Entities.hud()
     Globals.camera.xbounds = (0, 70*32)
     Globals.camera.ybounds = (0, 30*56)
@@ -221,26 +221,39 @@ def level_4():
     floor_1 = Entities.Platform(57*32, 20*56, 1, 1)
 
     floor_1 = Entities.Platform(60*32, 19*56, 7, 2)
+    spikebox_1 = Entities.spike_box(6*32 - 8, 25*56 - 24)
+    spikebox_1 = Entities.spike_box(45*32 - 8, 25*56 - 24)
+    
+    floor_1 = Entities.Platform(26*32, 10*56, 1, 1)
+    floor_1 = Entities.Platform(22*32, 8*56, 1, 1)
+    floor_1 = Entities.Platform(18*32, 6*56, 1, 1)
+    floor_1 = Entities.Platform(14*32, 4*56, 1, 1)
+    floor_1 = Entities.Platform(8*32, 4*56, 1, 1)
     
     floor_1 = Entities.Platform(5*32, 17*56, 4, 2)
-    
-    moving = Entities.moving(11*32, 22*56, 0, 2*56, 0, 1, 2)
-    switch = Entities.moving_switch(15*32, 24*56, 2)
-    
-    moving = Entities.moving(31*32, 23*56, 0, 11*56, 0, -1, 1)
+
+    door = Entities.Door(60*32,20*56 + 8, 1,4, 1)
+    key = Entities.key(7*32, 15*56, 1)
+
+    moving = Entities.moving(11*32, 17*56, 0, 7*56, 0, 2, 2)
+    switch = Entities.moving_switch(63*32, 17*56, 2)
+        
+    moving = Entities.moving(31*32, 12*56, 0, 11*56, 0, 2, 1)    
     switch = Entities.moving_switch(64*32, 24*56, 1)
 
+    troll = Entities.Troll(21*32,24*56, True, (9*32, 25*32), (9*32, 24*56, 17*32, 2*32))
+    troll = Entities.Troll(32*32,24*56, False, (27*32, 44*32), (27*32, 24*56, 17*32, 2*32))
     
-    '''
-    floor_1 = Entities.Platform(61*32, 9*56, 1, 1)
-    
-    floor_1 = Entities.Platform(49*32, 7*56, 10, 2)
-    floor_1 = Entities.Platform(37*32, 7*56, 8, 2)
-    '''
+    wiki = Entities.Wikipedia(45*32, 21*56, 2*56)
+    wiki = Entities.Wikipedia(32*32, 2*56, 2*56)
+    wiki = Entities.Wikipedia(32*32, 4*56, 2*56)
 
     
     #render thingses
-    goalpiece = Entities.goal_piece(32*32, 6*56)
+    goalpiece = Entities.goal_piece(4*32, 3*56)        
+    
+
+    #render thingses
         
     
     #other stuff
@@ -265,7 +278,7 @@ def level_5():
     floor_4 = Entities.Platform(7*32, 12*56, 11, 2)
     floor_5 = Entities.Platform(0*32, 17*56, 10, 3)
     floor_6 = Entities.Platform(48*32, 17*56, 7, 3)
-    switch = Entities.moving_switch(15*32, 4*56, 1)
+    switch = Entities.moving_switch(63*32, 4*56, 1)
     
     for i in range(18,64,2):
         spike = Entities.spike_box(i*32, 12*56)
