@@ -32,7 +32,7 @@ clock = pygame.time.Clock() #creates a controller for the game cycles
 ticktimer = 0 #variable to calculate the time that has passed
 mousex, mousey = (0,0)
 Globals.camera = Entities.Camera() #create the camera
-stage_1.level_5() #load level 1
+stage_1.level_2() #load level 1
 
 while not done:
     keypressed = pygame.key.get_pressed()
@@ -51,7 +51,7 @@ while not done:
                         Globals.player.yvel = -10 #accelerate the player upwards
                         Globals.player.y -= 4
             elif event.key == pygame.K_DOWN:
-                Globals.player.health -= 1
+                Globals.player.health -= 10
                 Globals.event_manager.throw_chat()
 
             elif event.key == pygame.K_z:

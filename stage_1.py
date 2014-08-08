@@ -11,6 +11,8 @@ def main_menu():
     pass
 
 def level_trial():
+    
+    test = Entities.passable(7*32, 20*32)
                 
     #render floors
     floor_1 = Entities.Platform(4*32, 22*32, 6, 4)
@@ -224,7 +226,7 @@ def level_4():
     
     floor_1 = Entities.Platform(5*32, 17*56, 4, 2)
     
-    moving = Entities.moving(11*32, 24*56, 0, 2*56, 0, -1, 2)
+    moving = Entities.moving(11*32, 22*56, 0, 2*56, 0, 1, 2)
     switch = Entities.moving_switch(15*32, 24*56, 2)
     
     moving = Entities.moving(31*32, 23*56, 0, 11*56, 0, -1, 1)
